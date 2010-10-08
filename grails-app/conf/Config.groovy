@@ -47,13 +47,13 @@ grails.spring.bean.packages = []
 // set per-environment serverURL stem for creating absolute links
 environments {
     production {
-        grails.serverURL = "http://www.changeme.com"
+        grails.serverURL = "https://secure.ncs.umn.edu/ncs-data"
     }
     development {
-        grails.serverURL = "http://localhost:8080/${appName}"
+        grails.serverURL = "https://localhost:8080/${appName}"
     }
     test {
-        grails.serverURL = "http://localhost:8080/${appName}"
+        grails.serverURL = "https://localhost:8080/${appName}"
     }
 
 }
@@ -82,5 +82,13 @@ log4j = {
     warn   'org.mortbay.log'
 }
 
+environments {
+    development {
+        log4j.appender.'errors.File'="stacktrace.log"
+    }
+    production {
+        log4j.appender.'errors.File'="/var/log/tomcat6/stacktrace.log"
+    }
+}
 
 //log4j.logger.org.springframework.security='off,stdout'
