@@ -87,7 +87,7 @@
 			  export utilities to collaborators of the University of Minnesota,
 			  Ramsey County screening center.</p>
 
-	  <p>Below are some services available to you for consumtion.  If you
+	  <p>Below are some services available to you for consumption.  If you
 			  do not yet have a "Partner Private Key" issued, you may use the key
 			  "DEMO" to view demo data for initial testing of your applications.</p>
 
