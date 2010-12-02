@@ -8,9 +8,9 @@
 	<link rel="stylesheet" type="text/css" href="${resource(dir:'css',plugin:'ncs-web-template',file:'umn_template.css')}" />
 	<link rel="stylesheet" type="text/css" href="${resource(dir:'css',plugin:'ncs-web-template',file:'umn_optional.css')}" />
 	<link rel="stylesheet" type="text/css" href="${resource(dir:'css',plugin:'ncs-web-template',file:'umn_grails.css')}" />
-	<link rel="stylesheet" type="text/css" href="${resource(dir:'css',plugin:'ncs-web-template',file:'umn_template.gsp')}" />
+	<link rel="stylesheet" type="text/css" href="${createLink(controller:'css',action:'template')}" />
 	<link rel="stylesheet" type="text/css" href="${resource(dir:'css',plugin:'ncs-web-template',file:'umn_print.css')}" media="print" />
-	<link rel="stylesheet" type="text/css" href="${resource(dir:'css',plugin:'ncs-web-template',file:'umn_print.gsp')}" media="print" />
+	<link rel="stylesheet" type="text/css" href="${createLink(controller:'css',action:'print')}" media="print" />
 	<link rel="shortcut icon" href="${resource(dir:'images',plugin:'ncs-web-template',file:'favicon.ico')}" type="image/x-icon" />
 <g:javascript plugin="ncs-web-template" src="umn_searchfield.js" />
 

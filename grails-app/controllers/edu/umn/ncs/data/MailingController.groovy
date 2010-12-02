@@ -42,6 +42,8 @@ class MailingController {
 				redirect(action:"list", params:params)
 			}
 			else {
+				// don't display creation config info
+				batchInstance.creationConfig = null
 
 				XML.use("deep") {
 					render batchInstance as XML
