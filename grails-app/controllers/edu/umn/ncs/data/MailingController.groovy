@@ -28,7 +28,7 @@ class MailingController {
 		// List all the batches
 		if ( ! hasRoleAccess(params.key, 'ROLE_READ_MAILING') ) {
 			response.sendError(403)
-			render "ACCESS DENIED ${readMailingRole}"
+			render "ACCESS DENIED ROLE_READ_MAILING"
 		} else {
 
 			def c = Batch.createCriteria()
@@ -41,6 +41,8 @@ class MailingController {
 					lt("instrumentDate", now)
 				}
 			}
+
+			if (batchInstanceList) {
 
 			// get the xml
 			def batchInstanceListXml = batchInstanceList.encodeAsXML()
@@ -69,6 +71,10 @@ class MailingController {
 			// rendering the results
 			//render batchInstanceListXml
 			render(contentType:"text/xml", text:xmlResult)
+			
+			} else {
+				render batchInstanceList as XML
+			}
 		}
     }
 
@@ -77,7 +83,7 @@ class MailingController {
 		// List all the batches
 		if ( ! hasRoleAccess(params.key, 'ROLE_READ_MAILING') ) {
 			response.sendError(403)
-			render "ACCESS DENIED ${readMailingRole}"
+			render "ACCESS DENIED ROLE_READ_MAILING"
 		} else {
 
 			def c = Batch.createCriteria()
@@ -133,7 +139,8 @@ class MailingController {
 			def batchInstance = Batch.get(params.id)
 
 			if (! batchInstance) {
-				redirect(action:"list", params:params)
+				response.sendError(404)
+				render "Mailing # ${params.id} Not Found"
 			}
 			else {
 				// don't display creation config info
@@ -188,6 +195,7 @@ class MailingController {
 	private def hasRoleAccess = { privateKey, roleName ->
 
 		def grantAccess = false
+		def ipAddress = request.remoteAddr
 
 		def accessRoles = getAccessRoles(privateKey)
 
@@ -197,11 +205,11 @@ class MailingController {
 			if (readMailingRole) {
 				grantAccess = true
 			} else {
-				println "Insuffiecent access to role ${roleName} for client host ${ipAddress} using ${dataExchangePartnerInstance} key!"
+				println "Insufficent access to role ${roleName} for client host."
 			}
 
 		} else {
-			println "Client host ${ipAddress} using ${dataExchangePartnerInstance} key has no roles!"
+			println "Client host ${ipAddress}."
 		}
 	}
 
@@ -219,11 +227,11 @@ class MailingController {
 				def clientHostInstance = dataExchangePartnerInstance.allowedClients.find { it.ipvFour == ipAddress || it.ipvSix == ipAddress }
 
 				if (clientHostInstance) {
-					println "Access grandted from client host ${ipAddress} using ${dataExchangePartnerInstance} key."
+					println "Access granted from client host ${ipAddress} using ${dataExchangePartnerInstance} key."
 					// load the roles
 					roles = dataExchangePartnerInstance.roles
 				} else {
-					println "Host Found:: Denied access from ${ipAddress} as ${dataExchangePartnerInstance} client host."
+					println "Host Not Found:: Denied access from ${ipAddress} as ${dataExchangePartnerInstance} client host."
 				}
 				
 			} else {

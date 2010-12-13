@@ -52,7 +52,7 @@ class BootStrap {
 				ipvFour:"65.213.192.20").save()
 		}
 
-		def norcWorkstationMartinBarron = ClientHost.findByIpvFour("172.16.149.99")
+		def norcWorkstationMartinBarron = ClientHost.findByIpvFour("65.213.192.3")
 		if ( ! norcWorkstationMartinBarron ) {
 			norcWorkstationMartinBarron = new ClientHost(hostname:"nat.norc.org",
 				userCreated: 'ajz',
@@ -60,25 +60,31 @@ class BootStrap {
 		}
 
 		if ( norcWorkstationMartinBarron && readMailingRole ) {
-			def norcPartner = new DataExchangePartner(name:"NORC",
-				contactName:"Martin Barron",
-				contactEmail:"Barron-Martin@norc.org",
-				privateKey:"kenah1ot5chu8Ingu7Phoh9Lionoh1eebah3saiXoetaicohl6aij4aph0eih3oi",
-				userCreated:'ajz')
 
-			if (norcPartner.save()) {
-				norcPartner.addToRoles(readMailingRole)
-				.addToRoles(writeResultRole)
-				.addToRoles(writeInstrument)
-				.addToAllowedClients(localhost)
-				.addToAllowedClients(norcWorkstationMartinBarron).save()
-			} else {
-				println "Failed to create NORC as data exchange partner."
+			def norcPartner = DataExchangePartner.findByName("NORC")
 
-				norcPartner.errors.each{ e ->
-					println "${e}"
-				}
+			if (! norcPartner) {
+				norcPartner = new DataExchangePartner(name:"NORC",
+					contactName:"Martin Barron",
+					contactEmail:"Barron-Martin@norc.org",
+					privateKey:"kenah1ot5chu8Ingu7Phoh9Lionoh1eebah3saiXoetaicohl6aij4aph0eih3oi",
+					userCreated:'ajz')
+
+				if (norcPartner.save()) {
+					norcPartner.addToRoles(readMailingRole)
+					.addToRoles(writeResultRole)
+					.addToRoles(writeInstrument)
+					.addToAllowedClients(aaronsComputer)
+					.addToAllowedClients(localhost)
+					.addToAllowedClients(norcWorkstationMartinBarron).save()
+				} else {
+					println "Failed to create NORC as data exchange partner."
+
+					norcPartner.errors.each{ e ->
+						println "${e}"
+					}
 				
+				}
 			}
 		} else {
 			println "Either norcMartinBarron or readMailingRole is missing."
