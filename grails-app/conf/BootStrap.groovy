@@ -1,50 +1,92 @@
 import edu.umn.ncs.*
+import edu.umn.ncs.data.*
 
 class BootStrap {
 
     def init = { servletContext ->
 
+        def today = new Date()
+        def appName = 'ncs-data'
+
 		println "Loading bootstrap..."
 
-		def demoRole = new DataExchangePartnerRole(name:"Demonstration",
-			role:"ROLE_DEMO")
+		def readMailingRole = DataExchangePartnerRole.findByRole("ROLE_READ_MAILING")
+		if ( ! readMailingRole ) {
+			readMailingRole = new DataExchangePartnerRole(name:"Read Mailing",
+				role:"ROLE_READ_MAILING").save()
+		}
 		
-		if ( ! demoRole.save() ) {
-			println "Error saving 'demoRole'"
-			println "Error:  ${demoRole.errors}"
-			println ""
+		def writeResultRole = DataExchangePartnerRole.findByRole("ROLE_WRITE_RESULT")
+		if ( ! writeResultRole ) {
+			writeResultRole = new DataExchangePartnerRole(name:"Write Results",
+				role:"ROLE_WRITE_RESULT").save()
 		}
 
-		def anywhere = new ClientHost(hostname:"*", userCreated:"ajz")
-
-		if ( ! anywhere.save() ) {
-			println "Error saving 'anywhere'"
-			println "Errors: ${anywhere.errors}"
-			println ""
+		def writeInstrument = DataExchangePartnerRole.findByRole("ROLE_WRITE_INSTRUMENT")
+		if ( ! writeInstrument ) {
+			writeInstrument = new DataExchangePartnerRole(name:"Write Instrument",
+				role:"ROLE_WRITE_INSTRUMENT").save()
 		}
 
-		def aaronsComputer = new ClientHost(hostname:"phantom.cccs.umn.edu",
-			ipvFour:"160.94.224.1").save()
+		// EnHS Clients
+		def localhost = ClientHost.findByIpvFour("127.0.0.1")
+		if ( ! localhost ) {
+			localhost = new ClientHost(hostname:"localhost",
+				userCreated: 'ajz',
+				ipvFour:"127.0.0.1",
+				ipvSix:"0:0:0:0:0:0:0:1").save()
+		}
 
-		if (anywhere && demoRole) {
-			def demoPartner = new DataExchangePartner(name:"Demo",
-				contactName:"Demonstration",
-				contactEmail:"info@ncs.umn.edu",
-				privatekey:"DEMO",
-				userCreated:"ajz")
-			.addToRoles(demoRole)
-			.addToAllowedClients(anywhere).save()
+		def aaronsComputer = ClientHost.findByIpvFour("160.94.224.1")
+		if ( ! aaronsComputer ) {
+			aaronsComputer = new ClientHost(hostname:"phantom.cccs.umn.edu",
+				userCreated: 'ajz',
+				ipvFour:"160.94.224.1").save()
+		}
+
+		// NORC Clients
+		def norcMailServer = ClientHost.findByIpvFour("65.213.192.20")
+		if ( ! norcMailServer ) {
+			norcMailServer = new ClientHost(hostname:"xmx.norc.net",
+				userCreated: 'ajz',
+				ipvFour:"65.213.192.20").save()
+		}
+
+		def norcWorkstationMartinBarron = ClientHost.findByIpvFour("172.16.149.99")
+		if ( ! norcWorkstationMartinBarron ) {
+			norcWorkstationMartinBarron = new ClientHost(hostname:"nat.norc.org",
+				userCreated: 'ajz',
+				ipvFour:"65.213.192.3").save()
+		}
+
+		if ( norcWorkstationMartinBarron && readMailingRole ) {
+			def norcPartner = new DataExchangePartner(name:"NORC",
+				contactName:"Martin Barron",
+				contactEmail:"Barron-Martin@norc.org",
+				privateKey:"kenah1ot5chu8Ingu7Phoh9Lionoh1eebah3saiXoetaicohl6aij4aph0eih3oi",
+				userCreated:'ajz')
+
+			if (norcPartner.save()) {
+				norcPartner.addToRoles(readMailingRole)
+				.addToRoles(writeResultRole)
+				.addToRoles(writeInstrument)
+				.addToAllowedClients(localhost)
+				.addToAllowedClients(norcWorkstationMartinBarron).save()
+			} else {
+				println "Failed to create NORC as data exchange partner."
+
+				norcPartner.errors.each{ e ->
+					println "${e}"
+				}
+				
+			}
 		} else {
-			println "Either anywhere or demoRole is missing."
+			println "Either norcMartinBarron or readMailingRole is missing."
 		}
-
 
 		// BEGIN BATCH BOOTSTRAP CODE
 
         // Global BootStrap
-
-        def today = new Date()
-        def appName = 'ncs-case-management'
 
         /*** People Seciton ***/
         /* Items: AddressType, ContactRole, Country, EmailType,
@@ -119,7 +161,16 @@ class BootStrap {
                     println "${it}"
                 }
             }
+
+			
         }
+
+		// add the NORC project ID
+        def ncsNorc = StudyLink.findByNorcProjectId("6612")
+        if (! ncsNorc) {
+			ncsNorc = new StudyLink(study:ncs, norcProjectId:'6612').save()
+		}
+
 
         /*** Tracking Seciton ***/
         /* Items: BatchDirection, InstrumentFormat, IsInitial, Result
@@ -205,128 +256,197 @@ class BootStrap {
             dwellingUnitSource = new BatchCreationQueueSource(name:'dwellingUnit').save()
         }
 
-        // Test Data
+		environments {
+			development {
 
-		/*
-		 * 1636 BREDA AVE            |           |          | SAINT PAUL | MN         | 55108 | 2701 |
-		 * 4 WYOMING ST E            |           |          | SAINT PAUL | MN         | 55107 | 3240 |
-		 * 1372 HAZEL ST N           |           |          | SAINT PAUL | MN         | 55119 | 4507 |
-		 * 180 WAYZATA ST            | APT       | 114      | SAINT PAUL | MN         | 55117 | 5351 |
-		 * 2122 WOODLYNN AVE         | APT       | 4        | SAINT PAUL | MN         | 55109 | 1480 |
-		 * 3744 CLEVELAND AVE N      | APT       | 104      | SAINT PAUL | MN         | 55112 | 3264 |
-		 * 1255 FLANDRAU ST          |           |          | SAINT PAUL | MN         | 55106 | 2302 |
-		 * 4310 OLD WHITE BEAR AVE N |           |          | SAINT PAUL | MN         | 55110 | 3874 |
-		 * 1131 MARION ST            |           |          | SAINT PAUL | MN         | 55117 | 4461 |
-		 * 305 EDMUND AVE            |           |          | SAINT PAUL | MN         | 55103 | 1708 |
-		 * 1412 COUNTY ROAD E W      |           |          | SAINT PAUL | MN         | 55112 | 3653 |
-		 * 1952 OAK KNOLL DR         |           |          | SAINT PAUL | MN         | 55110 | 4263 |
-		 * 480 GERANIUM AVE E        |           |          | SAINT PAUL | MN         | 55130 | 3709 |
-		 * 1140 4TH ST E             | APT       | 306      | SAINT PAUL | MN         | 55106 | 5353 |
-		 * 1793 MORGAN AVE           |           |          | SAINT PAUL | MN         | 55116 | 2721 |
-		 * 346 CLEVELAND AVE SW      | APT       | 14       | SAINT PAUL | MN         | 55112 | 3535 |
-		 * 1575 SAINT PAUL AVE       | APT       | 9        | SAINT PAUL | MN         | 55116 | 2862 |
-		 * 4041 BETHEL DR            | APT       | 27       | SAINT PAUL | MN         | 55112 | 6921 |
-		 * 1265 3RD ST E             |           |          | SAINT PAUL | MN         | 55106 | 5778 |
-		 * 1528 BREDA AVE            |           |          | SAINT PAUL | MN         | 55108 | 2610 |
-		 */
+				// Test Data
 
-		def myAddressList = [
-			['1636 BREDA AVE', 'SAINT PAUL', 'MN', '55108', '2701'],
-			['WYOMING ST E', 'SAINT PAUL', 'MN', '55107', '3240'],
-			['1372 HAZEL ST N', 'SAINT PAUL', 'MN', '55119', '4507 '],
-			['180 WAYZATA ST APT 114', 'SAINT PAUL', 'MN', '55117', '5351'],
-			['2122 WOODLYNN AVE APT 4', 'SAINT PAUL', 'MN', '55109', '1480'],
-			['3744 CLEVELAND AVE N APT 104', 'SAINT PAUL', 'MN', '55112', '3264'],
-			['1255 FLANDRAU ST', 'SAINT PAUL', 'MN', '55106', '2302'],
-			['4310 OLD WHITE BEAR AVE N', 'SAINT PAUL', 'MN', '55110', '3874'],
-			['1131 MARION ST', 'SAINT PAUL', 'MN', '55117', '4461'],
-			['305 EDMUND AVE', 'SAINT PAUL', 'MN', '55103', '1708'],
-			['1412 COUNTY ROAD E W', 'SAINT PAUL', 'MN', '55112', '3653'],
-			['1952 OAK KNOLL DR', 'SAINT PAUL', 'MN', '55110', '4263'],
-			['480 GERANIUM AVE E', 'SAINT PAUL', 'MN', '55130', '3709'],
-			['1140 4TH ST E APT 306', 'SAINT PAUL', 'MN', '55106', '5353'],
-			['1793 MORGAN AVE', 'SAINT PAUL', 'MN', '55116', '2721'],
-			['346 CLEVELAND AVE SW APT 14', 'SAINT PAUL', 'MN', '55112', '3535'],
-			['1575 SAINT PAUL AVE APT 9', 'SAINT PAUL', 'MN', '55116', '2862'],
-			['4041 BETHEL DR APT 27', 'SAINT PAUL', 'MN', '55112', '6921'],
-			['1265 3RD ST E','SAINT PAUL', 'MN', '55106', '5778'],
-			['1528 BREDA AVE','SAINT PAUL', 'MN', '55108', '2610']
-		]
+				/*
+				 * 1636 BREDA AVE            |           |          | SAINT PAUL | MN         | 55108 | 2701 |
+				 * 4 WYOMING ST E            |           |          | SAINT PAUL | MN         | 55107 | 3240 |
+				 * 1372 HAZEL ST N           |           |          | SAINT PAUL | MN         | 55119 | 4507 |
+				 * 180 WAYZATA ST            | APT       | 114      | SAINT PAUL | MN         | 55117 | 5351 |
+				 * 2122 WOODLYNN AVE         | APT       | 4        | SAINT PAUL | MN         | 55109 | 1480 |
+				 * 3744 CLEVELAND AVE N      | APT       | 104      | SAINT PAUL | MN         | 55112 | 3264 |
+				 * 1255 FLANDRAU ST          |           |          | SAINT PAUL | MN         | 55106 | 2302 |
+				 * 4310 OLD WHITE BEAR AVE N |           |          | SAINT PAUL | MN         | 55110 | 3874 |
+				 * 1131 MARION ST            |           |          | SAINT PAUL | MN         | 55117 | 4461 |
+				 * 305 EDMUND AVE            |           |          | SAINT PAUL | MN         | 55103 | 1708 |
+				 * 1412 COUNTY ROAD E W      |           |          | SAINT PAUL | MN         | 55112 | 3653 |
+				 * 1952 OAK KNOLL DR         |           |          | SAINT PAUL | MN         | 55110 | 4263 |
+				 * 480 GERANIUM AVE E        |           |          | SAINT PAUL | MN         | 55130 | 3709 |
+				 * 1140 4TH ST E             | APT       | 306      | SAINT PAUL | MN         | 55106 | 5353 |
+				 * 1793 MORGAN AVE           |           |          | SAINT PAUL | MN         | 55116 | 2721 |
+				 * 346 CLEVELAND AVE SW      | APT       | 14       | SAINT PAUL | MN         | 55112 | 3535 |
+				 * 1575 SAINT PAUL AVE       | APT       | 9        | SAINT PAUL | MN         | 55116 | 2862 |
+				 * 4041 BETHEL DR            | APT       | 27       | SAINT PAUL | MN         | 55112 | 6921 |
+				 * 1265 3RD ST E             |           |          | SAINT PAUL | MN         | 55106 | 5778 |
+				 * 1528 BREDA AVE            |           |          | SAINT PAUL | MN         | 55108 | 2610 |
+				 */
 
-		myAddressList.each{
-			def sa = new StreetAddress(address:it[0],
-				city:it[1], state:it[2], zipCode:it[3], zip4:it[4],
-				country:us, county:'Ramsey', appCreated:'byHand').save()
+				def myAddressList = [
+					['1636 BREDA AVE', 'SAINT PAUL', 'MN', '55108', '2701'],
+					['WYOMING ST E', 'SAINT PAUL', 'MN', '55107', '3240'],
+					['1372 HAZEL ST N', 'SAINT PAUL', 'MN', '55119', '4507 '],
+					['180 WAYZATA ST APT 114', 'SAINT PAUL', 'MN', '55117', '5351'],
+					['2122 WOODLYNN AVE APT 4', 'SAINT PAUL', 'MN', '55109', '1480'],
+					['3744 CLEVELAND AVE N APT 104', 'SAINT PAUL', 'MN', '55112', '3264'],
+					['1255 FLANDRAU ST', 'SAINT PAUL', 'MN', '55106', '2302'],
+					['4310 OLD WHITE BEAR AVE N', 'SAINT PAUL', 'MN', '55110', '3874'],
+					['1131 MARION ST', 'SAINT PAUL', 'MN', '55117', '4461'],
+					['305 EDMUND AVE', 'SAINT PAUL', 'MN', '55103', '1708'],
+					['1412 COUNTY ROAD E W', 'SAINT PAUL', 'MN', '55112', '3653'],
+					['1952 OAK KNOLL DR', 'SAINT PAUL', 'MN', '55110', '4263'],
+					['480 GERANIUM AVE E', 'SAINT PAUL', 'MN', '55130', '3709'],
+					['1140 4TH ST E APT 306', 'SAINT PAUL', 'MN', '55106', '5353'],
+					['1793 MORGAN AVE', 'SAINT PAUL', 'MN', '55116', '2721'],
+					['346 CLEVELAND AVE SW APT 14', 'SAINT PAUL', 'MN', '55112', '3535'],
+					['1575 SAINT PAUL AVE APT 9', 'SAINT PAUL', 'MN', '55116', '2862'],
+					['4041 BETHEL DR APT 27', 'SAINT PAUL', 'MN', '55112', '6921'],
+					['1265 3RD ST E','SAINT PAUL', 'MN', '55106', '5778'],
+					['1528 BREDA AVE','SAINT PAUL', 'MN', '55108', '2610']
+				]
 
-			def du = new DwellingUnit(address:sa,
-				appCreated:'byHand').save()
+				def baseNorcSuId = 123456
 
-			//println "Created Dwelling unit: ${du?.id}:${sa?.id}"
-		}
+				myAddressList.each{
+					def sa = new StreetAddress(address:it[0],
+						city:it[1], state:it[2], zipCode:it[3], zip4:it[4],
+						country:us, county:'Ramsey', appCreated:'byHand').save()
 
-		def advLetter = new Instrument(name:'Advance Letter',
-			nickName:'ADV', study:ncs, requiresPrimaryContact:false).save()
+					def du = new DwellingUnit(address:sa,
+						appCreated:'byHand').save()
+
+					def suId = "00${baseNorcSuId}00"
+					baseNorcSuId++
+
+					// adding NORC SU_IDs
+					def duNorc = new DwellingUnitLink(dwellingUnit: du,
+						deliverySequenceId: 1, norcSuId:suId).save()
+
+					//println "Created Dwelling unit: ${du?.id}:${sa?.id}"
+				}
+
+				def advLetter = new Instrument(name:'Advance Letter',
+					nickName:'ADV', study:ncs, requiresPrimaryContact:false).save()
+
+		
+				// adding NORC Link for the Doc ID
+				def norcAdvLetter = new InstrumentLink(instrument: advLetter,
+					norcDocId: "80", norcQuexId: "ADVBRO",
+					norcDescription:"Advance Letter and Brochure").save()
 
 
-		def bccAdv = new BatchCreationConfig(name:'Advance Mailing',
-			instrument:advLetter, format:firstClassMail, direction: outgoing,
-			isInitial:initial, selectionQuery:"", active:true, manualSelection:true,
-			oneBatchEventPerson:true).save()
+				def bccAdv = new BatchCreationConfig(name:'Advance Mailing',
+					instrument:advLetter, format:firstClassMail, direction: outgoing,
+					isInitial:initial, selectionQuery:"", active:true, manualSelection:true,
+					oneBatchEventPerson:true).save()
 
-		// add a document
-		bccAdv.addToDocuments(
-			documentLocation:'n:/production documents/advance letter/ncs_advance_letter_merge.docx')
-		.save()
+				// add a document
+				bccAdv.addToDocuments(
+					documentLocation:'n:/production documents/advance letter/ncs_advance_letter_merge.docx')
+				.save()
 
 
-		// 10 Fake Mailings
-		// generate a batch
+				// 10 Fake Mailings
+				// generate a batch
 
-		(1..10).each{
+				(1..10).each{
 					
-			def batchAdv = new Batch(format:firstClassMail,
-				direction: outgoing, instrumentDate: today, batchRunBy:'ajz',
-				batchRunByWhat: appName, trackingDocumentSent:false,
-				creationConfig: bccAdv)
+					def batchAdv = new Batch(format:firstClassMail,
+						direction: outgoing, instrumentDate: today, batchRunBy:'ajz',
+						batchRunByWhat: appName, trackingDocumentSent:false,
+						creationConfig: bccAdv)
 
-			bccAdv.addToBatches(batchAdv)
+					bccAdv.addToBatches(batchAdv)
 
-			if (! bccAdv.save() ) {
-				println "ERRORS:"
-				bccAdv.errors.each{ error ->
-					println "ERROR>> ${error} "
+					if (! bccAdv.save() ) {
+						println "ERRORS:"
+						bccAdv.errors.each{ error ->
+							println "ERROR>> ${error} "
+						}
+						println ""
+					} else {
+						// add an instrument
+						batchAdv.addToInstruments(instrument:advLetter, isInitial:initial).save()
+
+					}
+
+					if (batchAdv) {
+						// reload from the database
+						batchAdv.refresh()
+
+						// assign a mail date to batches 1 and 3
+						if ( it == 1 || it == 3 ){
+							batchAdv.mailDate = today
+						}
+
+						// assign an addressing and mailing date to batches 5 and 6
+						if ( it == 5 || it == 7 ){
+							batchAdv.addressAndMailingDate = today + 1
+						}
+
+						// set the instrument date for batches 4 and 8
+						if ( it == 4 || it == 8 ){
+							batchAdv.instrumentDate = today - 1
+						}
+					}
+
+					// Add Items to batch
+					def dwellingUnitInstanceList = DwellingUnit.list()
+
+					dwellingUnitInstanceList.each{ du ->
+						batchAdv.addToItems(dwellingUnit:du)
+					}
+
+					if (! batchAdv.save() ) {
+						println "ERRORS adding to batch:"
+						batchAdv.errors.each{ error ->
+							println "ERROR>> ${error} "
+						}
+						println ""
+					}
+
+					println "Created Batch: ${batchAdv.id}"
+
 				}
-				println ""
-			} else {
-				// add an instrument
-				batchAdv.addToInstruments(instrument:advLetter, isInitial:initial).save()
-
 			}
-
-			// Add Items to batch
-			def dwellingUnitInstanceList = DwellingUnit.list()
-
-			dwellingUnitInstanceList.each{ du ->
-				batchAdv.addToItems(dwellingUnit:du)
-			}
-
-			if (! batchAdv.save() ) {
-				println "ERRORS adding to batch:"
-				batchAdv.errors.each{ error ->
-					println "ERROR>> ${error} "
-				}
-				println ""
-			}
-
-			println "Created Batch: ${batchAdv.id}"
-
-        }
+		}
+		// END DEVELOPMENT ENVIRONMENT CODE
 
         // add 'capitalize()' function to Strings
         String.metaClass.capitalize = {->
             return delegate.tokenize().collect{ word ->
                 word.substring(0,1).toUpperCase() + word.substring(1, word.size())
             }.join(' ')
+        }
+
+        // Add a norc doc ID to the Batch Class
+        Batch.metaClass.getNorcDocId = {->
+            return InstrumentLink.findByInstrument(delegate.primaryInstrument)?.norcDocId
+        }
+
+        Batch.metaClass.getNorcProjectId = {->
+            return StudyLink.findByStudy(delegate.primaryInstrument.study)?.norcProjectId
+        }
+
+		// Add norcDocId to Instrument class
+        Instrument.metaClass.getNorcDocId = {->
+            return InstrumentLink.findByInstrument(delegate)?.norcDocId
+        }
+
+        Instrument.metaClass.getNorcProjectId = {->
+            return StudyLink.findByStudy(delegate.study)?.norcProjectId
+        }
+
+        // Add a norc doc ID to the Batch Class
+        Study.metaClass.getNorcProjectId = {->
+            return StudyLink.findByStudy(delegate)?.norcProjectId
+        }
+
+        // Add a norc doc ID to the Batch Class
+        DwellingUnit.metaClass.getNorcSuId = {->
+            return DwellingUnitLink.findByDwellingUnit(delegate)?.norcSuId
         }
 
     }

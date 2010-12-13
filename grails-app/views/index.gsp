@@ -103,29 +103,6 @@
 			  section for Grails specific implementation questions.
 
 	  </p>
-
-	  <div id="controllerList" class="dialog">
-		<h2>Available Demo Services:</h2>
-		<ul>
-
-		  <li class="controller">
-		  Mailings
-			<ul>
-			  <li>
-				<g:link controller="mailing" action="list" params="[key: 'DEMO']">
-				  List Mailings
-				</g:link>
-			  </li>
-			  <li>
-				<g:link controller="mailing" action="show" params="[key: 'DEMO']" id="1">
-					View Specific Mailing
-				</g:link>
-			  </li>
-			</ul>
-		  </li>
-
-		</ul>
-	  </div>
 	</div>
   </body>
 </html>

@@ -1,4 +1,4 @@
-package edu.umn.ncs
+package edu.umn.ncs.data
 
 class DataExchangePartner {
 
@@ -14,6 +14,10 @@ class DataExchangePartner {
 	// Provenance fields
 	String userCreated
 	Date dateCreated = new Date()
+
+	String toString() {
+		name
+	}
 
 	static hasMany = [
 		roles : DataExchangePartnerRole,

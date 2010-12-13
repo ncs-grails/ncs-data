@@ -1,4 +1,4 @@
-package edu.umn.ncs
+package edu.umn.ncs.data
 
 class ClientHost {
 

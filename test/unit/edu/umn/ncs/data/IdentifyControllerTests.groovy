@@ -1,8 +1,8 @@
-package edu.umn.ncs
+package edu.umn.ncs.data
 
 import grails.test.*
 
-class ClientHostTests extends GrailsUnitTestCase {
+class IdentifyControllerTests extends ControllerUnitTestCase {
     protected void setUp() {
         super.setUp()
     }
