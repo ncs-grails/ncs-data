@@ -153,7 +153,7 @@ class BootStrap {
             mother = new RelationshipType(name:'mother').save()
         }
         //Study
-        def ncs = Study.findByName("National Children's Study")
+        def ncs = Study.findByName("NCS")
         if (! ncs) {
             ncs = new Study(name:"NCS",
                 fullName:"National Children's Study",
@@ -167,8 +167,6 @@ class BootStrap {
                     println "${it}"
                 }
             }
-
-			
         }
 
 		// add the NORC project ID
