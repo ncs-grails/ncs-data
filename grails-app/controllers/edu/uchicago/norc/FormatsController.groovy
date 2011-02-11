@@ -11,7 +11,7 @@ class FormatsController {
 	def save = {
 		
 		// dependency injection wasn't working here,
-		// so I'll explicity initiate the service
+		// so I'll explicitly instantiate the service
 		AccessService accessService = new AccessService()
 		
 		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_WRITE_RESULT') ) {
@@ -32,13 +32,13 @@ class FormatsController {
 						if ( ! norcDocType ) {
 							norcDocType = new NorcDocType(name:fName, label:fLabel, value:fValue)
 							norcDocType.save(flush:true)
-							response << "Saved new NorcDocType: ${norcDocType.label}"
+							response << "Saved new NorcDocType: ${norcDocType.label}\n"
 						} else {
 							if (norcDocType.label != fLabel) {
 								norcDocType.label = fLabel
 								norcDocType.save(flush:true)
 		
-								response << "Updated new NorcDocType(${norcDocType.value}) = ${norcDocType.name}\n"
+								response << "Updated NorcDocType(${norcDocType.value}) = ${norcDocType.name}\n"
 							} else {
 								response << "NorcDocType(${norcDocType.value}) already in the system.\n"
 							}
@@ -49,13 +49,13 @@ class FormatsController {
 						if ( ! norcDocMode ) {
 							norcDocMode = new NorcDocMode(name:fName, label:fLabel, value:fValue)
 							norcDocMode.save(flush:true)
-							response << "Saved new NorcDocType: ${norcDocMode.label}"
+							response << "Saved new NorcDocType: ${norcDocMode.label}\n"
 						} else {
 							if (norcDocMode.label != fLabel) {
 								norcDocMode.label = fLabel
 								norcDocMode.save(flush:true)
 		
-								response << "Updated new NorcDocMode(${norcDocMode.value}) = ${norcDocMode.name}\n"
+								response << "Updated NorcDocMode(${norcDocMode.value}) = ${norcDocMode.name}\n"
 							} else {
 								response << "NorcDocMode(${norcDocMode.value}) already in the system.\n"
 							}
@@ -72,7 +72,7 @@ class FormatsController {
 								norcSource.label = fLabel
 								norcSource.save(flush:true)
 		
-								response << "Updated new NorcSource(${norcSource.value}) = ${norcSource.name}\n"
+								response << "Updated NorcSource(${norcSource.value}) = ${norcSource.name}\n"
 							} else {
 								response << "NorcSource(${norcSource.value}) already in the system.\n"
 							}
@@ -89,14 +89,14 @@ class FormatsController {
 								norcStatus.label = fLabel
 								norcStatus.save(flush:true)
 		
-								response << "Updated new NorcStatus(${norcStatus.value}) = ${norcStatus.name}\n"
+								response << "Updated NorcStatus(${norcStatus.value}) = ${norcStatus.name}\n"
 							} else {
 								response << "NorcStatus(${norcStatus.value}) already in the system.\n"
 							}
 						}
 						break
 					default:
-						println "Unknown FMTS: ${fName}"
+						println "Unknown FMTS: ${fName}\n"
 				}
 			}
 		render "saved data\n"

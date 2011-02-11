@@ -15,17 +15,17 @@ class NorcIncentive {
 	String state
 	String zipCode
 	String zipFour
+	String email
+	String phoneNumber
+	Integer segmentId
 	String norcSuId
 	String mailingId
 	NorcDocType docType
 	NorcSource source
 	NorcStatus status
-	Date incentiveDate
 	NorcDocMode mode
+	Date incentiveDate
 	Date appTime
-	String email
-	String phoneNumber
-	Integer segmentId
 	BigDecimal incentiveAmount
 	// this should be a date
 	Boolean incentiveMailed
@@ -39,18 +39,21 @@ class NorcIncentive {
 		addressUnit(nullable:true)
 		city(nullable:true, maxSize:30)
 		state(nullable:true, maxSize:2)
-		zipCode(nullable:true, maxSize:4)
-		zipFour(nullable:true, maxSize:5)
+		zipCode(nullable:true, maxSize:5)
+		zipFour(nullable:true, maxSize:4)
+		email(nullable:true, email:true)
+		phoneNumber(nullable:true, maxSize:32)
+		segmentId(nullable:true)
 		norcSuId(nullable:true)
 		mailingId(nullable:true)
 		docType(nullable:true)
 		source(nullable:true)
 		status(nullable:true)
-		pregnancyScreenerDate(nullable:true)
 		mode(nullable:true)
+		pregnancyScreenerDate(nullable:true)
+		incentiveDate(nullable:true)
 		appTime(nullable:true)
-		email(nullable:true, email:true)
-		phoneNumber(nullable:true, maxSize:32)
-		segmentId(nullable:true)
+		incentiveAmount(nullable:true)
+		incentiveMailed(nullable:true)
 	}
 }
