@@ -37,13 +37,20 @@ class BootStrap {
 				ipvSix:"0:0:0:0:0:0:0:1").save()
 		}
 
+		def localhostMac = ClientHost.findByIpvSix("0:0:0:0:0:0:0:1%0")
+		if ( ! localhostMac ) {
+			localhostMac = new ClientHost(hostname:"localhost0",
+				userCreated: 'ajz',
+				ipvSix:"0:0:0:0:0:0:0:1%0").save()
+		}
+
 		def aaronsComputer = ClientHost.findByIpvFour("160.94.224.1")
 		if ( ! aaronsComputer ) {
 			aaronsComputer = new ClientHost(hostname:"phantom.cccs.umn.edu",
 				userCreated: 'ajz',
 				ipvFour:"160.94.224.1").save()
 		}
-
+		
 		// NORC Clients
 		def norcMailServer = ClientHost.findByIpvFour("65.213.192.20")
 		if ( ! norcMailServer ) {
@@ -76,6 +83,7 @@ class BootStrap {
 					.addToRoles(writeInstrument)
 					.addToAllowedClients(aaronsComputer)
 					.addToAllowedClients(localhost)
+					.addToAllowedClients(localhostMac)
 					.addToAllowedClients(norcWorkstationMartinBarron).save()
 				} else {
 					println "Failed to create NORC as data exchange partner."

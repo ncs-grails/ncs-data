@@ -16,6 +16,8 @@ class MailingController {
 
 	// GET, POST, PUT, DELETE
     static allowedMethods = [list: "GET", show: "GET"]
+	
+	def accessService
 
 	def now = new Date()
 
@@ -26,7 +28,7 @@ class MailingController {
 	// the batch list adapted for NORC
     def listNorc = {
 		// List all the batches
-		if ( ! hasRoleAccess(params.key, 'ROLE_READ_MAILING') ) {
+		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_READ_MAILING') ) {
 			response.sendError(403)
 			render "ACCESS DENIED ROLE_READ_MAILING"
 		} else {
@@ -81,7 +83,7 @@ class MailingController {
 	// the default batch list
 	def list = {
 		// List all the batches
-		if ( ! hasRoleAccess(params.key, 'ROLE_READ_MAILING') ) {
+		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_READ_MAILING') ) {
 			response.sendError(403)
 			render "ACCESS DENIED ROLE_READ_MAILING"
 		} else {
@@ -105,7 +107,7 @@ class MailingController {
 	// the default show action for a mailing/batch
     def show = {
 
-		if ( ! hasRoleAccess(params.key, 'ROLE_READ_MAILING') ) {
+		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_READ_MAILING') ) {
 			response.sendError(403)
 			render "ACCESS DENIED ${readMailingRole}"
 
@@ -131,9 +133,9 @@ class MailingController {
 
 	def showNorc = {
 
-		if ( ! hasRoleAccess(params.key, 'ROLE_READ_MAILING') ) {
+		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_READ_MAILING') ) {
 			response.sendError(403)
-			render "ACCESS DENIED ${readMailingRole}"
+			render "ACCESS DENIED ROLE_READ_MAILING"
 
 		} else {
 			def batchInstance = Batch.get(params.id)
@@ -191,56 +193,5 @@ class MailingController {
 			}
 		}
     }
-
-	private def hasRoleAccess = { privateKey, roleName ->
-
-		def grantAccess = false
-		def ipAddress = request.remoteAddr
-
-		def accessRoles = getAccessRoles(privateKey)
-
-		if (accessRoles) {
-			def readMailingRole = accessRoles.find{it.role == roleName}
-
-			if (readMailingRole) {
-				grantAccess = true
-			} else {
-				println "Insufficent access to role ${roleName} for client host."
-			}
-
-		} else {
-			println "Client host ${ipAddress}."
-		}
-	}
-
-	private def getAccessRoles = { privateKey ->
-
-		def roles = []
-
-		def ipAddress = request.remoteAddr
-
-		if (privateKey) {
-			def dataExchangePartnerInstance = DataExchangePartner.findByPrivateKey(privateKey)
-
-			if (dataExchangePartnerInstance) {
-
-				def clientHostInstance = dataExchangePartnerInstance.allowedClients.find { it.ipvFour == ipAddress || it.ipvSix == ipAddress }
-
-				if (clientHostInstance) {
-					println "Access granted from client host ${ipAddress} using ${dataExchangePartnerInstance} key."
-					// load the roles
-					roles = dataExchangePartnerInstance.roles
-				} else {
-					println "Host Not Found:: Denied access from ${ipAddress} as ${dataExchangePartnerInstance} client host."
-				}
-				
-			} else {
-				println "Key Not Found:: Denied access to ${ipAddress} using key: ${privateKey}"
-			}
-
-		}
-
-		return roles
-	}
 }
 
