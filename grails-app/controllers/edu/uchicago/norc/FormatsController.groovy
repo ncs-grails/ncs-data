@@ -9,7 +9,7 @@ class FormatsController {
 	static allowedMethods = [ save:'POST', update:'PUT', show:'GET', delete:'DELETE' ]
 
 	def regurgitate = {
-		response << "regugitating response:\n${request.reader.text}"
+		render "regurgitating response:\n${request.reader.text}"
 	}
 
 	def save = {
