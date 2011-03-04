@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="windows-1252" ?>
+<TABLE>
+   <CONSENT_BATCH1>
+      <fName>Martin</fName>
+      <lName>Barron</lName>
+      <Address1>1123 Test Drive</Address1>
+      <Address2> </Address2>
+      <Unit>Apt 3.</Unit>
+      <City>Chicago</City>
+      <State>IL</State>
+      <Zip>60626</Zip>
+      <Zip4>1123</Zip4>
+      <SU_ID>12345678</SU_ID>
+      <MailingID>8912345678</MailingID>
+      <DocType>89</DocType>
+      <Source>1</Source>
+      <Status>2</Status>
+      <DatePS>1960-01-01T04:04:46</DatePS>
+      <Mode>1</Mode>
+      <AppTime>1960-01-01T04:04:46</AppTime>
+      <email>barron-martin@norc.org</email>
+      <phoneNumber>773-338-2815</phoneNumber>
+      <SegmentID>8</SegmentID>
+   </CONSENT_BATCH1>
+   <CONSENT_BATCH1>
+      <fName>Bob</fName>
+      <lName>Barron</lName>
+      <Address1>1123 test Road</Address1>
+      <Address2> </Address2>
+      <Unit>Apt 1.</Unit>
+      <City>Chicago</City>
+      <State>IL</State>
+      <Zip>60603</Zip>
+      <Zip4>9999</Zip4>
+      <SU_ID>98765432</SU_ID>
+      <MailingID>8998765432</MailingID>
+      <DocType>89</DocType>
+      <Source>1</Source>
+      <Status>2</Status>
+      <DatePS>1960-01-26T17:18:18</DatePS>
+      <Mode>1</Mode>
+      <AppTime>1960-01-11T09:23:17</AppTime>
+      <email>martinlbarron@norc.org</email>
+      <phoneNumber>773-612-7695</phoneNumber>
+      <SegmentID>8</SegmentID>
+   </CONSENT_BATCH1>
+   <INCENTIVE_BATCH1>
+      <fName>Martin</fName>
+      <lName>Barron</lName>
+      <Address1>1123 Test Drive</Address1>
+      <Address2> </Address2>
+      <Unit>Apt 3.</Unit>
+      <City>Chicago</City>
+      <State>IL</State>
+      <Zip>60626</Zip>
+      <Zip4>1123</Zip4>
+      <SU_ID>12345678</SU_ID>
+      <MailingID>9512345678</MailingID>
+      <DocType>95</DocType>
+      <Source>1</Source>
+      <Status>2</Status>
+      <DateIn>14686</DateIn>
+      <Mode>1</Mode>
+      <AppTime>1960-01-01T04:04:46</AppTime>
+      <email>barron-martin@norc.org</email>
+      <phoneNumber>773-338-2815</phoneNumber>
+      <SegmentID>8</SegmentID>
+      <incentiveAmount>25</incentiveAmount>
+      <incentiveMailed>0</incentiveMailed>
+      <datePS missing="." />
+   </INCENTIVE_BATCH1>
+   <INCENTIVE_BATCH1>
+      <fName>Bob</fName>
+      <lName>Barron</lName>
+      <Address1>1123 test Road</Address1>
+      <Address2> </Address2>
+      <Unit>Apt 1.</Unit>
+      <City>Chicago</City>
+      <State>IL</State>
+      <Zip>60603</Zip>
+      <Zip4>9999</Zip4>
+      <SU_ID>98765432</SU_ID>
+      <MailingID>9598765432</MailingID>
+      <DocType>95</DocType>
+      <Source>1</Source>
+      <Status>2</Status>
+      <DateIn>2222298</DateIn>
+      <Mode>1</Mode>
+      <AppTime>1960-01-11T09:23:17</AppTime>
+      <email>martinlbarron@norc.org</email>
+      <phoneNumber>773-612-7695</phoneNumber>
+      <SegmentID>8</SegmentID>
+      <incentiveAmount>25</incentiveAmount>
+      <incentiveMailed>0</incentiveMailed>
+      <datePS missing="." />
+   </INCENTIVE_BATCH1>
+   <FMTS>
+      <FMTNAME>DOCTYPE</FMTNAME>
+      <START>              89</START>
+      <END>              89</END>
+      <LABEL>Consent Package</LABEL>
+      <MIN>1</MIN>
+      <MAX>40</MAX>
+      <DEFAULT>17</DEFAULT>
+      <LENGTH>17</LENGTH>
+      <FUZZ>1E-12</FUZZ>
+      <PREFIX> </PREFIX>
+      <MULT>0</MULT>
+      <FILL> </FILL>
+      <NOEDIT>0</NOEDIT>
+      <TYPE>N</TYPE>
+      <SEXCL>N</SEXCL>
+      <EEXCL>N</EEXCL>
+      <HLO> </HLO>
+      <DECSEP> </DECSEP>
+      <DIG3SEP> </DIG3SEP>
+      <DATATYPE> </DATATYPE>
+      <LANGUAGE> </LANGUAGE>
+   </FMTS>
+   <FMTS>
+      <FMTNAME>DOCTYPE</FMTNAME>
+      <START>              95</START>
+      <END>              95</END>
+      <LABEL>incentive package</LABEL>
+      <MIN>1</MIN>
+      <MAX>40</MAX>
+      <DEFAULT>17</DEFAULT>
+      <LENGTH>17</LENGTH>
+      <FUZZ>1E-12</FUZZ>
+      <PREFIX> </PREFIX>
+      <MULT>0</MULT>
+      <FILL> </FILL>
+      <NOEDIT>0</NOEDIT>
+      <TYPE>N</TYPE>
+      <SEXCL>N</SEXCL>
+      <EEXCL>N</EEXCL>
+      <HLO> </HLO>
+      <DECSEP> </DECSEP>
+      <DIG3SEP> </DIG3SEP>
+      <DATATYPE> </DATATYPE>
+      <LANGUAGE> </LANGUAGE>
+   </FMTS>
+   <FMTS>
+      <FMTNAME>MODE</FMTNAME>
+      <START>               1</START>
+      <END>               1</END>
+      <LABEL>Phone</LABEL>
+      <MIN>1</MIN>
+      <MAX>40</MAX>
+      <DEFAULT>5</DEFAULT>
+      <LENGTH>5</LENGTH>
+      <FUZZ>1E-12</FUZZ>
+      <PREFIX> </PREFIX>
+      <MULT>0</MULT>
+      <FILL> </FILL>
+      <NOEDIT>0</NOEDIT>
+      <TYPE>N</TYPE>
+      <SEXCL>N</SEXCL>
+      <EEXCL>N</EEXCL>
+      <HLO> </HLO>
+      <DECSEP> </DECSEP>
+      <DIG3SEP> </DIG3SEP>
+      <DATATYPE> </DATATYPE>
+      <LANGUAGE> </LANGUAGE>
+   </FMTS>
+   <FMTS>
+      <FMTNAME>MODE</FMTNAME>
+      <START>               2</START>
+      <END>               2</END>
+      <LABEL>Mail</LABEL>
+      <MIN>1</MIN>
+      <MAX>40</MAX>
+      <DEFAULT>5</DEFAULT>
+      <LENGTH>5</LENGTH>
+      <FUZZ>1E-12</FUZZ>
+      <PREFIX> </PREFIX>
+      <MULT>0</MULT>
+      <FILL> </FILL>
+      <NOEDIT>0</NOEDIT>
+      <TYPE>N</TYPE>
+      <SEXCL>N</SEXCL>
+      <EEXCL>N</EEXCL>
+      <HLO> </HLO>
+      <DECSEP> </DECSEP>
+      <DIG3SEP> </DIG3SEP>
+      <DATATYPE> </DATATYPE>
+      <LANGUAGE> </LANGUAGE>
+   </FMTS>
+   <FMTS>
+      <FMTNAME>MODE</FMTNAME>
+      <START>               3</START>
+      <END>               3</END>
+      <LABEL>Web</LABEL>
+      <MIN>1</MIN>
+      <MAX>40</MAX>
+      <DEFAULT>5</DEFAULT>
+      <LENGTH>5</LENGTH>
+      <FUZZ>1E-12</FUZZ>
+      <PREFIX> </PREFIX>
+      <MULT>0</MULT>
+      <FILL> </FILL>
+      <NOEDIT>0</NOEDIT>
+      <TYPE>N</TYPE>
+      <SEXCL>N</SEXCL>
+      <EEXCL>N</EEXCL>
+      <HLO> </HLO>
+      <DECSEP> </DECSEP>
+      <DIG3SEP> </DIG3SEP>
+      <DATATYPE> </DATATYPE>
+      <LANGUAGE> </LANGUAGE>
+   </FMTS>
+   <FMTS>
+      <FMTNAME>SOURCE</FMTNAME>
+      <START>               1</START>
+      <END>               1</END>
+      <LABEL>Mailing</LABEL>
+      <MIN>1</MIN>
+      <MAX>40</MAX>
+      <DEFAULT>7</DEFAULT>
+      <LENGTH>7</LENGTH>
+      <FUZZ>1E-12</FUZZ>
+      <PREFIX> </PREFIX>
+      <MULT>0</MULT>
+      <FILL> </FILL>
+      <NOEDIT>0</NOEDIT>
+      <TYPE>N</TYPE>
+      <SEXCL>N</SEXCL>
+      <EEXCL>N</EEXCL>
+      <HLO> </HLO>
+      <DECSEP> </DECSEP>
+      <DIG3SEP> </DIG3SEP>
+      <DATATYPE> </DATATYPE>
+      <LANGUAGE> </LANGUAGE>
+   </FMTS>
+   <FMTS>
+      <FMTNAME>SOURCE</FMTNAME>
+      <START>               2</START>
+      <END>               2</END>
+      <LABEL>Call-in</LABEL>
+      <MIN>1</MIN>
+      <MAX>40</MAX>
+      <DEFAULT>7</DEFAULT>
+      <LENGTH>7</LENGTH>
+      <FUZZ>1E-12</FUZZ>
+      <PREFIX> </PREFIX>
+      <MULT>0</MULT>
+      <FILL> </FILL>
+      <NOEDIT>0</NOEDIT>
+      <TYPE>N</TYPE>
+      <SEXCL>N</SEXCL>
+      <EEXCL>N</EEXCL>
+      <HLO> </HLO>
+      <DECSEP> </DECSEP>
+      <DIG3SEP> </DIG3SEP>
+      <DATATYPE> </DATATYPE>
+      <LANGUAGE> </LANGUAGE>
+   </FMTS>
+   <FMTS>
+      <FMTNAME>STATUS</FMTNAME>
+      <START>               1</START>
+      <END>               1</END>
+      <LABEL>Pregnant</LABEL>
+      <MIN>1</MIN>
+      <MAX>40</MAX>
+      <DEFAULT>11</DEFAULT>
+      <LENGTH>11</LENGTH>
+      <FUZZ>1E-12</FUZZ>
+      <PREFIX> </PREFIX>
+      <MULT>0</MULT>
+      <FILL> </FILL>
+      <NOEDIT>0</NOEDIT>
+      <TYPE>N</TYPE>
+      <SEXCL>N</SEXCL>
+      <EEXCL>N</EEXCL>
+      <HLO> </HLO>
+      <DECSEP> </DECSEP>
+      <DIG3SEP> </DIG3SEP>
+      <DATATYPE> </DATATYPE>
+      <LANGUAGE> </LANGUAGE>
+   </FMTS>
+   <FMTS>
+      <FMTNAME>STATUS</FMTNAME>
+      <START>               2</START>
+      <END>               2</END>
+      <LABEL>High trier</LABEL>
+      <MIN>1</MIN>
+      <MAX>40</MAX>
+      <DEFAULT>11</DEFAULT>
+      <LENGTH>11</LENGTH>
+      <FUZZ>1E-12</FUZZ>
+      <PREFIX> </PREFIX>
+      <MULT>0</MULT>
+      <FILL> </FILL>
+      <NOEDIT>0</NOEDIT>
+      <TYPE>N</TYPE>
+      <SEXCL>N</SEXCL>
+      <EEXCL>N</EEXCL>
+      <HLO> </HLO>
+      <DECSEP> </DECSEP>
+      <DIG3SEP> </DIG3SEP>
+      <DATATYPE> </DATATYPE>
+      <LANGUAGE> </LANGUAGE>
+   </FMTS>
+   <FMTS>
+      <FMTNAME>STATUS</FMTNAME>
+      <START>               3</START>
+      <END>               3</END>
+      <LABEL>Recent Loss</LABEL>
+      <MIN>1</MIN>
+      <MAX>40</MAX>
+      <DEFAULT>11</DEFAULT>
+      <LENGTH>11</LENGTH>
+      <FUZZ>1E-12</FUZZ>
+      <PREFIX> </PREFIX>
+      <MULT>0</MULT>
+      <FILL> </FILL>
+      <NOEDIT>0</NOEDIT>
+      <TYPE>N</TYPE>
+      <SEXCL>N</SEXCL>
+      <EEXCL>N</EEXCL>
+      <HLO> </HLO>
+      <DECSEP> </DECSEP>
+      <DIG3SEP> </DIG3SEP>
+      <DATATYPE> </DATATYPE>
+      <LANGUAGE> </LANGUAGE>
+   </FMTS>
+   <FMTS>
+      <FMTNAME>STATUS</FMTNAME>
+      <START>               4</START>
+      <END>               4</END>
+      <LABEL>Low trier</LABEL>
+      <MIN>1</MIN>
+      <MAX>40</MAX>
+      <DEFAULT>11</DEFAULT>
+      <LENGTH>11</LENGTH>
+      <FUZZ>1E-12</FUZZ>
+      <PREFIX> </PREFIX>
+      <MULT>0</MULT>
+      <FILL> </FILL>
+      <NOEDIT>0</NOEDIT>
+      <TYPE>N</TYPE>
+      <SEXCL>N</SEXCL>
+      <EEXCL>N</EEXCL>
+      <HLO> </HLO>
+      <DECSEP> </DECSEP>
+      <DIG3SEP> </DIG3SEP>
+      <DATATYPE> </DATATYPE>
+      <LANGUAGE> </LANGUAGE>
+   </FMTS>
+</TABLE>
