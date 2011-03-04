@@ -10,34 +10,47 @@ class IncentiveController {
 
 	static allowedMethods = [ save:'POST', update:'PUT', show:'GET', delete:'DELETE' ]
 
+	def regurgitate = {
+		response << "regugitating response:\n${request.reader.text}"
+	}
+
 	def save = {
-		
+
 		DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss")
-		
+
 		// dependency injection wasn't working here,
 		// so I'll explicitly instantiate the service
 		AccessService accessService = new AccessService()
-		
+
 		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_WRITE_INSTRUMENT') ) {
 			response.sendError(403)
 			render "ACCESS DENIED ROLE_WRITE_INSTRUMENT\n"
 		} else {
 
-			def table = request.XML
-			table.INCENTIVE_BATCH1.each() { c ->
-				
+			def table
+
+			try {
+				table = request.XML
+			} catch (Exception ex) {
+				response << " ! Invalid XML:\n"
+				response << "	${ex.cause}\n"
+				response << "	${ex.message}\n"
+			}
+
+			table?.INCENTIVE_BATCH1?.each{ c ->
+
 				def mailingId = c.MailingID.toString()
-				
+
 				def norcIncentive = NorcIncentive.findByMailingId(mailingId)
-				
+
 				if (! norcIncentive) {
 					norcIncentive = new NorcIncentive()
 					response <<  " + Creating new NorcIncentive(${mailingId})\n"
 				} else {
 					response <<  " ~ Updating existing NorcIncentive(${mailingId})\n"
 				}
-				
-				
+
+
 				norcIncentive.firstName = c.fName.toString()
 				norcIncentive.lastName = c.lName.toString()
 				norcIncentive.address1 = c.Address1.toString()
@@ -61,20 +74,20 @@ class IncentiveController {
 					println "! parse incentiveAmount Exception: ${e.toString()}"
 					response <<  "! Invalid incentiveAmount: ${c.incentiveAmount.toString()}.\n"
 				}
-				
+
 				def incentiveMailed = c.incentiveMailed.toString()
 				if (incentiveMailed == "1") {
 					norcIncentive.incentiveMailed = true
-				} else if (incentiveMailed == "0") { 
+				} else if (incentiveMailed == "0") {
 					norcIncentive.incentiveMailed = false
 				} else if ( ! incentiveMailed ) {
 					norcIncentive.incentiveMailed = null
 				} else {
 					response <<  "! Unknown incentiveMailed: ${incentiveMailed}.  1 or 0 expect.\n"
 				}
-				
-				
-								
+
+
+
 				// Read, parse, and lookup the docType
 				def docTypeString = c.DocType.toString()
 				try {
@@ -91,7 +104,7 @@ class IncentiveController {
 				} catch (Exception e) {
 					response << "! Invalid DocType: ${docTypeString}"
 				}
-				
+
 				// Read, parse, and lookup the Source
 				def sourceString = c.Source.toString()
 				try {
@@ -108,7 +121,7 @@ class IncentiveController {
 				} catch (Exception e) {
 					response << "! Invalid Source: ${sourceString}"
 				}
-				
+
 				// Read, parse, and lookup the Status
 				def statusString = c.Status.toString()
 				try {
@@ -126,7 +139,7 @@ class IncentiveController {
 					response << "! Invalid Status: ${statusString}\n"
 					println "! parse Status Exception: ${e.toString()}"
 				}
-				
+
 				// Read, parse, and lookup the Mode
 				def modeString = c.Mode.toString()
 				try {
@@ -159,7 +172,7 @@ class IncentiveController {
 					println "! parse DateIn Input: ${c.DateIn.toString()}"
 					println "! parse DateIn Exception: ${e.toString()}"
 				}
-				
+
 				// App Time & Date
 				try {
 					def appTimeString = c.AppTime.toString()
@@ -174,7 +187,7 @@ class IncentiveController {
 					println "! parse AppTime Input: ${c.AppTime.toString()}"
 					println "! parse AppTime Exception: ${e.toString()}"
 				}
-				
+
 				// PS Date
 				try {
 					def pregnancyScreenerDateString = c.DatePS.toString()
@@ -190,7 +203,7 @@ class IncentiveController {
 					println "! parse DatePS Exception: ${e.toString()}"
 				}
 
-				
+
 				norcIncentive.email = c.email.toString()
 				norcIncentive.phoneNumber = c.phoneNumber.toString()
 				try {
@@ -198,24 +211,20 @@ class IncentiveController {
 				} catch (Exception e) {
 					response << "! Invalid SegmentID: ${c.SegmentID.toString()}\n"
 				}
-				
+
 				// DONE SETTING VALUES, NOW WE SAVE.
-				
+
 				if (norcIncentive.hasErrors()) {
 					response << "! consent has errors.\n"
 				} else if (norcIncentive.save(flush:true)) {
 					response << "= saved data\n"
 				} else {
 					response << "! unable to save data.\n"
-					
+
 					norcIncentive.errors.each{ e ->
 						// println "norcIncentive:error::${e}"
-						e.fieldErrors.each{ fe ->
-							response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-						}
-						
+						e.fieldErrors.each{ fe -> response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n" }
 					}
-
 				}
 			}
 		}

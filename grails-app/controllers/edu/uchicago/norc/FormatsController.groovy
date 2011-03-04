@@ -8,6 +8,10 @@ class FormatsController {
 
 	static allowedMethods = [ save:'POST', update:'PUT', show:'GET', delete:'DELETE' ]
 
+	def regurgitate = {
+		response << "regugitating response:\n${request.reader.text}"
+	}
+
 	def save = {
 		
 		// dependency injection wasn't working here,
@@ -19,8 +23,16 @@ class FormatsController {
 			render "ACCESS DENIED ROLE_WRITE_RESULT"
 		} else {
 
-			def table = request.XML
-			table.FMTS.each() { f ->
+			def table
+
+			try {
+				table = request.XML
+			} catch (Exception ex) {
+				response << " ! Invalid XML:\n"
+				response << "	${ex.cause}\n"
+				response << "	${ex.message}\n"
+			}
+			table?.FMTS?.each{ f ->
 				
 				def fName = f.FMTNAME.toString()
 				def fLabel = f.LABEL.toString()
@@ -96,7 +108,7 @@ class FormatsController {
 						}
 						break
 					default:
-						println "Unknown FMTS: ${fName}\n"
+						response << "Unknown FMTS: ${fName}\n"
 				}
 			}
 		render "saved data\n"

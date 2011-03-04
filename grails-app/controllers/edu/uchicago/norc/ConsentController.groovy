@@ -11,6 +11,10 @@ class ConsentController {
 
 	static allowedMethods = [ save:'POST', update:'PUT', show:'GET', delete:'DELETE' ]
 
+	def regurgitate = {
+		response << "regugitating response:\n${request.reader.text}"
+	}
+
 	def save = {
 		
 		DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss")
@@ -24,8 +28,16 @@ class ConsentController {
 			render "ACCESS DENIED ROLE_WRITE_INSTRUMENT\n"
 		} else {
 
-			def table = request.XML
-			table.CONSENT_BATCH1.each() { c ->
+			def table
+
+			try {
+				table = request.XML
+			} catch (Exception ex) {
+				response << " ! Invalid XML:\n"
+				response << "	${ex.cause}\n"
+				response << "	${ex.message}\n"
+			}
+			table?.CONSENT_BATCH1?.each{ c ->
 				
 				def mailingId = c.MailingID.toString()
 				
@@ -50,7 +62,9 @@ class ConsentController {
 				norcConsent.zipFour = c.Zip4.toString()
 				norcConsent.norcSuId = c.SU_ID.toString()
 				norcConsent.mailingId = c.MailingID.toString()
-				
+				norcConsent.email = c.email.toString()
+				norcConsent.phoneNumber = c.phoneNumber.toString()
+
 				// Read, parse, and lookup the docType
 				def docTypeString = c.DocType.toString()
 				try {
@@ -151,8 +165,6 @@ class ConsentController {
 					println "! parse AppTime Exception: ${e.toString()}"
 				}
 				
-				norcConsent.email = c.email.toString()
-				norcConsent.phoneNumber = c.phoneNumber.toString()
 				try {
 					norcConsent.segmentId = Integer.parseInt(c.SegmentID.toString())
 				} catch (Exception e) {
