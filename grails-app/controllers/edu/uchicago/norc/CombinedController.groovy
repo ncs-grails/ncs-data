@@ -3,18 +3,22 @@ package edu.uchicago.norc
 import edu.umn.ncs.data.AccessService
 import grails.converters.*
 
-class ConsentController {
-	
+// Incentive Controller
+class CombinedController {
 	def dataParserService
+	
+	static allowedMethods = [ index:'POST' ]
 
-	static allowedMethods = [ save:'POST', update:'PUT', show:'GET', delete:'DELETE' ]
+	def regurgitate = {
+		render "regurgitating response:\n${request.reader.text}"
+	}
 
-	def save = {
-		
+	def index = {
+
 		// dependency injection wasn't working here,
 		// so I'll explicitly instantiate the service
 		AccessService accessService = new AccessService()
-		
+
 		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_WRITE_INSTRUMENT') ) {
 			response.sendError(403)
 			render "ACCESS DENIED ROLE_WRITE_INSTRUMENT\n"
@@ -24,29 +28,16 @@ class ConsentController {
 
 			try {
 				table = request.XML
+				println "table class: ${table.class}"
 			} catch (Exception ex) {
 				response << " ! Invalid XML:\n"
 				response << "	${ex.cause}\n"
 				response << "	${ex.message}\n"
 			}
-
-			dataParserService.parseConsent(table, response)
+			
+			dataParserService.parseEverything(table, response)
+			
 		}
 		render "save action finished.\n"
-	}
-
-	def update = {
-		response.sendError(401)
-		render "UPDATE not allowed, use POST\n"
-	}
-
-	def show = {
-		response.sendError(401)
-		render "SHOW not allowed\n"
-	}
-
-	def delete = {
-		response.sendError(401)
-		render "DELETE not allowed\n"
 	}
 }

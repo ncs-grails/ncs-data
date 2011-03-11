@@ -6,11 +6,9 @@ import grails.converters.*
 
 class FormatsController {
 
+	def dataParserService
+	
 	static allowedMethods = [ save:'POST', update:'PUT', show:'GET', delete:'DELETE' ]
-
-	def regurgitate = {
-		render "regurgitating response:\n${request.reader.text}"
-	}
 
 	def save = {
 		
@@ -32,85 +30,9 @@ class FormatsController {
 				response << "	${ex.cause}\n"
 				response << "	${ex.message}\n"
 			}
-			table?.FMTS?.each{ f ->
-				
-				def fName = f.FMTNAME.toString()
-				def fLabel = f.LABEL.toString()
-				def fValue = f.START.toString()
-				
-				switch (fName) {
-					case "DOCTYPE":
-						def norcDocType = NorcDocType.findByValue(fValue)
-						if ( ! norcDocType ) {
-							norcDocType = new NorcDocType(name:fName, label:fLabel, value:fValue)
-							norcDocType.save(flush:true)
-							response << "Saved new NorcDocType: ${norcDocType.label}\n"
-						} else {
-							if (norcDocType.label != fLabel) {
-								norcDocType.label = fLabel
-								norcDocType.save(flush:true)
-		
-								response << "Updated NorcDocType(${norcDocType.value}) = ${norcDocType.name}\n"
-							} else {
-								response << "NorcDocType(${norcDocType.value}) already in the system.\n"
-							}
-						}
-						break
-					case "MODE":
-						def norcDocMode = NorcDocMode.findByValue(fValue)
-						if ( ! norcDocMode ) {
-							norcDocMode = new NorcDocMode(name:fName, label:fLabel, value:fValue)
-							norcDocMode.save(flush:true)
-							response << "Saved new NorcDocType: ${norcDocMode.label}\n"
-						} else {
-							if (norcDocMode.label != fLabel) {
-								norcDocMode.label = fLabel
-								norcDocMode.save(flush:true)
-		
-								response << "Updated NorcDocMode(${norcDocMode.value}) = ${norcDocMode.name}\n"
-							} else {
-								response << "NorcDocMode(${norcDocMode.value}) already in the system.\n"
-							}
-						}
-						break
-					case "SOURCE":
-						def norcSource = NorcSource.findByValue(fValue)
-						if ( ! norcSource ) {
-							norcSource = new NorcSource(name:fName, label:fLabel, value:fValue)
-							norcSource.save(flush:true)
-							response << "Saved new NorcSource: ${norcSource.label}\n"
-						} else {
-							if (norcSource.label != fLabel) {
-								norcSource.label = fLabel
-								norcSource.save(flush:true)
-		
-								response << "Updated NorcSource(${norcSource.value}) = ${norcSource.name}\n"
-							} else {
-								response << "NorcSource(${norcSource.value}) already in the system.\n"
-							}
-						}
-						break
-					case "STATUS":
-						def norcStatus = NorcStatus.findByValue(fValue)
-						if ( ! norcStatus ) {
-							norcStatus = new NorcStatus(name:fName, label:fLabel, value:fValue)
-							norcStatus.save(flush:true)
-							response << "Saved new NorcStatus: ${norcStatus.label}\n"
-						} else {
-							if (norcStatus.label != fLabel) {
-								norcStatus.label = fLabel
-								norcStatus.save(flush:true)
-		
-								response << "Updated NorcStatus(${norcStatus.value}) = ${norcStatus.name}\n"
-							} else {
-								response << "NorcStatus(${norcStatus.value}) already in the system.\n"
-							}
-						}
-						break
-					default:
-						response << "Unknown FMTS: ${fName}\n"
-				}
-			}
+
+		dataParserService.parseFormats(table, response)
+			
 		render "saved data\n"
 		}
 	}
