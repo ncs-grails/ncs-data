@@ -28,7 +28,7 @@ class CombinedController {
 
 			try {
 				table = request.XML
-				println "table class: ${table.class}"
+				// println "table class: ${table.class}"
 			} catch (Exception ex) {
 				response << " ! Invalid XML:\n"
 				response << "	${ex.cause}\n"
