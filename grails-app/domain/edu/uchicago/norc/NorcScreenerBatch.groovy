@@ -330,7 +330,7 @@ class NorcScreenerBatch {
 		datacleaningReviewstatus04(nullable:true,maxSize:75)
 		suId(nullable:true,maxSize:75)
 		affiliate(nullable:true,maxSize:75)
-		affiliate(nullable:true,maxSize:50)
+		affiliate(nullable:true,maxSize:75)
 		majority(nullable:true,maxSize:75)
 		prFname(nullable:true,maxSize:75)
 		prFnameCodes(nullable:true,maxSize:75)
