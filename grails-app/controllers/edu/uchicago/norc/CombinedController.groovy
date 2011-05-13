@@ -7,7 +7,7 @@ import grails.converters.*
 class CombinedController {
 	def dataParserService
 	
-	static allowedMethods = [ index:'POST' ]
+	static allowedMethods = [ index:'POST', textXmlParser:'POST' ]
 
 	def regurgitate = {
 		render "regurgitating response:\n${request.reader.text}"
