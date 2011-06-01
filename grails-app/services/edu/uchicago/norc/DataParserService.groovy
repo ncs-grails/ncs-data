@@ -15,6 +15,7 @@ class DataParserService {
 		parseFormats table, response
 		parseConsent table, response
 		parseIncentive table, response
+		// parseHousholdInventory table, response
 	}
 	
 	def parseNorcData(records, response) {
