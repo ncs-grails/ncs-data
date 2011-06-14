@@ -41,6 +41,12 @@ class CombinedController {
 			
 		}
 		render "save action finished.\n"
+		
+		// send notification email
+		emailNotifyService.notifyOfNorcUpload(request.remoteAddr)
+
+		def session = sessionFactory.getCurrentSession();
+		session.clear();
 	}
 
 	def textXmlParser = {

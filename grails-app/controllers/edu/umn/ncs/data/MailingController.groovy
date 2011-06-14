@@ -6,6 +6,8 @@ import edu.umn.ncs.InstrumentLink
 import edu.umn.ncs.DwellingUnitLink
 import edu.umn.ncs.StudyLink
 import edu.umn.ncs.DwellingUnit
+import edu.umn.ncs.BatchDirection
+import edu.umn.ncs.InstrumentFormat
 
 import grails.converters.XML
 
@@ -34,13 +36,23 @@ class MailingController {
 		} else {
 
 			def c = Batch.createCriteria()
+			def batchDirectionInstance = BatchDirection.findByName('outgoing')
+			def instrumentFormatInstance = InstrumentFormat.findByName('first class mail')
 
 			// finding all mailed batches
 			def batchInstanceList = c.list{
-				or {
-					isNotNull("mailDate")
-					isNotNull("addressAndMailingDate")
-					lt("instrumentDate", now)
+				and {
+					direction {
+						idEq(batchDirectionInstance.id)
+					}
+					format {
+						idEq(instrumentFormatInstance.id)
+					}
+					or {
+						isNotNull("mailDate")
+						isNotNull("addressAndMailingDate")
+						lt("instrumentDate", now)
+					}
 				}
 			}
 
@@ -89,13 +101,23 @@ class MailingController {
 		} else {
 
 			def c = Batch.createCriteria()
+			def batchDirectionInstance = BatchDirection.findByName('outgoing')
+			def instrumentFormatInstance = InstrumentFormat.findByName('first class mail')
 
 			// finding all mailed batches
 			def batchInstanceList = c.list{
-				or {
-					isNotNull("mailDate")
-					isNotNull("addressAndMailingDate")
-					lt("instrumentDate", now)
+				and {
+					direction {
+						idEq(batchDirectionInstance.id)
+					}
+					format {
+						idEq(instrumentFormatInstance.id)
+					}
+					or {
+						isNotNull("mailDate")
+						isNotNull("addressAndMailingDate")
+						lt("instrumentDate", now)
+					}
 				}
 			}
 
