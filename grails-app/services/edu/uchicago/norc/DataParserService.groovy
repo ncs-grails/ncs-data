@@ -2224,30 +2224,22 @@ class DataParserService {
 					norcNonResponseList.mail = c.mail.toString()
 					norcNonResponseList.mailUndeliverable = c.mail_undeliverable.toString()
 					
-					// Add the record to a batch
-					batch.add(norcNonResponseList)
-					if (batch.size() >  1000 || procCount == table?.NONRESPONSE_LIST?.size()) {
-						NorcNonResponseList.withTransaction {
-							for (NorcNonResponseList n in batch) {
-								if (n.hasErrors()) {
-									response << "! norcNonResponseList has errors.\n"
-								} else if (n.save()) {
-									saveCount++
-								}
-								else {
-									// println "Error saving norcNonResponseList record with su_id ${norcNonResponseList.su_id}"
-									n.errors.each{ e ->
-										// println "norcLowConsentBatch:error::${e}"
-										e.fieldErrors.each{ fe ->
-											response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-											// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
-										}
-									}
-								}			
+					// Save the record
+					if (norcNonResponseList.hasErrors()) {
+						response << "! norcNonResponseList has errors.\n"
+					} else if (norcNonResponseList.save()) {
+						saveCount++
+					}
+					else {
+						// println "Error saving norcNonResponseList record with Respondent Serial ${norcNonResponseList.suId}"
+						norcNonResponseList.errors.each{ e ->
+							// println "norcNonResponseList:error::${e}"
+							e.fieldErrors.each{ fe ->
+								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
+								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
 							}
 						}
-						batch.clear()
-					}
+					}				
 				}
 			}
 		}		
