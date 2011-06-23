@@ -416,4 +416,5 @@ class NorcLowQuex1Batch {
 		elapsedtime(nullable:true)
 		temptimevariable(nullable:true)
     }
+
 }

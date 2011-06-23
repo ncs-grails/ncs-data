@@ -31,20 +31,38 @@ class CombinedController {
 			try {
 				table = request.XML
 				// println "table class: ${table.class}"
+				// save the XML data somewhere?
+
+				println " ~ Saving Local Copy..."
+				response << " ~ Saving Local Copy... \n"
+
+				def fileName = 'textXmlParser-upload_' + g.formatDate(date:now, format: 'yyyy-MM-dd-hh-mm') + '.xml'
+				def xmlFileWriter = new File(fileName).newWriter()
+				
+				def smb = new StreamingMarkupBuilder().bind {xml -> xml.mkp.yield table}
+				
+				xmlFileWriter.write(smb.toString())
+				xmlFileWriter.flush()
+				
+				println " ~ Done Saving Local Copy."
+				response << " ~ Saving Local Copy. \n"
+
 			} catch (Exception ex) {
 				response << " ! Invalid XML:\n"
 				response << "	${ex.cause}\n"
 				response << "	${ex.message}\n"
 			}
 			
+			println " ~ Beginning Data Parse."
+			response << " ~ Beginning Data Parse. \n"
 			dataParserService.parseEverything(table, response)
 			
 		}
 		render "save action finished.\n"
-		
+
 		// send notification email
 		emailNotifyService.notifyOfNorcUpload(request.remoteAddr)
-
+		
 		def session = sessionFactory.getCurrentSession();
 		session.clear();
 	}
@@ -56,6 +74,7 @@ class CombinedController {
 		def now = new Date()
 
 		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_WRITE_INSTRUMENT') ) {
+			println "Yo!"
 			response.sendError(403)
 			render "ACCESS DENIED ROLE_WRITE_INSTRUMENT\n"
 		} else {
@@ -94,7 +113,8 @@ class CombinedController {
 			
 			println " ~ Beginning Data Parse."
 			response << " ~ Beginning Data Parse. \n"
-			dataParserService.parseNorcData(table, response)
+			//dataParserService.parseNorcData(table, response)
+			dataParserService.parseEverything(table, response)
 			
 		}
 		render "save action finished.\n"

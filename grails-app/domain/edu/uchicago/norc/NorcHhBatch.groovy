@@ -1564,4 +1564,5 @@ class NorcHhBatch {
 		elapsedtime(nullable:true,maxSize:75)
 		temptimevariable(nullable:true)
     }
+	
 }

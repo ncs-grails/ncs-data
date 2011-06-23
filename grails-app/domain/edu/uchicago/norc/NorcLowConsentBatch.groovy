@@ -198,4 +198,5 @@ class NorcLowConsentBatch {
 		elapsedtime(nullable:true)
 		temptimevariable(nullable:true)
     }
+
 }
