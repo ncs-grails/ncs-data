@@ -58,34 +58,34 @@ class MailingController {
 
 			if (batchInstanceList) {
 
-			// get the xml
-			def batchInstanceListXml = batchInstanceList.encodeAsXML()
-
-			// parse it out to an XPath
-			def xmlOutput = new XmlSlurper().parseText(batchInstanceListXml)
-
-			// let's update it with the batch info
-			xmlOutput.batch.each{ b ->
-				def batchId = Integer.parseInt(b.@id.toString())
-				def batchInstance = Batch.get(batchId)
-				// println "Found BatchID: ${batchId}"
-
-				b.appendNode {
-					norcDoc(id:batchInstance.norcDocId)
+				// get the xml
+				def batchInstanceListXml = batchInstanceList.encodeAsXML()
+	
+				// parse it out to an XPath
+				def xmlOutput = new XmlSlurper().parseText(batchInstanceListXml)
+	
+				// let's update it with the batch info
+				xmlOutput.batch.each{ b ->
+					def batchId = Integer.parseInt(b.@id.toString())
+					def batchInstance = Batch.read(batchId)
+					// println "Found BatchID: ${batchId}"
+	
+					b.appendNode {
+						norcDoc(id:batchInstance.norcDocId)
+					}
+					b.appendNode {
+						norcProject(id:batchInstance.norcProjectId)
+					}
 				}
-				b.appendNode {
-					norcProject(id:batchInstance.norcProjectId)
-				}
-			}
-
-			// check the whole document using XmlUnit
-			def outputBuilder = new StreamingMarkupBuilder()
-			String xmlResult = outputBuilder.bind{ mkp.yield xmlOutput }
-			
-			// rendering the results
-			//render batchInstanceListXml
-			render(contentType:"text/xml", text:xmlResult)
-			
+	
+				// check the whole document using XmlUnit
+				def outputBuilder = new StreamingMarkupBuilder()
+				String xmlResult = outputBuilder.bind{ mkp.yield xmlOutput }
+				
+				// rendering the results
+				//render batchInstanceListXml
+				render(contentType:"text/xml", text:xmlResult)
+				
 			} else {
 				render batchInstanceList as XML
 			}
@@ -134,7 +134,7 @@ class MailingController {
 			render "ACCESS DENIED ${readMailingRole}"
 
 		} else {
-			def batchInstance = Batch.get(params.id)
+			def batchInstance = Batch.read(params.id)
 
 			if (! batchInstance) {
 				redirect(action:"list", params:params)
@@ -160,13 +160,15 @@ class MailingController {
 			render "ACCESS DENIED ROLE_READ_MAILING"
 
 		} else {
-			def batchInstance = Batch.get(params.id)
+			def batchInstance = Batch.read(params.id)
 
 			if (! batchInstance) {
 				response.sendError(404)
 				render "Mailing # ${params.id} Not Found"
-			}
-			else {
+			} else if ( ! batchInstance.norcDocId ) {
+				response.sendError(403)
+				render "ACCESS DENIED TO NON-NORC BATCH"
+			} else {
 				// don't display creation config info
 				batchInstance.creationConfig = null
 
@@ -192,11 +194,11 @@ class MailingController {
 				}
 
 				// let's update it with the batch info
-				xmlOutput.items.trackedItem.each{ i ->
+				xmlOutput?.items?.trackedItem?.each{ i ->
 
 					def duid = Integer.parseInt(i.dwellingUnit.@id.toString())
 
-					def dwellingUnitInstance = DwellingUnit.get(duid)
+					def dwellingUnitInstance = DwellingUnit.read(duid)
 					// println "Found Dwelling Unit Item ID: ${duid}"
 
 					i.dwellingUnit.appendNode {
