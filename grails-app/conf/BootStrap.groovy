@@ -456,10 +456,15 @@ class BootStrap {
             return StudyLink.findByStudy(delegate)?.norcProjectId
         }
 
-        // Add a norc doc ID to the Batch Class
+        // Add a norc SU ID to the DwellingUnit Class
         DwellingUnit.metaClass.getNorcSuId = {->
             return DwellingUnitLink.findByDwellingUnit(delegate)?.norcSuId
         }
+
+		// Add a norc SU ID to the Person Class
+		Person.metaClass.getNorcSuId = {->
+			return PersonLink.findByPerson(delegate)?.norcSuId
+		}
 
     }
     def destroy = {

@@ -1,4 +1,6 @@
 package edu.umn.ncs.data
+import com.sun.xml.internal.stream.buffer.stax.StreamWriterBufferCreator;
+
 import groovy.xml.StreamingMarkupBuilder
 import edu.umn.ncs.Batch
 import edu.umn.ncs.TrackedItem
@@ -10,6 +12,7 @@ import edu.umn.ncs.BatchDirection
 import edu.umn.ncs.InstrumentFormat
 
 import grails.converters.XML
+import groovy.xml.MarkupBuilder
 
 // This is the RESTful web service for
 // the mailings.
@@ -20,8 +23,8 @@ class MailingController {
     static allowedMethods = [list: "GET", show: "GET"]
 	
 	def accessService
-
-	def now = new Date()
+	
+	static def debug = false
 
     def index = {
         redirect(action: "list", params: params)
@@ -29,6 +32,8 @@ class MailingController {
 
 	// the batch list adapted for NORC
     def listNorc = {
+		def now = new Date()
+		
 		// List all the batches
 		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_READ_MAILING') ) {
 			response.sendError(403)
@@ -68,7 +73,7 @@ class MailingController {
 				xmlOutput.batch.each{ b ->
 					def batchId = Integer.parseInt(b.@id.toString())
 					def batchInstance = Batch.read(batchId)
-					// println "Found BatchID: ${batchId}"
+					if (debug) { println "Found BatchID: ${batchId}" }
 	
 					b.appendNode {
 						norcDoc(id:batchInstance.norcDocId)
@@ -94,6 +99,8 @@ class MailingController {
 
 	// the default batch list
 	def list = {
+		def now = new Date()
+		
 		// List all the batches
 		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_READ_MAILING') ) {
 			response.sendError(403)
@@ -128,7 +135,8 @@ class MailingController {
 
 	// the default show action for a mailing/batch
     def show = {
-
+		def now = new Date()
+		
 		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_READ_MAILING') ) {
 			response.sendError(403)
 			render "ACCESS DENIED ${readMailingRole}"
@@ -154,7 +162,8 @@ class MailingController {
     }
 
 	def showNorc = {
-
+		def now = new Date()
+		
 		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_READ_MAILING') ) {
 			response.sendError(403)
 			render "ACCESS DENIED ROLE_READ_MAILING"
@@ -166,8 +175,14 @@ class MailingController {
 				response.sendError(404)
 				render "Mailing # ${params.id} Not Found"
 			} else if ( ! batchInstance.norcDocId ) {
-				response.sendError(403)
-				render "ACCESS DENIED TO NON-NORC BATCH"
+				def writer = new StringWriter()
+				def builder = new MarkupBuilder(writer)
+				builder.message{
+					error "Access Denied to Non-NORC batch."
+					explanation "This batch does not have a matching NORC Doc ID."
+				}
+				render(contentType:"text/xml", text: writer.toString() )
+				return
 			} else {
 				// don't display creation config info
 				batchInstance.creationConfig = null
@@ -195,15 +210,35 @@ class MailingController {
 
 				// let's update it with the batch info
 				xmlOutput?.items?.trackedItem?.each{ i ->
-
-					def duid = Integer.parseInt(i.dwellingUnit.@id.toString())
-
-					def dwellingUnitInstance = DwellingUnit.read(duid)
-					// println "Found Dwelling Unit Item ID: ${duid}"
-
-					i.dwellingUnit.appendNode {
-						norcSu(id:dwellingUnitInstance.norcSuId)
+					
+					try {
+						def duid = Integer.parseInt(i.dwellingUnit.@id.toString())
+		
+						def dwellingUnitInstance = DwellingUnit.read(duid)
+						if (debug) { println "Found Dwelling Unit Item ID: ${duid}" }
+		
+						i.dwellingUnit.appendNode {
+							norcSu(id:dwellingUnitInstance.norcSuId)
+						}
+					} catch (Exception) {
+						// no dwelling unit here
+						if (debug) { println "DEBUG: not a dwelling unit" }
 					}
+					
+					try {
+						def pid = Integer.parseInt(i.person.@id.toString())
+		
+						def personInstance = Person.read(pid)
+						if (debug) { println "Found Person from Item ID: ${pid}" }
+		
+						i.person.appendNode {
+							norcSu(id:personInstance.norcSuId)
+						}
+					} catch (Exception) {
+						// no dwelling unit here
+						if (debug) { println "DEBUG: not a dwelling unit" }
+					}
+					
 				}
 
 				// check the whole document using XmlUnit
