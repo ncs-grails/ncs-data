@@ -9,7 +9,7 @@ class NorcNonResponseList {
 	String mailUndeliverable
 	
     static constraints = {
-		suId(nullable:true,maxSize:75)
+		suId(unique:true,maxSize:32)
 		promptDisp(nullable:true,maxSize:75)
 		promptDispDate(nullable:true,maxSize:75)
 		promptDispLabel(nullable:true,maxSize:75)

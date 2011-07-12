@@ -829,7 +829,7 @@ class NorcHhBatch {
 		datacleaningReviewstatus02(nullable:true,maxSize:75)
 		datacleaningReviewstatus03(nullable:true,maxSize:75)
 		datacleaningReviewstatus04(nullable:true,maxSize:75)
-		suId(nullable:true,maxSize:75)
+		suId(unique:true,maxSize:32)
 		sampleUnitKey(nullable:true,maxSize:75)
 		affiliate(nullable:true,maxSize:75)
 		majority(nullable:true,maxSize:75)
