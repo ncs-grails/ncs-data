@@ -781,6 +781,13 @@ class NorcHhBatch {
 	String timeStamp9
 	String elapsedtime
 	Date temptimevariable
+	String barcode
+	String tracking
+	Date transmlDate
+	String comments
+	Date theDate
+	String rcuser
+	String flagMail
 	
     static constraints = {
 		respondentSerial(nullable:true,maxSize:75)
@@ -1563,6 +1570,13 @@ class NorcHhBatch {
 		timeStamp9(nullable:true,maxSize:75)
 		elapsedtime(nullable:true,maxSize:75)
 		temptimevariable(nullable:true)
+		barcode(nullable:true,maxSize:75)
+		tracking(nullable:true,maxSize:75)
+		transmlDate(nullable:true)
+		comments(nullable:true,maxSize:75)
+		theDate(nullable:true)
+		rcuser(nullable:true,maxSize:75)
+		flagMail(nullable:true,maxSize:75)
     }
 	
 }

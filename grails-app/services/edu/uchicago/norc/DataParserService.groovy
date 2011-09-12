@@ -13,7 +13,8 @@ class DataParserService {
 	def sessionFactory
 
 	DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss")
-
+	DateTimeFormatter fmtDateOnly = DateTimeFormat.forPattern("yyyy-MM-dd")
+	
 	def parseEverything(table, response) {
 		// TODO send data by table name so the entire file is not parsed each time 
 		parseFormats table, response
@@ -960,6 +961,37 @@ class DataParserService {
 						// println '! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}'
 						// println '! parse TempTimeVariable Exception: ${e.toString()}'
 					}
+					norcHhBatch.barcode = c.barcode.toString()
+					norcHhBatch.tracking = c.TRACKING__.toString()
+					try {
+						dateTimeString = c.TRANSML_DATE.toString()
+						if ( ! dateTimeString ) {
+							norcHhBatch.transmlDate = null
+						} else {
+							DateTime dt = fmtDateOnly.parseDateTime(dateTimeString)
+							norcHhBatch.transmlDate = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						response << '! Invalid TRANSML_DATE: ${c.TRANSML_DATE.toString()}'
+						// println '! parse TRANSML_DATE Input: ${c.TRANSML_DATE.toString()}'
+						// println '! parse TRANSML_DATE Exception: ${e.toString()}'
+					}
+					norcHhBatch.comments = c.COMMENTS.toString()
+					try {
+						dateTimeString = c.DATE.toString()
+						if ( ! dateTimeString ) {
+							norcHhBatch.theDate = null
+						} else {
+							DateTime dt = fmtDateOnly.parseDateTime(dateTimeString)
+							norcHhBatch.theDate = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						response << '! Invalid DATE: ${c.DATE.toString()}'
+						// println '! parse DATE Input: ${c.DATE.toString()}'
+						// println '! parse DATE Exception: ${e.toString()}'
+					}
+					norcHhBatch.rcuser = c.RCUSER.toString()
+					norcHhBatch.flagMail = c.flag_mail.toString()
 					
 					// Save the record
 					if (norcHhBatch.hasErrors()) {
