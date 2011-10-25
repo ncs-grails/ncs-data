@@ -201,13 +201,52 @@ def parsedFile = new ParsedFile()
 //parsedFile.setParsedFile("transmissionX_1_14APR11.xml")
 //parsedFile.setParsedFile("ramsey_nonresponse_list_17JUN11.xml")
 //parsedFile.setParsedFile("data_transmission_07sep11_temp.xml")
-parsedFile.setParsedFile("data_transmission_16SEP11_2.xml")
+parsedFile.setParsedFile("data_transmission_10OCT11.xml")
 def node = ""
 def f = null
 def propertyListFile = ""
 def dataImportCodeFile = ""
 def tableName = ""
 
+// Get list of domain class properties from node COMBO_BATCH1 - added 2011-10-24
+node = "COMBO_BATCH1"		// Change for each new table
+parsedFile.setPropertyMapList(node)
+// Write properties to a file
+propertyListFile = "property_list-${node}"
+println "Writing output file ${propertyListFile}"
+f = new File("${propertyListFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()	
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeListToFile(propertyListFile, ".txt", false) 
+// Add property constraints to file
+parsedFile.writeListToFile(propertyListFile, ".txt", true) 
+println "Done!"
+
+// Write data import code to a file
+dataImportCodeFile = "data_import_code-${node}"
+tableName = "norcComboBatch"		// This is the new domain class name in web service
+println "Writing output file ${dataImportCodeFile}"
+f = new File("${dataImportCodeFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()	
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeCodeToFile(dataImportCodeFile, ".txt", tableName) 
+println "Done!"
+
+/*
 // Get list of domain class properties from node BIRTH_BATCH1
 node = "BIRTH_BATCH1"
 parsedFile.setPropertyMapList(node)
