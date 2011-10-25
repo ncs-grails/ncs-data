@@ -13,7 +13,10 @@ class EmailNotifyService {
 
     def notifyOfNorcUpload(clientAddress) {
     
-    	def recipients = [ 'ajz@umn.edu', 'ast@umn.edu', 'msg@umn.edu' ]
+    	def recipients = [ 'ajz@umn.edu'
+		, 'ast@umn.edu'
+		, 'jaf@umn.edu'
+		, 'msg@umn.edu' ]
     
 		def referenceDate = new Date()
 		
