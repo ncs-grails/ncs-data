@@ -231,8 +231,6 @@ class MailingController {
 				batchInstance.creationConfig = null
 
 				// adding NORC data
-
-
 				XML.use("deep") {
 					render batchInstance as XML
 				}

@@ -208,6 +208,89 @@ def propertyListFile = ""
 def dataImportCodeFile = ""
 def tableName = ""
 
+
+// Get list of domain class properties from node PPGFOLLOW_BATCH - added 2011-10-25
+node = "PPGFOLLOW_BATCH1"		// Change for each new table
+parsedFile.setPropertyMapList(node)
+// Write properties to a file
+propertyListFile = "property_list-${node}"
+println "Writing output file ${propertyListFile}"
+f = new File("${propertyListFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeListToFile(propertyListFile, ".txt", false)
+// Add property constraints to file
+parsedFile.writeListToFile(propertyListFile, ".txt", true)
+println "Done!"
+
+// Write data import code to a file
+dataImportCodeFile = "data_import_code-${node}"
+tableName = "norcPpgFollowBatch"		// This is the new domain class name in web service
+println "Writing output file ${dataImportCodeFile}"
+f = new File("${dataImportCodeFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeCodeToFile(dataImportCodeFile, ".txt", tableName)
+println "Done!"
+
+
+/*
+// Get list of domain class properties from node EN_BATCH - added 2011-10-25
+node = "EN_BATCH1"		// Change for each new table
+parsedFile.setPropertyMapList(node)
+// Write properties to a file
+propertyListFile = "property_list-${node}"
+println "Writing output file ${propertyListFile}"
+f = new File("${propertyListFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeListToFile(propertyListFile, ".txt", false)
+// Add property constraints to file
+parsedFile.writeListToFile(propertyListFile, ".txt", true)
+println "Done!"
+
+// Write data import code to a file
+dataImportCodeFile = "data_import_code-${node}"
+tableName = "norcEnBatch"		// This is the new domain class name in web service
+println "Writing output file ${dataImportCodeFile}"
+f = new File("${dataImportCodeFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeCodeToFile(dataImportCodeFile, ".txt", tableName)
+println "Done!"
+
+
+
+
+
 // Get list of domain class properties from node COMBO_BATCH1 - added 2011-10-24
 node = "COMBO_BATCH1"		// Change for each new table
 parsedFile.setPropertyMapList(node)
@@ -246,7 +329,7 @@ if (f.exists()){
 parsedFile.writeCodeToFile(dataImportCodeFile, ".txt", tableName) 
 println "Done!"
 
-/*
+
 // Get list of domain class properties from node BIRTH_BATCH1
 node = "BIRTH_BATCH1"
 parsedFile.setPropertyMapList(node)

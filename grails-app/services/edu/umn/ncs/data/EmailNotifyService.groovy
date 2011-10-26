@@ -16,7 +16,8 @@ class EmailNotifyService {
     	def recipients = [ 'ajz@umn.edu'
 		, 'ast@umn.edu'
 		, 'jaf@umn.edu'
-		, 'msg@umn.edu' ]
+		, 'msg@umn.edu'
+		, 'ngp@umn.edu' ]
     
 		def referenceDate = new Date()
 		

@@ -36,6 +36,7 @@ class CombinedController {
 				println " ~ Saving Local Copy..."
 				response << " ~ Saving Local Copy... \n"
 
+				def now = new Date()
 				def fileName = 'textXmlParser-upload_' + g.formatDate(date:now, format: 'yyyy-MM-dd-hh-mm') + '.xml'
 				def xmlFileWriter = new File(fileName).newWriter()
 				
