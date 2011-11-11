@@ -32,8 +32,735 @@ class DataParserService {
 		parseComboBatch table, response
 		parseEnBatch table, response
 		parsePpgFollowBatch table, response
+		parseLbBatch table, response
+		parseBirthIncentiveBatch table, response
 	}
 
+	
+	def parseBirthIncentiveBatch(table, response) {
+		def now = new Date()
+		// println "ready to load. ${now}"
+				
+		def saveCount = 0
+		if (debug){
+			println "Parsing BIRTHINCENTIVE_BATCH1"			
+		}
+		// Save data in batches
+		def startTime = System.nanoTime()
+
+		GParsPool.withPool {
+			table?.BIRTHINCENTIVE_BATCH1?.eachParallel { c ->
+				
+				//def affiliate = c.AFFILIATE.toString()
+				//def institutionName = c.INSTITUTION.toString()
+				//println "${affiliate}: ${institutionName}"
+				NorcBirthIncentiveBatch.withTransaction {
+					def dateTimeString = ""
+					def checkSerial = c.Respondent_Serial.toString()
+					
+					// Verify that the current respondent serial has not already been saved
+					def norcBirthIncentiveBatch = NorcBirthIncentiveBatch.findByRespondentSerial(checkSerial)				
+		
+					if (!norcBirthIncentiveBatch) {
+						norcBirthIncentiveBatch = new NorcBirthIncentiveBatch()
+						response <<  " + Creating new NorcBirthIncentiveBatch(${checkSerial})\n"
+					} else {
+						// Lock object for update
+						norcBirthIncentiveBatch.lock()
+						response <<  " ~ Updating existing NorcBirthIncentiveBatch(${checkSerial})\n"
+					}
+
+
+					norcBirthIncentiveBatch.fname = c.fName.toString()
+					norcBirthIncentiveBatch.lname = c.lName.toString()
+					norcBirthIncentiveBatch.address1 = c.Address1.toString()
+					norcBirthIncentiveBatch.address2 = c.Address2.toString()
+					norcBirthIncentiveBatch.unit = c.Unit.toString()
+					norcBirthIncentiveBatch.city = c.City.toString()
+					norcBirthIncentiveBatch.state = c.State.toString()
+					norcBirthIncentiveBatch.zip = c.Zip.toString()
+					norcBirthIncentiveBatch.zip4 = c.Zip4.toString()
+					norcBirthIncentiveBatch.suId = c.SU_ID.toString()
+					norcBirthIncentiveBatch.mailingid = c.MailingID.toString()
+					norcBirthIncentiveBatch.doctype = c.DocType.toString()
+					norcBirthIncentiveBatch.source = c.Source.toString()
+					norcBirthIncentiveBatch.status = c.Status.toString()
+					norcBirthIncentiveBatch.mode = c.Mode.toString()
+					norcBirthIncentiveBatch.email = c.email.toString()
+					norcBirthIncentiveBatch.phonenumber = c.phoneNumber.toString()
+					norcBirthIncentiveBatch.segmentid = c.SegmentID.toString()
+					norcBirthIncentiveBatch.incentiveamount = c.incentiveAmount.toString()
+					norcBirthIncentiveBatch.incentivemailed = c.incentiveMailed.toString()
+					norcBirthIncentiveBatch.sampleUnitKey = c.sample_unit_key.toString()
+					try {
+						dateTimeString = c.dateIn.toString()
+						if ( ! dateTimeString ) {
+							norcBirthIncentiveBatch.datein = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcBirthIncentiveBatch.datein = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						response << '! Invalid dateIn: ${c.dateIn.toString()}'
+						println '! parse dateIn Input: ${c.dateIn.toString()}'
+						println '! parse dateIn Exception: ${e.toString()}'
+					}
+					norcBirthIncentiveBatch.apptime = c.apptime.toString()
+
+					// Save the record
+					if (norcBirthIncentiveBatch.hasErrors()) {
+						response << "! norcBirthIncentiveBatch has errors.\n"
+					} else if (norcBirthIncentiveBatch.save()) {
+						saveCount++
+					}
+					else {
+						// println "Error saving norcBirthIncentiveBatch record with Respondent Serial ${norcBirthIncentiveBatch.respondentSerial}"
+						norcBirthIncentiveBatch.errors.each{ e ->
+							// println "norcBirthIncentiveBatch:error::${e}"
+							e.fieldErrors.each{ fe -> 
+								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n" 
+								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
+							}
+						}
+					} 				
+				}
+			}
+		}
+		
+		def endTime = System.nanoTime()
+		def diff = (endTime - startTime)/1000000000
+		if (debug) {
+			println "    Done! ${saveCount} records saved to norcBirthIncentiveBatch in ${diff} seconds"			
+		}
+		// end BIRTHINCENTIVE_BATCH1
+	}
+
+	def parseLbBatch(table, response) {
+		def now = new Date()
+		// println "ready to load. ${now}"
+				
+		def saveCount = 0
+		if (debug){
+			println "Parsing LB1_BATCH1"			
+		}
+		// Save data in batches
+		def startTime = System.nanoTime()
+
+		GParsPool.withPool {
+			table?.LB1_BATCH1?.eachParallel { c ->
+				
+				//def affiliate = c.AFFILIATE.toString()
+				//def institutionName = c.INSTITUTION.toString()
+				//println "${affiliate}: ${institutionName}"
+				NorcLbBatch.withTransaction {
+					def dateTimeString = ""
+					def checkSerial = c.Respondent_Serial.toString()
+					
+					// Verify that the current respondent serial has not already been saved
+					def norcLbBatch = NorcLbBatch.findByRespondentSerial(checkSerial)				
+		
+					if (!norcLbBatch) {
+						norcLbBatch = new NorcLbBatch()
+						response <<  " + Creating new NorcLbBatch(${checkSerial})\n"
+					} else {
+						// Lock object for update
+						norcLbBatch.lock()
+						response <<  " ~ Updating existing NorcLbBatch(${checkSerial})\n"
+					}
+					
+
+						norcLbBatch.respondentSerial = c.Respondent_Serial.toString()
+						norcLbBatch.respondentSerialSourcefile = c.Respondent_Serial_SourceFile.toString()
+						norcLbBatch.respondentOrigin01 = c.Respondent_Origin_01.toString()
+						norcLbBatch.respondentOrigin02 = c.Respondent_Origin_02.toString()
+						norcLbBatch.respondentOrigin03 = c.Respondent_Origin_03.toString()
+						norcLbBatch.respondentOrigin04 = c.Respondent_Origin_04.toString()
+						norcLbBatch.respondentOrigin05 = c.Respondent_Origin_05.toString()
+						norcLbBatch.respondentOrigin06 = c.Respondent_Origin_06.toString()
+						norcLbBatch.respondentOriginOther = c.Respondent_Origin_Other.toString()
+						norcLbBatch.respondentId = c.Respondent_ID.toString()
+						norcLbBatch.datacollectionStatus01 = c.DataCollection_Status_01.toString()
+						norcLbBatch.datacollectionStatus02 = c.DataCollection_Status_02.toString()
+						norcLbBatch.datacollectionStatus03 = c.DataCollection_Status_03.toString()
+						norcLbBatch.datacollectionStatus04 = c.DataCollection_Status_04.toString()
+						norcLbBatch.datacollectionStatus05 = c.DataCollection_Status_05.toString()
+						norcLbBatch.datacollectionStatus06 = c.DataCollection_Status_06.toString()
+						norcLbBatch.datacollectionStatus07 = c.DataCollection_Status_07.toString()
+						norcLbBatch.datacollectionStatus08 = c.DataCollection_Status_08.toString()
+						norcLbBatch.datacollectionStatus09 = c.DataCollection_Status_09.toString()
+						norcLbBatch.datacollectionInterviewerid = c.DataCollection_InterviewerID.toString()
+						try {
+							dateTimeString = c.DataCollection_StartTime.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.datacollectionStarttime = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.datacollectionStarttime = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}'
+							println '! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}'
+							println '! parse DataCollection_StartTime Exception: ${e.toString()}'
+						}
+						try {
+							dateTimeString = c.DataCollection_FinishTime.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.datacollectionFinishtime = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.datacollectionFinishtime = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}'
+							println '! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}'
+							println '! parse DataCollection_FinishTime Exception: ${e.toString()}'
+						}
+						norcLbBatch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
+						norcLbBatch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
+						norcLbBatch.datactinRngcntxt4 = c.DataCtin_RngCntxt4.toString()
+						norcLbBatch.datacollectionVariant = c.DataCollection_Variant.toString()
+						norcLbBatch.datacollectionEndquestion = c.DataCollection_EndQuestion.toString()
+						norcLbBatch.datacollectionTerminatesignal = c.DataCollection_TerminateSignal.toString()
+						norcLbBatch.datacollectionSeedvalue = c.DataCollection_SeedValue.toString()
+						norcLbBatch.datacollectionInterviewengine = c.DataCollection_InterviewEngine.toString()
+						norcLbBatch.datacollectionCurrentpage = c.DataCollection_CurrentPage.toString()
+						norcLbBatch.datacollectionDebug = c.DataCollection_Debug.toString()
+						norcLbBatch.datacollectionServertimezone = c.DataCollection_ServerTimeZone.toString()
+						norcLbBatch.datacIntrviwrtrtimzn5 = c.DataC_IntrviwrTrTimZn5.toString()
+						norcLbBatch.datacnRsndnttitimzn6 = c.DataCn_RsndntTiTimZn6.toString()
+						norcLbBatch.datacollectionBatchid = c.DataCollection_BatchID.toString()
+						norcLbBatch.datacollectionBatchname = c.DataCollection_BatchName.toString()
+						norcLbBatch.datactinDaentrymd7 = c.DataCtin_DaEntryMd7.toString()
+						norcLbBatch.datacollectionRemoved = c.DataCollection_Removed.toString()
+						norcLbBatch.datacleaningNote = c.DataCleaning_Note.toString()
+						norcLbBatch.datacleaningStatus01 = c.DataCleaning_Status_01.toString()
+						norcLbBatch.datacleaningStatus02 = c.DataCleaning_Status_02.toString()
+						norcLbBatch.datacleaningReviewstatus01 = c.DataCleaning_ReviewStatus_01.toString()
+						norcLbBatch.datacleaningReviewstatus02 = c.DataCleaning_ReviewStatus_02.toString()
+						norcLbBatch.datacleaningReviewstatus03 = c.DataCleaning_ReviewStatus_03.toString()
+						norcLbBatch.datacleaningReviewstatus04 = c.DataCleaning_ReviewStatus_04.toString()
+						norcLbBatch.prOwnHome = c.PR_OWN_HOME.toString()
+						norcLbBatch.suId = c.SU_ID.toString()
+						norcLbBatch.prFname = c.PR_FNAME.toString()
+						norcLbBatch.prFnameCodes = c.PR_FNAME_Codes.toString()
+						norcLbBatch.prLname = c.PR_LNAME.toString()
+						norcLbBatch.prLnameCodes = c.PR_LNAME_Codes.toString()
+						norcLbBatch.dobMo = c.DOB_MO.toString()
+						norcLbBatch.dobMoCodes = c.DOB_MO_Codes.toString()
+						norcLbBatch.dobDy = c.DOB_DY.toString()
+						norcLbBatch.dobDyCodes = c.DOB_DY_Codes.toString()
+						norcLbBatch.dobYr = c.DOB_YR.toString()
+						norcLbBatch.dobYrCodes = c.DOB_YR_Codes.toString()
+						norcLbBatch.agecalc = c.AGECALC.toString()
+						norcLbBatch.ageRange = c.AGE_RANGE.toString()
+						try {
+							dateTimeString = c.TIME_STAMP_1A.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.timeStamp1a = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.timeStamp1a = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TIME_STAMP_1A: ${c.TIME_STAMP_1A.toString()}'
+							println '! parse TIME_STAMP_1A Input: ${c.TIME_STAMP_1A.toString()}'
+							println '! parse TIME_STAMP_1A Exception: ${e.toString()}'
+						}
+						norcLbBatch.quexlang = c.QUEXLANG.toString()
+						norcLbBatch.english = c.ENGLISH.toString()
+						norcLbBatch.contactLang = c.CONTACT_LANG.toString()
+						norcLbBatch.contactLangOth = c.CONTACT_LANG_OTH.toString()
+						norcLbBatch.contactLangOthCodes = c.CONTACT_LANG_OTH_Codes.toString()
+						norcLbBatch.interpret = c.INTERPRET.toString()
+						norcLbBatch.contactInterpret = c.CONTACT_INTERPRET.toString()
+						norcLbBatch.contactInterpretOth = c.CONTACT_INTERPRET_OTH.toString()
+						try {
+							dateTimeString = c.TIME_STAMP_1.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.timeStamp1 = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.timeStamp1 = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}'
+							println '! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}'
+							println '! parse TIME_STAMP_1 Exception: ${e.toString()}'
+						}
+						norcLbBatch.currmo = c.CURRMO.toString()
+						norcLbBatch.currdy = c.CURRDY.toString()
+						norcLbBatch.curryr = c.CURRYR.toString()
+						norcLbBatch.age = c.AGE.toString()
+						norcLbBatch.release_renamed = c.RELEASE.toString()
+						norcLbBatch.multiple = c.MULTIPLE.toString()
+						norcLbBatch.multipleNum = c.MULTIPLE_NUM.toString()
+						norcLbBatch.childDobMonth = c.CHILD_DOB_MONTH.toString()
+						norcLbBatch.childDobMonthCodes = c.CHILD_DOB_MONTH_Codes.toString()
+						norcLbBatch.childDobDay = c.CHILD_DOB_DAY.toString()
+						norcLbBatch.childDobDayCodes = c.CHILD_DOB_DAY_Codes.toString()
+						norcLbBatch.childDobYear = c.CHILD_DOB_YEAR.toString()
+						norcLbBatch.childDobYearCodes = c.CHILD_DOB_YEAR_Codes.toString()
+						norcLbBatch.babytxt01 = c.babytxt_01.toString()
+						norcLbBatch.babytxt02 = c.babytxt_02.toString()
+						norcLbBatch.multi01 = c.multi_01.toString()
+						norcLbBatch.multi02 = c.multi_02.toString()
+						norcLbBatch.multi03 = c.multi_03.toString()
+						norcLbBatch.babyloopFirstBabyName = c.BabyLoop_first_BABY_NAME.toString()
+						norcLbBatch.babyloopSecondBabyName = c.BabyLoop_second_BABY_NAME.toString()
+						norcLbBatch.babyloopThirdBabyName = c.BabyLoop_third_BABY_NAME.toString()
+						norcLbBatch.babyloopFourthBabyName = c.BabyLoop_fourth_BABY_NAME.toString()
+						norcLbBatch.babyloopFifthBabyName = c.BabyLoop_fifth_BABY_NAME.toString()
+						norcLbBatch.babyloopSixthBabyName = c.BabyLoop_sixth_BABY_NAME.toString()
+						norcLbBatch.babyloopSeventhBabyName = c.BabyLoop_seventh_BABY_NAME.toString()
+						norcLbBatch.babyloopEighthBabyName = c.BabyLoop_eighth_BABY_NAME.toString()
+						norcLbBatch.babyAbyName2BabyFname8 = c.Baby_ABY_NAME2__BABY_FNAME8.toString()
+						norcLbBatch.babyByName2BabyFname9 = c.Baby_BY_NAME2_BABY_FNAME9.toString()
+						norcLbBatch.babyAbyName2BabyFname10 = c.Baby_ABY_NAME2__BABY_FNAME10.toString()
+						norcLbBatch.babyAbyName2BabyFname11 = c.Baby_ABY_NAME2_BABY_FNAME11.toString()
+						norcLbBatch.babyAbyName2BabyFname12 = c.Baby_ABY_NAME2__BABY_FNAME12.toString()
+						norcLbBatch.babyAbyName2BabyFname13 = c.Baby_ABY_NAME2__BABY_FNAME13.toString()
+						norcLbBatch.babyByName2BabyFname14 = c.Baby_BY_NAME2_BABY_FNAME14.toString()
+						norcLbBatch.babyAbyName2BabyFname15 = c.Baby_ABY_NAME2_BABY_FNAME15.toString()
+						norcLbBatch.babyName2BabfnameCds16 = c.Baby__NAME2_BABFNAME_Cds16.toString()
+						norcLbBatch.babyName2BabyameCds17 = c.Baby_NAME2_BABYAME_Cds17.toString()
+						norcLbBatch.babyName2BabfnameCds18 = c.Baby__NAME2_BABFNAME_Cds18.toString()
+						norcLbBatch.babyName2BabnameCds19 = c.Baby__NAME2_BABNAME_Cds19.toString()
+						norcLbBatch.babyName2BabfnameCds20 = c.Baby__NAME2_BABFNAME_Cds20.toString()
+						norcLbBatch.babyName2BabfnameCds21 = c.Baby__NAME2_BABFNAME_Cds21.toString()
+						norcLbBatch.babyName2BabyameCds22 = c.Baby_NAME2_BABYAME_Cds22.toString()
+						norcLbBatch.babyName2BabnameCds23 = c.Baby__NAME2_BABNAME_Cds23.toString()
+						norcLbBatch.babyAbyName2BabyMname24 = c.Baby_ABY_NAME2__BABY_MNAME24.toString()
+						norcLbBatch.babyByName2BabyMname25 = c.Baby_BY_NAME2_BABY_MNAME25.toString()
+						norcLbBatch.babyAbyName2BabyMname26 = c.Baby_ABY_NAME2__BABY_MNAME26.toString()
+						norcLbBatch.babyAbyName2BabyMname27 = c.Baby_ABY_NAME2_BABY_MNAME27.toString()
+						norcLbBatch.babyAbyName2BabyMname28 = c.Baby_ABY_NAME2__BABY_MNAME28.toString()
+						norcLbBatch.babyAbyName2BabyMname29 = c.Baby_ABY_NAME2__BABY_MNAME29.toString()
+						norcLbBatch.babyByName2BabyMname30 = c.Baby_BY_NAME2_BABY_MNAME30.toString()
+						norcLbBatch.babyAbyName2BabyMname31 = c.Baby_ABY_NAME2_BABY_MNAME31.toString()
+						norcLbBatch.babyName2BabmnameCds32 = c.Baby__NAME2_BABMNAME_Cds32.toString()
+						norcLbBatch.babyName2BabyameCds33 = c.Baby_NAME2_BABYAME_Cds33.toString()
+						norcLbBatch.babyName2BabmnameCds34 = c.Baby__NAME2_BABMNAME_Cds34.toString()
+						norcLbBatch.babyName2BabnameCds35 = c.Baby__NAME2_BABNAME_Cds35.toString()
+						norcLbBatch.babyName2BabmnameCds36 = c.Baby__NAME2_BABMNAME_Cds36.toString()
+						norcLbBatch.babyName2BabmnameCds37 = c.Baby__NAME2_BABMNAME_Cds37.toString()
+						norcLbBatch.babyName2BabyameCds38 = c.Baby_NAME2_BABYAME_Cds38.toString()
+						norcLbBatch.babyName2BabnameCds39 = c.Baby__NAME2_BABNAME_Cds39.toString()
+						norcLbBatch.babyAbyName2BabyName40 = c.Baby_ABY_NAME2__BABY_NAME40.toString()
+						norcLbBatch.babyByName2BabyName41 = c.Baby_BY_NAME2_BABY_NAME41.toString()
+						norcLbBatch.babyAbyName2BabyName42 = c.Baby_ABY_NAME2__BABY_NAME42.toString()
+						norcLbBatch.babyAbyName2BabyName43 = c.Baby_ABY_NAME2_BABY_NAME43.toString()
+						norcLbBatch.babyAbyName2BabyName44 = c.Baby_ABY_NAME2__BABY_NAME44.toString()
+						norcLbBatch.babyAbyName2BabyName45 = c.Baby_ABY_NAME2__BABY_NAME45.toString()
+						norcLbBatch.babyByName2BabyName46 = c.Baby_BY_NAME2_BABY_NAME46.toString()
+						norcLbBatch.babyAbyName2BabyName47 = c.Baby_ABY_NAME2_BABY_NAME47.toString()
+						norcLbBatch.babyName2BabnameCds48 = c.Baby__NAME2_BABNAME_Cds48.toString()
+						norcLbBatch.babyName2BabymeCds49 = c.Baby_NAME2_BABYME_Cds49.toString()
+						norcLbBatch.babyName2BabnameCds50 = c.Baby__NAME2_BABNAME_Cds50.toString()
+						norcLbBatch.babyName2BabameCds51 = c.Baby__NAME2_BABAME_Cds51.toString()
+						norcLbBatch.babyName2BabnameCds52 = c.Baby__NAME2_BABNAME_Cds52.toString()
+						norcLbBatch.babyName2BabnameCds53 = c.Baby__NAME2_BABNAME_Cds53.toString()
+						norcLbBatch.babyName2BabymeCds54 = c.Baby_NAME2_BABYME_Cds54.toString()
+						norcLbBatch.babyName2BabameCds55 = c.Baby__NAME2_BABAME_Cds55.toString()
+						norcLbBatch.babyloopFirstBabySex = c.BabyLoop_first_BABY_SEX.toString()
+						norcLbBatch.babyloopSecondBabySex = c.BabyLoop_second_BABY_SEX.toString()
+						norcLbBatch.babyloopThirdBabySex = c.BabyLoop_third_BABY_SEX.toString()
+						norcLbBatch.babyloopFourthBabySex = c.BabyLoop_fourth_BABY_SEX.toString()
+						norcLbBatch.babyloopFifthBabySex = c.BabyLoop_fifth_BABY_SEX.toString()
+						norcLbBatch.babyloopSixthBabySex = c.BabyLoop_sixth_BABY_SEX.toString()
+						norcLbBatch.babyloopSeventhBabySex = c.BabyLoop_seventh_BABY_SEX.toString()
+						norcLbBatch.babyloopEighthBabySex = c.BabyLoop_eighth_BABY_SEX.toString()
+						norcLbBatch.babyloopFirstBabygend = c.BabyLoop_first_babygend.toString()
+						norcLbBatch.babyloopSecondBabygend = c.BabyLoop_second_babygend.toString()
+						norcLbBatch.babyloopThirdBabygend = c.BabyLoop_third_babygend.toString()
+						norcLbBatch.babyloopFourthBabygend = c.BabyLoop_fourth_babygend.toString()
+						norcLbBatch.babyloopFifthBabygend = c.BabyLoop_fifth_babygend.toString()
+						norcLbBatch.babyloopSixthBabygend = c.BabyLoop_sixth_babygend.toString()
+						norcLbBatch.babyloopSeventhBabygend = c.BabyLoop_seventh_babygend.toString()
+						norcLbBatch.babyloopEighthBabygend = c.BabyLoop_eighth_babygend.toString()
+						norcLbBatch.babyAbyBwtBaabyBwtBs56 = c.Baby_ABY_BWT_BAABY_BWT_BS56.toString()
+						norcLbBatch.babyByBwtBabyBwtBs57 = c.Baby_BY_BWT_BABY_BWT_BS57.toString()
+						norcLbBatch.babyAbyBwtBaabyBwtBs58 = c.Baby_ABY_BWT_BAABY_BWT_BS58.toString()
+						norcLbBatch.babyAbyBwtBabyBwtBs59 = c.Baby_ABY_BWT_BABY_BWT_BS59.toString()
+						norcLbBatch.babyAbyBwtBaabyBwtBs60 = c.Baby_ABY_BWT_BAABY_BWT_BS60.toString()
+						norcLbBatch.babyAbyBwtBaabyBwtBs61 = c.Baby_ABY_BWT_BAABY_BWT_BS61.toString()
+						norcLbBatch.babyByBwtBabyBwtBs62 = c.Baby_BY_BWT_BABY_BWT_BS62.toString()
+						norcLbBatch.babyAbyBwtBabyBwtBs63 = c.Baby_ABY_BWT_BABY_BWT_BS63.toString()
+						norcLbBatch.babyBwtBabyTBsCds64 = c.Baby__BWT_BABY_T_BS_Cds64.toString()
+						norcLbBatch.babyBwtBabyBbsCds65 = c.Baby_BWT_BABY_BBS_Cds65.toString()
+						norcLbBatch.babyBwtBabyTBsCds66 = c.Baby__BWT_BABY_T_BS_Cds66.toString()
+						norcLbBatch.babyBwtBabyBsCds67 = c.Baby__BWT_BABY__BS_Cds67.toString()
+						norcLbBatch.babyBwtBabyTBsCds68 = c.Baby__BWT_BABY_T_BS_Cds68.toString()
+						norcLbBatch.babyBwtBabyTBsCds69 = c.Baby__BWT_BABY_T_BS_Cds69.toString()
+						norcLbBatch.babyBwtBabyBbsCds70 = c.Baby_BWT_BABY_BBS_Cds70.toString()
+						norcLbBatch.babyBwtBabyBsCds71 = c.Baby__BWT_BABY__BS_Cds71.toString()
+						norcLbBatch.babyBabyBwtBbabyBwtOz72 = c.Baby_BABY_BWT_BBABY_BWT_OZ72.toString()
+						norcLbBatch.babyByBwtBabbyBwtOz73 = c.Baby_BY_BWT_BABBY_BWT_OZ73.toString()
+						norcLbBatch.babyBabyBwtBbabyBwtOz74 = c.Baby_BABY_BWT_BBABY_BWT_OZ74.toString()
+						norcLbBatch.babyAbyBwtBaabyBwtOz75 = c.Baby_ABY_BWT_BAABY_BWT_OZ75.toString()
+						norcLbBatch.babyBabyBwtBbabyBwtOz76 = c.Baby_BABY_BWT_BBABY_BWT_OZ76.toString()
+						norcLbBatch.babyBabyBwtBbabyBwtOz77 = c.Baby_BABY_BWT_BBABY_BWT_OZ77.toString()
+						norcLbBatch.babyAbyBwtBabyBwtOz78 = c.Baby_ABY_BWT_BABY_BWT_OZ78.toString()
+						norcLbBatch.babyAbyBwtBaabyBwtOz79 = c.Baby_ABY_BWT_BAABY_BWT_OZ79.toString()
+						norcLbBatch.babyYBwtBabywtOzCds80 = c.Baby_Y_BWT_BABYWT_OZ_Cds80.toString()
+						norcLbBatch.babyBwtBabyBOzCds81 = c.Baby_BWT_BABY_B_OZ_Cds81.toString()
+						norcLbBatch.babyYBwtBabywtOzCds82 = c.Baby_Y_BWT_BABYWT_OZ_Cds82.toString()
+						norcLbBatch.babyBwtBabyTOzCds83 = c.Baby__BWT_BABY_T_OZ_Cds83.toString()
+						norcLbBatch.babyYBwtBabywtOzCds84 = c.Baby_Y_BWT_BABYWT_OZ_Cds84.toString()
+						norcLbBatch.babyYBwtBabywtOzCds85 = c.Baby_Y_BWT_BABYWT_OZ_Cds85.toString()
+						norcLbBatch.babyBwtBabyOzCds86 = c.Baby__BWT_BABY__OZ_Cds86.toString()
+						norcLbBatch.babyBwtBabyTOzCds87 = c.Baby__BWT_BABY_T_OZ_Cds87.toString()
+						norcLbBatch.babytxt201 = c.babytxt2_01.toString()
+						norcLbBatch.babytxt202 = c.babytxt2_02.toString()
+						norcLbBatch.babytxt203 = c.babytxt2_03.toString()
+						norcLbBatch.babytxt204 = c.babytxt2_04.toString()
+						norcLbBatch.babygend = c.babygend.toString()
+						norcLbBatch.babygend2 = c.babygend2.toString()
+						norcLbBatch.liveMom = c.LIVE_MOM.toString()
+						norcLbBatch.liveothtxt = c.liveothtxt.toString()
+						norcLbBatch.liveOth = c.LIVE_OTH.toString()
+						try {
+							dateTimeString = c.TIME_STAMP_2.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.timeStamp2 = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.timeStamp2 = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}'
+							println '! parse TIME_STAMP_2 Input: ${c.TIME_STAMP_2.toString()}'
+							println '! parse TIME_STAMP_2 Exception: ${e.toString()}'
+						}
+						norcLbBatch.recentMove = c.RECENT_MOVE.toString()
+						norcLbBatch.ownHome = c.OWN_HOME.toString()
+						norcLbBatch.ownHomeOth = c.OWN_HOME_OTH.toString()
+						norcLbBatch.ownHomeOthCodes = c.OWN_HOME_OTH_Codes.toString()
+						norcLbBatch.ageHome = c.AGE_HOME.toString()
+						norcLbBatch.lengthReside = c.LENGTH_RESIDE.toString()
+						norcLbBatch.lengthResideCodes = c.LENGTH_RESIDE_Codes.toString()
+						norcLbBatch.lengthResideUnit = c.LENGTH_RESIDE_UNIT.toString()
+						try {
+							dateTimeString = c.TIME_STAMP_3.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.timeStamp3 = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.timeStamp3 = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}'
+							println '! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}'
+							println '! parse TIME_STAMP_3 Exception: ${e.toString()}'
+						}
+						norcLbBatch.renovate = c.RENOVATE.toString()
+						norcLbBatch.renovateRoom01 = c.RENOVATE_ROOM_01.toString()
+						norcLbBatch.renovateRoom02 = c.RENOVATE_ROOM_02.toString()
+						norcLbBatch.renovateRoom03 = c.RENOVATE_ROOM_03.toString()
+						norcLbBatch.renovateRoom04 = c.RENOVATE_ROOM_04.toString()
+						norcLbBatch.renovateRoom05 = c.RENOVATE_ROOM_05.toString()
+						norcLbBatch.renovateRoom06 = c.RENOVATE_ROOM_06.toString()
+						norcLbBatch.renovateRoom07 = c.RENOVATE_ROOM_07.toString()
+						norcLbBatch.renovateRoom08 = c.RENOVATE_ROOM_08.toString()
+						norcLbBatch.renovateRoom09 = c.RENOVATE_ROOM_09.toString()
+						norcLbBatch.renovateRoom10 = c.RENOVATE_ROOM_10.toString()
+						norcLbBatch.renovateRoomOth = c.RENOVATE_ROOM_OTH.toString()
+						norcLbBatch.renovateRoomOthCodes = c.RENOVATE_ROOM_OTH_Codes.toString()
+						norcLbBatch.decorate = c.DECORATE.toString()
+						norcLbBatch.decorateRoom01 = c.DECORATE_ROOM_01.toString()
+						norcLbBatch.decorateRoom02 = c.DECORATE_ROOM_02.toString()
+						norcLbBatch.decorateRoom03 = c.DECORATE_ROOM_03.toString()
+						norcLbBatch.decorateRoom04 = c.DECORATE_ROOM_04.toString()
+						norcLbBatch.decorateRoom05 = c.DECORATE_ROOM_05.toString()
+						norcLbBatch.decorateRoom06 = c.DECORATE_ROOM_06.toString()
+						norcLbBatch.decorateRoom07 = c.DECORATE_ROOM_07.toString()
+						norcLbBatch.decorateRoom08 = c.DECORATE_ROOM_08.toString()
+						norcLbBatch.decorateRoom09 = c.DECORATE_ROOM_09.toString()
+						norcLbBatch.decorateRoom10 = c.DECORATE_ROOM_10.toString()
+						norcLbBatch.decorateRoomOth = c.DECORATE_ROOM_OTH.toString()
+						norcLbBatch.decorateRoomOthCodes = c.DECORATE_ROOM_OTH_Codes.toString()
+						norcLbBatch.smoke = c.SMOKE.toString()
+						norcLbBatch.smokeLocate = c.SMOKE_LOCATE.toString()
+						try {
+							dateTimeString = c.TIME_STAMP_4.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.timeStamp4 = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.timeStamp4 = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}'
+							println '! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}'
+							println '! parse TIME_STAMP_4 Exception: ${e.toString()}'
+						}
+						norcLbBatch.babytxt301 = c.babytxt3_01.toString()
+						norcLbBatch.babytxt302 = c.babytxt3_02.toString()
+						norcLbBatch.fedBaby = c.FED_BABY.toString()
+						norcLbBatch.howFed = c.HOW_FED.toString()
+						norcLbBatch.planfeedtxt = c.planfeedtxt.toString()
+						norcLbBatch.planFeed = c.PLAN_FEED.toString()
+						try {
+							dateTimeString = c.TIME_STAMP_5.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.timeStamp5 = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.timeStamp5 = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}'
+							println '! parse TIME_STAMP_5 Input: ${c.TIME_STAMP_5.toString()}'
+							println '! parse TIME_STAMP_5 Exception: ${e.toString()}'
+						}
+						norcLbBatch.postxt = c.postxt.toString()
+						norcLbBatch.babygend3 = c.babygend3.toString()
+						norcLbBatch.posHosp = c.POS_HOSP.toString()
+						norcLbBatch.postxt2 = c.postxt2.toString()
+						norcLbBatch.posHome = c.POS_HOME.toString()
+						norcLbBatch.sleeptxt = c.sleeptxt.toString()
+						norcLbBatch.sleeptxt2 = c.sleeptxt2.toString()
+						norcLbBatch.sleepRoom = c.SLEEP_ROOM.toString()
+						norcLbBatch.bed = c.BED.toString()
+						norcLbBatch.bedOth = c.BED_OTH.toString()
+						norcLbBatch.bedOthCodes = c.BED_OTH_Codes.toString()
+						try {
+							dateTimeString = c.TIME_STAMP_6.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.timeStamp6 = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.timeStamp6 = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}'
+							println '! parse TIME_STAMP_6 Input: ${c.TIME_STAMP_6.toString()}'
+							println '! parse TIME_STAMP_6 Exception: ${e.toString()}'
+						}
+						norcLbBatch.hcareYet = c.HCARE_YET.toString()
+						norcLbBatch.hcaretxt01 = c.hcaretxt_01.toString()
+						norcLbBatch.hcaretxt02 = c.hcaretxt_02.toString()
+						norcLbBatch.hcare = c.HCARE.toString()
+						norcLbBatch.hcareOth = c.HCARE_OTH.toString()
+						norcLbBatch.hcareOthCodes = c.HCARE_OTH_Codes.toString()
+						norcLbBatch.vaccineYet = c.VACCINE_YET.toString()
+						norcLbBatch.vaccine = c.VACCINE.toString()
+						try {
+							dateTimeString = c.TIME_STAMP_7.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.timeStamp7 = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.timeStamp7 = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}'
+							println '! parse TIME_STAMP_7 Input: ${c.TIME_STAMP_7.toString()}'
+							println '! parse TIME_STAMP_7 Exception: ${e.toString()}'
+						}
+						norcLbBatch.employ2 = c.EMPLOY2.toString()
+						norcLbBatch.returnJobYet = c.RETURN_JOB_YET.toString()
+						norcLbBatch.returnJobDtMonth = c.RETURN_JOB_DT_MONTH.toString()
+						norcLbBatch.returnJobDtMonthCodes = c.RETURN_JOB_DT_MONTH_Codes.toString()
+						norcLbBatch.returnJobDtDay = c.RETURN_JOB_DT_DAY.toString()
+						norcLbBatch.returnJobDtDayCodes = c.RETURN_JOB_DT_DAY_Codes.toString()
+						norcLbBatch.returnJobDtYear = c.RETURN_JOB_DT_YEAR.toString()
+						norcLbBatch.returnJobDtYearCodes = c.RETURN_JOB_DT_YEAR_Codes.toString()
+						norcLbBatch.returnJobReturnJobNum = c.RETURN_JOB_RETURN_JOB_NUM.toString()
+						norcLbBatch.returbRetjobNumCds88 = c.RETURB_RETJOB_NUM_Cds88.toString()
+						norcLbBatch.returnJobReturnJobUnit = c.RETURN_JOB_RETURN_JOB_UNIT.toString()
+						norcLbBatch.babytxt401 = c.babytxt4_01.toString()
+						norcLbBatch.babytxt402 = c.babytxt4_02.toString()
+						norcLbBatch.childcare = c.CHILDCARE.toString()
+						norcLbBatch.ccareType = c.CCARE_TYPE.toString()
+						norcLbBatch.ccareTypeOth = c.CCARE_TYPE_OTH.toString()
+						norcLbBatch.ccareTypeOthCodes = c.CCARE_TYPE_OTH_Codes.toString()
+						norcLbBatch.ccareWho = c.CCARE_WHO.toString()
+						norcLbBatch.relCareOth = c.REL_CARE_OTH.toString()
+						norcLbBatch.relCareOthCodes = c.REL_CARE_OTH_Codes.toString()
+						norcLbBatch.ccareWhoOth = c.CCARE_WHO_OTH.toString()
+						norcLbBatch.ccareWhoOthCodes = c.CCARE_WHO_OTH_Codes.toString()
+						try {
+							dateTimeString = c.TIME_STAMP_8.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.timeStamp8 = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.timeStamp8 = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}'
+							println '! parse TIME_STAMP_8 Input: ${c.TIME_STAMP_8.toString()}'
+							println '! parse TIME_STAMP_8 Exception: ${e.toString()}'
+						}
+						norcLbBatch.rNameRFname = c.R_NAME_R_FNAME.toString()
+						norcLbBatch.rNameRLname = c.R_NAME_R_LNAME.toString()
+						norcLbBatch.rNameRLnameCodes = c.R_NAME_R_LNAME_Codes.toString()
+						norcLbBatch.phoneNbr = c.PHONE_NBR.toString()
+						norcLbBatch.phoneNbrCodes = c.PHONE_NBR_Codes.toString()
+						norcLbBatch.phoneType = c.PHONE_TYPE.toString()
+						norcLbBatch.phoneTypeOth = c.PHONE_TYPE_OTH.toString()
+						norcLbBatch.phoneTypeOthCodes = c.PHONE_TYPE_OTH_Codes.toString()
+						norcLbBatch.friendPhoneOth = c.FRIEND_PHONE_OTH.toString()
+						norcLbBatch.friendPhoneOthCodes = c.FRIEND_PHONE_OTH_Codes.toString()
+						norcLbBatch.homePhone = c.HOME_PHONE.toString()
+						norcLbBatch.homePhoneCodes = c.HOME_PHONE_Codes.toString()
+						norcLbBatch.cellPhone1 = c.CELL_PHONE_1.toString()
+						norcLbBatch.cellPhone2 = c.CELL_PHONE_2.toString()
+						norcLbBatch.cellPhone3 = c.CELL_PHONE_3.toString()
+						norcLbBatch.cellPhone4 = c.CELL_PHONE_4.toString()
+						norcLbBatch.cellPhone = c.CELL_PHONE.toString()
+						norcLbBatch.cellPhoneCodes = c.CELL_PHONE_Codes.toString()
+						try {
+							dateTimeString = c.TIME_STAMP_9.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.timeStamp9 = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.timeStamp9 = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}'
+							println '! parse TIME_STAMP_9 Input: ${c.TIME_STAMP_9.toString()}'
+							println '! parse TIME_STAMP_9 Exception: ${e.toString()}'
+						}
+						norcLbBatch.recmoveInfo = c.RECMOVE_INFO.toString()
+						norcLbBatch.recaddrRecAddress1 = c.RECADDR_REC_ADDRESS1.toString()
+						norcLbBatch.recaddrRecAddress1Codes = c.RECADDR_REC_ADDRESS1_Codes.toString()
+						norcLbBatch.recaddrRecAddress2 = c.RECADDR_REC_ADDRESS2.toString()
+						norcLbBatch.recaddrRecAddress2Codes = c.RECADDR_REC_ADDRESS2_Codes.toString()
+						norcLbBatch.recaddrRecUnit = c.RECADDR_REC_UNIT.toString()
+						norcLbBatch.recaddrRecUnitCodes = c.RECADDR_REC_UNIT_Codes.toString()
+						norcLbBatch.recaddrRecCity = c.RECADDR_REC_CITY.toString()
+						norcLbBatch.recaddrRecCityCodes = c.RECADDR_REC_CITY_Codes.toString()
+						norcLbBatch.recaddrRecState = c.RECADDR_REC_STATE.toString()
+						norcLbBatch.recaddrRecZip = c.RECADDR_REC_ZIP.toString()
+						norcLbBatch.recaddrRecZipCodes = c.RECADDR_REC_ZIP_Codes.toString()
+						norcLbBatch.recaddrRecZip4 = c.RECADDR_REC_ZIP4.toString()
+						norcLbBatch.recaddrRecZip4Codes = c.RECADDR_REC_ZIP4_Codes.toString()
+						norcLbBatch.sameAddr = c.SAME_ADDR.toString()
+						norcLbBatch.mailaddrMailAddress1 = c.MAILADDR_MAIL_ADDRESS1.toString()
+						norcLbBatch.maiadmaiAress1Cds89 = c.MAIADMAI_ARESS1_Cds89.toString()
+						norcLbBatch.mailaddrMailAddress2 = c.MAILADDR_MAIL_ADDRESS2.toString()
+						norcLbBatch.maiadmaiAress2Cds90 = c.MAIADMAI_ARESS2_Cds90.toString()
+						norcLbBatch.mailaddrMailUnit = c.MAILADDR_MAIL_UNIT.toString()
+						norcLbBatch.mailaddrMailUnitCodes = c.MAILADDR_MAIL_UNIT_Codes.toString()
+						norcLbBatch.mailaddrMailCity = c.MAILADDR_MAIL_CITY.toString()
+						norcLbBatch.mailaddrMailCityCodes = c.MAILADDR_MAIL_CITY_Codes.toString()
+						norcLbBatch.mailaddrMailState = c.MAILADDR_MAIL_STATE.toString()
+						norcLbBatch.mailaddrMailZip = c.MAILADDR_MAIL_ZIP.toString()
+						norcLbBatch.mailaddrMailZipCodes = c.MAILADDR_MAIL_ZIP_Codes.toString()
+						norcLbBatch.mailaddrMailZip4 = c.MAILADDR_MAIL_ZIP4.toString()
+						norcLbBatch.mailaddrMailZip4Codes = c.MAILADDR_MAIL_ZIP4_Codes.toString()
+						norcLbBatch.haveEmail = c.HAVE_EMAIL.toString()
+						norcLbBatch.email = c.EMAIL.toString()
+						norcLbBatch.emailCodes = c.EMAIL_Codes.toString()
+						norcLbBatch.emailType = c.EMAIL_TYPE.toString()
+						norcLbBatch.emailShare = c.EMAIL_SHARE.toString()
+						norcLbBatch.planMove = c.PLAN_MOVE.toString()
+						norcLbBatch.whereMove = c.WHERE_MOVE.toString()
+						norcLbBatch.moveInfo = c.MOVE_INFO.toString()
+						norcLbBatch.newaddrNewAddress1 = c.NEWADDR_NEW_ADDRESS1.toString()
+						norcLbBatch.newaddrNewAddress1Codes = c.NEWADDR_NEW_ADDRESS1_Codes.toString()
+						norcLbBatch.newaddrNewAddress2 = c.NEWADDR_NEW_ADDRESS2.toString()
+						norcLbBatch.newaddrNewAddress2Codes = c.NEWADDR_NEW_ADDRESS2_Codes.toString()
+						norcLbBatch.newaddrNewUnit = c.NEWADDR_NEW_UNIT.toString()
+						norcLbBatch.newaddrNewUnitCodes = c.NEWADDR_NEW_UNIT_Codes.toString()
+						norcLbBatch.newaddrNewCity = c.NEWADDR_NEW_CITY.toString()
+						norcLbBatch.newaddrNewCityCodes = c.NEWADDR_NEW_CITY_Codes.toString()
+						norcLbBatch.newaddrNewState = c.NEWADDR_NEW_STATE.toString()
+						norcLbBatch.newaddrNewZip = c.NEWADDR_NEW_ZIP.toString()
+						norcLbBatch.newaddrNewZipCodes = c.NEWADDR_NEW_ZIP_Codes.toString()
+						norcLbBatch.newaddrNewZip4 = c.NEWADDR_NEW_ZIP4.toString()
+						norcLbBatch.newaddrNewZip4Codes = c.NEWADDR_NEW_ZIP4_Codes.toString()
+						norcLbBatch.whenMove = c.WHEN_MOVE.toString()
+						norcLbBatch.dateMoveMonth = c.DATE_MOVE_MONTH.toString()
+						norcLbBatch.dateMoveMonthCodes = c.DATE_MOVE_MONTH_Codes.toString()
+						norcLbBatch.dateMoveYear = c.DATE_MOVE_YEAR.toString()
+						norcLbBatch.dateMoveYearCodes = c.DATE_MOVE_YEAR_Codes.toString()
+						try {
+							dateTimeString = c.TIME_STAMP_10.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.timeStamp10 = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.timeStamp10 = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TIME_STAMP_10: ${c.TIME_STAMP_10.toString()}'
+							println '! parse TIME_STAMP_10 Input: ${c.TIME_STAMP_10.toString()}'
+							println '! parse TIME_STAMP_10 Exception: ${e.toString()}'
+						}
+						try {
+							dateTimeString = c.TIME_STAMP_11.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.timeStamp11 = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.timeStamp11 = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}'
+							println '! parse TIME_STAMP_11 Input: ${c.TIME_STAMP_11.toString()}'
+							println '! parse TIME_STAMP_11 Exception: ${e.toString()}'
+						}
+						norcLbBatch.respndnt = c.RESPNDNT.toString()
+						norcLbBatch.contactType = c.CONTACT_TYPE.toString()
+						norcLbBatch.contactLocation = c.CONTACT_LOCATION.toString()
+						norcLbBatch.contactLocationOth = c.CONTACT_LOCATION_OTH.toString()
+						try {
+							dateTimeString = c.TIME_STAMP_12.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.timeStamp12 = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.timeStamp12 = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}'
+							println '! parse TIME_STAMP_12 Input: ${c.TIME_STAMP_12.toString()}'
+							println '! parse TIME_STAMP_12 Exception: ${e.toString()}'
+						}
+						norcLbBatch.elapsedtime = c.ElapsedTime.toString()
+						try {
+							dateTimeString = c.TempTimeVariable.toString()
+							if ( ! dateTimeString ) {
+								norcLbBatch.temptimevariable = null
+							} else {
+								DateTime dt = fmt.parseDateTime(dateTimeString)
+								norcLbBatch.temptimevariable = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							response << '! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}'
+							println '! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}'
+							println '! parse TempTimeVariable Exception: ${e.toString()}'
+						}
+					// Save the record
+					if (norcLbBatch.hasErrors()) {
+						response << "! norcLbBatch has errors.\n"
+					} else if (norcLbBatch.save()) {
+						saveCount++
+					}
+					else {
+						// println "Error saving norcLbBatch record with Respondent Serial ${norcLbBatch.respondentSerial}"
+						norcLbBatch.errors.each{ e ->
+							// println "norcLbBatch:error::${e}"
+							e.fieldErrors.each{ fe -> 
+								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n" 
+								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
+							}
+						}
+					} 				
+				}
+			}
+		}
+		
+		def endTime = System.nanoTime()
+		def diff = (endTime - startTime)/1000000000
+		if (debug) {
+			println "    Done! ${saveCount} records saved to norcLbBatch in ${diff} seconds"			
+		}
+		// end LB1_BATCH1
+	}
 	def parseHhBatch(table, response) {
 		def now = new Date()
 		// println "ready to load. ${now}"
@@ -2259,10 +2986,13 @@ class DataParserService {
 					norcNonResponseList.suId = c.su_id.toString()
 					norcNonResponseList.promptDisp = c.prompt_disp.toString()
 					norcNonResponseList.promptDispDate = c.prompt_disp_date.toString()
+					norcNonResponseList.catiDisp = c.cati_disp.toString()
+					norcNonResponseList.catiDispDate = c.cati_disp_date.toString()
 					norcNonResponseList.promptDispLabel = c.prompt_disp_label.toString()
+					norcNonResponseList.catiDispLabel = c.cati_disp_label.toString()
 					norcNonResponseList.mail = c.mail.toString()
 					norcNonResponseList.mailUndeliverable = c.mail_undeliverable.toString()
-					
+
 					// Save the record
 					if (norcNonResponseList.hasErrors()) {
 						response << "! norcNonResponseList has errors.\n"
@@ -6811,6 +7541,7 @@ class DataParserService {
 					norcEnBatch.timeStamp9 = c.TIME_STAMP_9.toString()
 					norcEnBatch.elapsedtime = c.ElapsedTime.toString()
 					norcEnBatch.temptimevariable = c.TempTimeVariable.toString()
+                    norcEnBatch.flagMail = c.flag_mail.toString()
 					
 					
 					// Save the record
