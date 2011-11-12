@@ -34,9 +34,289 @@ class DataParserService {
 		parsePpgFollowBatch table, response
 		parseLbBatch table, response
 		parseBirthIncentiveBatch table, response
+		parseHiConBatch table, response
 	}
 
 	
+	def parseHiConBatch(table, response) {
+		def now = new Date()
+		// println "ready to load. ${now}"
+				
+		def saveCount = 0
+		if (debug){
+			println "Parsing HICON_BATCH1"			
+		}
+		// Save data in batches
+		def startTime = System.nanoTime()
+
+		GParsPool.withPool {
+			table?.HICON_BATCH1?.eachParallel { c ->
+				
+				//def affiliate = c.AFFILIATE.toString()
+				//def institutionName = c.INSTITUTION.toString()
+				//println "${affiliate}: ${institutionName}"
+				NorcHiConBatch.withTransaction {
+					def dateTimeString = ""
+					def checkSerial = c.Respondent_Serial.toString()
+					
+					// Verify that the current respondent serial has not already been saved
+					def norcHiConBatch = NorcHiConBatch.findByRespondentSerial(checkSerial)				
+	
+					if (!norcHiConBatch) {
+						norcHiConBatch = new NorcHiConBatch()
+						response <<  " + Creating new NorcHiConBatch(${checkSerial})\n"
+					} else {
+						// Lock object for update
+						norcHiConBatch.lock()
+						response <<  " ~ Updating existing NorcHiConBatch(${checkSerial})\n"
+					}
+
+					norcHiConBatch.respondentSerial = c.Respondent_Serial.toString()
+					norcHiConBatch.respondentSerialSourcefile = c.Respondent_Serial_SourceFile.toString()
+					norcHiConBatch.respondentOrigin01 = c.Respondent_Origin_01.toString()
+					norcHiConBatch.respondentOrigin02 = c.Respondent_Origin_02.toString()
+					norcHiConBatch.respondentOrigin03 = c.Respondent_Origin_03.toString()
+					norcHiConBatch.respondentOrigin04 = c.Respondent_Origin_04.toString()
+					norcHiConBatch.respondentOrigin05 = c.Respondent_Origin_05.toString()
+					norcHiConBatch.respondentOrigin06 = c.Respondent_Origin_06.toString()
+					norcHiConBatch.respondentOriginOther = c.Respondent_Origin_Other.toString()
+					norcHiConBatch.respondentId = c.Respondent_ID.toString()
+					norcHiConBatch.datacollectionStatus01 = c.DataCollection_Status_01.toString()
+					norcHiConBatch.datacollectionStatus02 = c.DataCollection_Status_02.toString()
+					norcHiConBatch.datacollectionStatus03 = c.DataCollection_Status_03.toString()
+					norcHiConBatch.datacollectionStatus04 = c.DataCollection_Status_04.toString()
+					norcHiConBatch.datacollectionStatus05 = c.DataCollection_Status_05.toString()
+					norcHiConBatch.datacollectionStatus06 = c.DataCollection_Status_06.toString()
+					norcHiConBatch.datacollectionStatus07 = c.DataCollection_Status_07.toString()
+					norcHiConBatch.datacollectionStatus08 = c.DataCollection_Status_08.toString()
+					norcHiConBatch.datacollectionStatus09 = c.DataCollection_Status_09.toString()
+					norcHiConBatch.datacollectionInterviewerid = c.DataCollection_InterviewerID.toString()
+					try {
+						dateTimeString = c.DataCollection_StartTime.toString()
+						if ( ! dateTimeString ) {
+							norcHiConBatch.datacollectionStarttime = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcHiConBatch.datacollectionStarttime = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						response << '! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}'
+						println '! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}'
+						println '! parse DataCollection_StartTime Exception: ${e.toString()}'
+					}
+					try {
+						dateTimeString = c.DataCollection_FinishTime.toString()
+						if ( ! dateTimeString ) {
+							norcHiConBatch.datacollectionFinishtime = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcHiConBatch.datacollectionFinishtime = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						response << '! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}'
+						println '! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}'
+						println '! parse DataCollection_FinishTime Exception: ${e.toString()}'
+					}
+					norcHiConBatch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
+					norcHiConBatch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
+					norcHiConBatch.datactinRngcntxt4 = c.DataCtin_RngCntxt4.toString()
+					norcHiConBatch.datacollectionVariant = c.DataCollection_Variant.toString()
+					norcHiConBatch.datacollectionEndquestion = c.DataCollection_EndQuestion.toString()
+					norcHiConBatch.datacollectionTerminatesignal = c.DataCollection_TerminateSignal.toString()
+					norcHiConBatch.datacollectionSeedvalue = c.DataCollection_SeedValue.toString()
+					norcHiConBatch.datacollectionInterviewengine = c.DataCollection_InterviewEngine.toString()
+					norcHiConBatch.datacollectionCurrentpage = c.DataCollection_CurrentPage.toString()
+					norcHiConBatch.datacollectionDebug = c.DataCollection_Debug.toString()
+					norcHiConBatch.datacollectionServertimezone = c.DataCollection_ServerTimeZone.toString()
+					norcHiConBatch.datacIntrviwrtrtimzn5 = c.DataC_IntrviwrTrTimZn5.toString()
+					norcHiConBatch.datacnRsndnttitimzn6 = c.DataCn_RsndntTiTimZn6.toString()
+					norcHiConBatch.datacollectionBatchid = c.DataCollection_BatchID.toString()
+					norcHiConBatch.datacollectionBatchname = c.DataCollection_BatchName.toString()
+					norcHiConBatch.datactinDaentrymd7 = c.DataCtin_DaEntryMd7.toString()
+					norcHiConBatch.datacollectionRemoved = c.DataCollection_Removed.toString()
+					norcHiConBatch.datacleaningNote = c.DataCleaning_Note.toString()
+					norcHiConBatch.datacleaningStatus01 = c.DataCleaning_Status_01.toString()
+					norcHiConBatch.datacleaningStatus02 = c.DataCleaning_Status_02.toString()
+					norcHiConBatch.datacleaningReviewstatus01 = c.DataCleaning_ReviewStatus_01.toString()
+					norcHiConBatch.datacleaningReviewstatus02 = c.DataCleaning_ReviewStatus_02.toString()
+					norcHiConBatch.datacleaningReviewstatus03 = c.DataCleaning_ReviewStatus_03.toString()
+					norcHiConBatch.datacleaningReviewstatus04 = c.DataCleaning_ReviewStatus_04.toString()
+					norcHiConBatch.suId = c.SU_ID.toString()
+					norcHiConBatch.prFname = c.PR_FNAME.toString()
+					norcHiConBatch.prLname = c.PR_LNAME.toString()
+					norcHiConBatch.dobMo = c.DOB_MO.toString()
+					norcHiConBatch.dobMoCodes = c.DOB_MO_Codes.toString()
+					norcHiConBatch.dobDy = c.DOB_DY.toString()
+					norcHiConBatch.dobDyCodes = c.DOB_DY_Codes.toString()
+					norcHiConBatch.dobYr = c.DOB_YR.toString()
+					norcHiConBatch.dobYrCodes = c.DOB_YR_Codes.toString()
+					norcHiConBatch.agecalc = c.AGECALC.toString()
+					norcHiConBatch.ageRange = c.AGE_RANGE.toString()
+					norcHiConBatch.ppgFirst = c.PPG_FIRST.toString()
+					norcHiConBatch.ppgStatus = c.PPG_STATUS.toString()
+					norcHiConBatch.currmo = c.CURRMO.toString()
+					norcHiConBatch.currdy = c.CURRDY.toString()
+					norcHiConBatch.curryr = c.CURRYR.toString()
+					try {
+						dateTimeString = c.TIME_STAMP_1.toString()
+						if ( ! dateTimeString ) {
+							norcHiConBatch.timeStamp1 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcHiConBatch.timeStamp1 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						response << '! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}'
+						println '! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}'
+						println '! parse TIME_STAMP_1 Exception: ${e.toString()}'
+					}
+					norcHiConBatch.quexlang = c.QUEXLANG.toString()
+					norcHiConBatch.visWhoConsented = c.VIS_WHO_CONSENTED.toString()
+					norcHiConBatch.cn003txt = c.cn003txt.toString()
+					try {
+						dateTimeString = c.TIME_STAMP_2.toString()
+						if ( ! dateTimeString ) {
+							norcHiConBatch.timeStamp2 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcHiConBatch.timeStamp2 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						response << '! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}'
+						println '! parse TIME_STAMP_2 Input: ${c.TIME_STAMP_2.toString()}'
+						println '! parse TIME_STAMP_2 Exception: ${e.toString()}'
+					}
+					try {
+						dateTimeString = c.TIME_STAMP_2A.toString()
+						if ( ! dateTimeString ) {
+							norcHiConBatch.timeStamp2a = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcHiConBatch.timeStamp2a = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						response << '! Invalid TIME_STAMP_2A: ${c.TIME_STAMP_2A.toString()}'
+						println '! parse TIME_STAMP_2A Input: ${c.TIME_STAMP_2A.toString()}'
+						println '! parse TIME_STAMP_2A Exception: ${e.toString()}'
+					}
+					norcHiConBatch.discussBook = c.DISCUSS_BOOK.toString()
+					try {
+						dateTimeString = c.TIME_STAMP_2B.toString()
+						if ( ! dateTimeString ) {
+							norcHiConBatch.timeStamp2b = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcHiConBatch.timeStamp2b = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						response << '! Invalid TIME_STAMP_2B: ${c.TIME_STAMP_2B.toString()}'
+						println '! parse TIME_STAMP_2B Input: ${c.TIME_STAMP_2B.toString()}'
+						println '! parse TIME_STAMP_2B Exception: ${e.toString()}'
+					}
+					norcHiConBatch.cn005text = c.CN005text.toString()
+					norcHiConBatch.consentType1 = c.CONSENT_TYPE_1.toString()
+					norcHiConBatch.consentType2 = c.CONSENT_TYPE_2.toString()
+					norcHiConBatch.consentType3 = c.CONSENT_TYPE_3.toString()
+					norcHiConBatch.consentType4 = c.CONSENT_TYPE_4.toString()
+					norcHiConBatch.consentGiven1 = c.CONSENT_GIVEN_1.toString()
+					norcHiConBatch.consentGiven2 = c.CONSENT_GIVEN_2.toString()
+					norcHiConBatch.consentGiven3 = c.CONSENT_GIVEN_3.toString()
+					norcHiConBatch.consentGiven4 = c.CONSENT_GIVEN_4.toString()
+					norcHiConBatch.consentGiven5 = c.CONSENT_GIVEN_5.toString()
+					norcHiConBatch.consentGiven6 = c.CONSENT_GIVEN_6.toString()
+					norcHiConBatch.consentComments = c.CONSENT_COMMENTS.toString()
+					norcHiConBatch.cn008txt = c.cn008txt.toString()
+					try {
+						dateTimeString = c.TIME_STAMP_3.toString()
+						if ( ! dateTimeString ) {
+							norcHiConBatch.timeStamp3 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcHiConBatch.timeStamp3 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						response << '! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}'
+						println '! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}'
+						println '! parse TIME_STAMP_3 Exception: ${e.toString()}'
+					}
+					try {
+						dateTimeString = c.CONSENT_DATE.toString()
+						if ( ! dateTimeString ) {
+							norcHiConBatch.consentDate = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcHiConBatch.consentDate = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						response << '! Invalid CONSENT_DATE: ${c.CONSENT_DATE.toString()}'
+						println '! parse CONSENT_DATE Input: ${c.CONSENT_DATE.toString()}'
+						println '! parse CONSENT_DATE Exception: ${e.toString()}'
+					}
+					norcHiConBatch.english = c.ENGLISH.toString()
+					norcHiConBatch.contactLang = c.CONTACT_LANG.toString()
+					norcHiConBatch.contactLangOth = c.CONTACT_LANG_OTH.toString()
+					norcHiConBatch.contactLangOthCodes = c.CONTACT_LANG_OTH_Codes.toString()
+					norcHiConBatch.interpret = c.INTERPRET.toString()
+					norcHiConBatch.contactInterpret = c.CONTACT_INTERPRET.toString()
+					norcHiConBatch.contactInterpretOth = c.CONTACT_INTERPRET_OTH.toString()
+					norcHiConBatch.contactLocation = c.CONTACT_LOCATION.toString()
+					norcHiConBatch.contactLocationOth = c.CONTACT_LOCATION_OTH.toString()
+					norcHiConBatch.disp = c.disp.toString()
+					try {
+						dateTimeString = c.TIME_STAMP_4.toString()
+						if ( ! dateTimeString ) {
+							norcHiConBatch.timeStamp4 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcHiConBatch.timeStamp4 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						response << '! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}'
+						println '! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}'
+						println '! parse TIME_STAMP_4 Exception: ${e.toString()}'
+					}
+					norcHiConBatch.elapsedtime = c.ElapsedTime.toString()
+					try {
+						dateTimeString = c.TempTimeVariable.toString()
+						if ( ! dateTimeString ) {
+							norcHiConBatch.temptimevariable = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcHiConBatch.temptimevariable = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						response << '! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}'
+						println '! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}'
+						println '! parse TempTimeVariable Exception: ${e.toString()}'
+					}
+					// Save the record
+					if (norcHiConBatch.hasErrors()) {
+						response << "! norcHiConBatch has errors.\n"
+					} else if (norcHiConBatch.save()) {
+						saveCount++
+					}
+					else {
+						// println "Error saving norcHiConBatch record with Respondent Serial ${norcHiConBatch.respondentSerial}"
+						norcHiConBatch.errors.each{ e ->
+							// println "norcHiConBatch:error::${e}"
+							e.fieldErrors.each{ fe -> 
+								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n" 
+								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
+							}
+						}
+					} 				
+				}
+			}
+		}
+		
+		def endTime = System.nanoTime()
+		def diff = (endTime - startTime)/1000000000
+		if (debug) {
+			println "    Done! ${saveCount} records saved to norcHiConBatch in ${diff} seconds"			
+		}
+		// end HICON_BATCH1
+	}
+
 	def parseBirthIncentiveBatch(table, response) {
 		def now = new Date()
 		// println "ready to load. ${now}"
@@ -71,6 +351,7 @@ class DataParserService {
 					}
 
 
+					norcBirthIncentiveBatch.respondentSerial = c.Respondent_Serial.toString()
 					norcBirthIncentiveBatch.fname = c.fName.toString()
 					norcBirthIncentiveBatch.lname = c.lName.toString()
 					norcBirthIncentiveBatch.address1 = c.Address1.toString()

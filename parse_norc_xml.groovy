@@ -205,7 +205,8 @@ def parsedFile = new ParsedFile()
 //parsedFile.setParsedFile("data_transmission_01NOV11.xml")
 //parsedFile.setParsedFile("data_transmission_28OCT11.xml")
 //parsedFile.setParsedFile("transmission_1_28OCT11.xml")
-parsedFile.setParsedFile("ramsey_nonresponse_list_04NOV11.xml")
+//parsedFile.setParsedFile("ramsey_nonresponse_list_04NOV11.xml")
+parsedFile.setParsedFile("data_transmission_10NOV11.xml")
 
 
 def node = ""
@@ -215,7 +216,46 @@ def dataImportCodeFile = ""
 def tableName = ""
 
 
-// Get list of domain class properties from node NONRESPONSE_LIST (adding flag_mail field) - added 2011-11-11 
+// Get list of domain class properties from node HICON_BATCH1 - added 2011-11-11 
+node = "HICON_BATCH1"		// Change for each new table
+parsedFile.setPropertyMapList(node)
+// Write properties to a file
+propertyListFile = "property_list-${node}"
+println "Writing output file ${propertyListFile}"
+f = new File("${propertyListFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeListToFile(propertyListFile, ".txt", false)
+// Add property constraints to file
+parsedFile.writeListToFile(propertyListFile, ".txt", true)
+println "Done!"
+
+// Write data import code to a file
+dataImportCodeFile = "data_import_code-${node}"
+tableName = "norcHiConBatch"		// This is the new domain class name in web service
+println "Writing output file ${dataImportCodeFile}"
+f = new File("${dataImportCodeFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeCodeToFile(dataImportCodeFile, ".txt", tableName)
+println "Done!"
+
+/*
+// Get list of domain class properties from node NONRESPONSE_LIST (adding CATI columns to previously imported non-response-list) - added 2011-11-11 
 node = "NONRESPONSE_LIST"		// Change for each new table
 parsedFile.setPropertyMapList(node)
 // Write properties to a file
@@ -254,7 +294,7 @@ parsedFile.writeCodeToFile(dataImportCodeFile, ".txt", tableName)
 println "Done!"
 
 
-/*
+
 
 // Get list of domain class properties from node LB_BATCH (adding flag_mail field) - added 2011-11-02 
 node = "LB1_BATCH1"		// Change for each new table
