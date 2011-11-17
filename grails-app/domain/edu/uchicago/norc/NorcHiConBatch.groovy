@@ -184,7 +184,7 @@ class NorcHiConBatch {
 		consentGiven4(nullable:true,maxSize:75)
 		consentGiven5(nullable:true,maxSize:75)
 		consentGiven6(nullable:true,maxSize:75)
-		consentComments(nullable:true,maxSize:75)
+		consentComments(nullable:true,maxSize:1000)
 		cn008txt(nullable:true,maxSize:75)
 		timeStamp3(nullable:true)
 		consentDate(nullable:true)

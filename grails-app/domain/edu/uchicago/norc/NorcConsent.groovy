@@ -22,6 +22,21 @@ class NorcConsent {
 	String email
 	String phoneNumber
 	Integer segmentId
+
+	// New Columns
+	String ppgCurrent
+	Integer ppgStatus
+	String homePhone
+	String sampleUnitKey
+	String area
+	String pscrDisp
+	String flagPpgfollow
+	Date instrumentDispDate
+	String in3
+	String localApptime
+	String hhId
+	Integer flagCaticombo
+	String datePS
 	
     static constraints = {
 		firstName(nullable:true)
@@ -35,7 +50,7 @@ class NorcConsent {
 		zipFour(nullable:true, maxSize:4)
 		norcSuId(nullable:true)
 		mailingId(nullable:true)
-		docType(nullable:true)
+		docType(unique:'mailingId', nullable:true)
 		source(nullable:true)
 		status(nullable:true)
 		pregnancyScreenerDate(nullable:true)
@@ -44,5 +59,20 @@ class NorcConsent {
 		email(nullable:true, email:true)
 		phoneNumber(nullable:true, maxSize:32)
 		segmentId(nullable:true)
+
+		ppgCurrent(nullable:true)
+		ppgStatus(nullable:true)
+		homePhone(nullable:true)
+		sampleUnitKey(nullable:true)
+		area(nullable:true)
+		pscrDisp(nullable:true)
+		flagPpgfollow(nullable:true)
+		instrumentDispDate(nullable:true)
+		in3(nullable:true)
+		localApptime(nullable:true)
+		hhId(nullable:true)
+		flagCaticombo(nullable:true)
+		datePS(nullable:true)
+
     }
 }

@@ -206,14 +206,171 @@ def parsedFile = new ParsedFile()
 //parsedFile.setParsedFile("data_transmission_28OCT11.xml")
 //parsedFile.setParsedFile("transmission_1_28OCT11.xml")
 //parsedFile.setParsedFile("ramsey_nonresponse_list_04NOV11.xml")
-parsedFile.setParsedFile("data_transmission_10NOV11.xml")
-
+//parsedFile.setParsedFile("data_transmission_10NOV11.xml")
+//parsedFile.setParsedFile("data_transmission_13NOV11.xml")
+parsedFile.setParsedFile("RamseyPPGFollowUp_07NOV11.xml")
 
 def node = ""
 def f = null
 def propertyListFile = ""
 def dataImportCodeFile = ""
 def tableName = ""
+
+
+// Get list of domain class properties from node RAMSEY_PPGFOLLOWUP from RamseyPPGFollowUp_07NOV11.xml - added 2011-11-16 
+node = "RAMSEY_PPGFOLLOWUP"		// Change for each new table
+parsedFile.setPropertyMapList(node)
+// Write properties to a file
+propertyListFile = "property_list-${node}"
+println "Writing output file ${propertyListFile}"
+f = new File("${propertyListFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeListToFile(propertyListFile, ".txt", false)
+// Add property constraints to file
+parsedFile.writeListToFile(propertyListFile, ".txt", true)
+println "Done!"
+
+// Write data import code to a file
+dataImportCodeFile = "data_import_code-${node}"
+tableName = "norcRamseyPpgFollowup"		// This is the new domain class name in web service
+println "Writing output file ${dataImportCodeFile}"
+f = new File("${dataImportCodeFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeCodeToFile(dataImportCodeFile, ".txt", tableName)
+println "Done!"
+
+/*
+// Get list of domain class properties from node LOCNLQ_BATCH1 from data_transmission_13NOV11.xml - added 2011-11-16 
+node = "LOCNLQ_BATCH1"		// Change for each new table
+parsedFile.setPropertyMapList(node)
+// Write properties to a file
+propertyListFile = "property_list-${node}"
+println "Writing output file ${propertyListFile}"
+f = new File("${propertyListFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeListToFile(propertyListFile, ".txt", false)
+// Add property constraints to file
+parsedFile.writeListToFile(propertyListFile, ".txt", true)
+println "Done!"
+
+// Write data import code to a file
+dataImportCodeFile = "data_import_code-${node}"
+tableName = "norcLoCnLqBatch"		// This is the new domain class name in web service
+println "Writing output file ${dataImportCodeFile}"
+f = new File("${dataImportCodeFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeCodeToFile(dataImportCodeFile, ".txt", tableName)
+println "Done!"
+
+
+// Get list of domain class properties from node LBREMINDER_BATCH1 from transmission_1_28OCT11.xml- added 2011-11-16 
+node = "LBREMINDER_BATCH1"		// Change for each new table
+parsedFile.setPropertyMapList(node)
+// Write properties to a file
+propertyListFile = "property_list-${node}"
+println "Writing output file ${propertyListFile}"
+f = new File("${propertyListFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeListToFile(propertyListFile, ".txt", false)
+// Add property constraints to file
+parsedFile.writeListToFile(propertyListFile, ".txt", true)
+println "Done!"
+
+// Write data import code to a file
+dataImportCodeFile = "data_import_code-${node}"
+tableName = "norcLbReminderBatch"		// This is the new domain class name in web service
+println "Writing output file ${dataImportCodeFile}"
+f = new File("${dataImportCodeFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeCodeToFile(dataImportCodeFile, ".txt", tableName)
+println "Done!"
+
+
+// Get list of domain class properties from node BIRTHINCENTIVE_BATCH1 from transmission_1_28OCT11.xml- added 2011-11-11 
+node = "BIRTHINCENTIVE_BATCH1"		// Change for each new table
+parsedFile.setPropertyMapList(node)
+// Write properties to a file
+propertyListFile = "property_list-${node}"
+println "Writing output file ${propertyListFile}"
+f = new File("${propertyListFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeListToFile(propertyListFile, ".txt", false)
+// Add property constraints to file
+parsedFile.writeListToFile(propertyListFile, ".txt", true)
+println "Done!"
+
+// Write data import code to a file
+dataImportCodeFile = "data_import_code-${node}"
+tableName = "norcBirthIncentiveBatch"		// This is the new domain class name in web service
+println "Writing output file ${dataImportCodeFile}"
+f = new File("${dataImportCodeFile}.txt")
+if (f.exists()){
+	try {
+		f.delete()
+	}
+	catch (Exception ex) {
+		println "Could not delete file ${f.name} with ERROR: ${ex}"
+	}
+}
+// Add property definitions to file
+parsedFile.writeCodeToFile(dataImportCodeFile, ".txt", tableName)
+println "Done!"
 
 
 // Get list of domain class properties from node HICON_BATCH1 - added 2011-11-11 
@@ -254,7 +411,7 @@ if (f.exists()){
 parsedFile.writeCodeToFile(dataImportCodeFile, ".txt", tableName)
 println "Done!"
 
-/*
+
 // Get list of domain class properties from node NONRESPONSE_LIST (adding CATI columns to previously imported non-response-list) - added 2011-11-11 
 node = "NONRESPONSE_LIST"		// Change for each new table
 parsedFile.setPropertyMapList(node)
@@ -371,6 +528,8 @@ if (f.exists()){
 // Add property definitions to file
 parsedFile.writeCodeToFile(dataImportCodeFile, ".txt", tableName)
 println "Done!"
+
+
 
 
 // Get list of domain class properties from node PPGFOLLOW_BATCH - added 2011-10-25

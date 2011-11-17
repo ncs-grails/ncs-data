@@ -34,17 +34,737 @@ class DataParserService {
 		parsePpgFollowBatch table, response
 		parseLbBatch table, response
 		parseBirthIncentiveBatch table, response
+		parseLbReminderBatch table, response
 		parseHiConBatch table, response
+		parseLoCnLqBatch table, response
+		parseRamseyPpgFollowup table, response
 	}
 
-	
-	def parseHiConBatch(table, response) {
+
+	def parseRamseyPpgFollowup(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 				
 		def saveCount = 0
 		if (debug){
-			println "Parsing HICON_BATCH1"			
+			logMessage response, "Parsing RAMSEY_PPGFOLLOWUP"			
+		}
+		// Save data in batches
+		def startTime = System.nanoTime()
+
+		GParsPool.withPool {
+			table?.RAMSEY_PPGFOLLOWUP?.eachParallel { c ->
+				
+				//def affiliate = c.AFFILIATE.toString()
+				//def institutionName = c.INSTITUTION.toString()
+				//logMessage response, "${affiliate}: ${institutionName}"
+				NorcRamseyPpgFollowup.withTransaction {
+					def dateTimeString = ""
+					def checkSuId = c.SU_ID.toString()
+
+					if (checkSuId) {
+					
+						// Verify that the current SU_ID has not already been saved
+						def norcRamseyPpgFollowup = NorcRamseyPpgFollowup.findBySuId(checkSuId)				
+
+						if (!norcRamseyPpgFollowup) {
+							norcRamseyPpgFollowup = new NorcRamseyPpgFollowup()
+							logMessage response, " + Creating new NorcRamseyPpgFollowup(${checkSuId})"
+						} else {
+							// Lock object for update
+							norcRamseyPpgFollowup.lock()
+							logMessage response, " ~ Updating existing NorcRamseyPpgFollowup(${checkSuId})"
+						}
+
+						norcRamseyPpgFollowup.fname = c.fName.toString()
+						norcRamseyPpgFollowup.lname = c.lName.toString()
+						norcRamseyPpgFollowup.address1 = c.Address1.toString()
+						norcRamseyPpgFollowup.address2 = c.Address2.toString()
+						norcRamseyPpgFollowup.unit = c.Unit.toString()
+						norcRamseyPpgFollowup.city = c.City.toString()
+						norcRamseyPpgFollowup.state = c.State.toString()
+						norcRamseyPpgFollowup.zip = c.Zip.toString()
+						norcRamseyPpgFollowup.zip4 = c.Zip4.toString()
+						norcRamseyPpgFollowup.suId = c.SU_ID.toString()
+						norcRamseyPpgFollowup.mailingid = c.MailingID.toString()
+						norcRamseyPpgFollowup.doctype = c.DocType.toString()
+						norcRamseyPpgFollowup.status = c.Status.toString()
+						norcRamseyPpgFollowup.mailpulldate = c.mailpulldate.toString()
+
+						// Save the record
+						if (norcRamseyPpgFollowup.hasErrors()) {
+							logMessage response, "! norcRamseyPpgFollowup has errors."
+						} else if (norcRamseyPpgFollowup.save()) {
+							saveCount++
+						}
+						else {
+							// logMessage response, "Error saving norcRamseyPpgFollowup record with SU ID ${norcRamseyPpgFollowup.suId}"
+							norcRamseyPpgFollowup.errors.each{ e ->
+								// logMessage response, "norcRamseyPpgFollowup:error::${e}"
+								e.fieldErrors.each{ fe -> 
+									logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
+								}
+							}
+						} 				
+					} else {
+						logMessage response, " ! Can't create/update NorcRamseyPpgFollowup. No SU_ID!"
+					}
+				}
+			}
+		}
+		
+		def endTime = System.nanoTime()
+		def diff = (endTime - startTime)/1000000000
+		if (debug) {
+			logMessage response, "    Done! ${saveCount} records saved to norcRamseyPpgFollowup in ${diff} seconds"			
+		}
+		// end RAMSEY_PPGFOLLOWUP
+	}
+
+	def parseLoCnLqBatch(table, response) {
+		def now = new Date()
+		// logMessage response, "ready to load. ${now}"
+				
+		def saveCount = 0
+		if (debug){
+			logMessage response, "Parsing LOCNLQ_BATCH1"			
+		}
+		// Save data in batches
+		def startTime = System.nanoTime()
+
+		GParsPool.withPool {
+			table?.LOCNLQ_BATCH1?.eachParallel { c ->
+				
+				//def affiliate = c.AFFILIATE.toString()
+				//def institutionName = c.INSTITUTION.toString()
+				//logMessage response, "${affiliate}: ${institutionName}"
+				NorcLoCnLqBatch.withTransaction {
+					def dateTimeString = ""
+					def checkSerial = c.Respondent_Serial.toString()
+					
+					// Verify that the current respondent serial has not already been saved
+					def norcLoCnLqBatch = NorcLoCnLqBatch.findByRespondentSerial(checkSerial)				
+	
+					if (!norcLoCnLqBatch) {
+						norcLoCnLqBatch = new NorcLoCnLqBatch()
+						logMessage response, " + Creating new NorcLoCnLqBatch(${checkSerial})"
+					} else {
+						// Lock object for update
+						norcLoCnLqBatch.lock()
+						logMessage response, " ~ Updating existing NorcLoCnLqBatch(${checkSerial})"
+					}
+	
+
+					norcLoCnLqBatch.respondentSerial = c.Respondent_Serial.toString()
+					norcLoCnLqBatch.respondentSerialSourcefile = c.Respondent_Serial_SourceFile.toString()
+					norcLoCnLqBatch.respondentOrigin01 = c.Respondent_Origin_01.toString()
+					norcLoCnLqBatch.respondentOrigin02 = c.Respondent_Origin_02.toString()
+					norcLoCnLqBatch.respondentOrigin03 = c.Respondent_Origin_03.toString()
+					norcLoCnLqBatch.respondentOrigin04 = c.Respondent_Origin_04.toString()
+					norcLoCnLqBatch.respondentOrigin05 = c.Respondent_Origin_05.toString()
+					norcLoCnLqBatch.respondentOrigin06 = c.Respondent_Origin_06.toString()
+					norcLoCnLqBatch.respondentOriginOther = c.Respondent_Origin_Other.toString()
+					norcLoCnLqBatch.respondentId = c.Respondent_ID.toString()
+					norcLoCnLqBatch.datacollectionStatus01 = c.DataCollection_Status_01.toString()
+					norcLoCnLqBatch.datacollectionStatus02 = c.DataCollection_Status_02.toString()
+					norcLoCnLqBatch.datacollectionStatus03 = c.DataCollection_Status_03.toString()
+					norcLoCnLqBatch.datacollectionStatus04 = c.DataCollection_Status_04.toString()
+					norcLoCnLqBatch.datacollectionStatus05 = c.DataCollection_Status_05.toString()
+					norcLoCnLqBatch.datacollectionStatus06 = c.DataCollection_Status_06.toString()
+					norcLoCnLqBatch.datacollectionStatus07 = c.DataCollection_Status_07.toString()
+					norcLoCnLqBatch.datacollectionStatus08 = c.DataCollection_Status_08.toString()
+					norcLoCnLqBatch.datacollectionStatus09 = c.DataCollection_Status_09.toString()
+					norcLoCnLqBatch.datacollectionInterviewerid = c.DataCollection_InterviewerID.toString()
+					try {
+						dateTimeString = c.DataCollection_StartTime.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.datacollectionStarttime = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.datacollectionStarttime = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}"
+						logMessage response, "! parse DataCollection_StartTime Exception: ${e.toString()}"
+					}
+					try {
+						dateTimeString = c.DataCollection_FinishTime.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.datacollectionFinishtime = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.datacollectionFinishtime = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}"
+						logMessage response, "! parse DataCollection_FinishTime Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
+					norcLoCnLqBatch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
+					norcLoCnLqBatch.datactinRngcntxt4 = c.DataCtin_RngCntxt4.toString()
+					norcLoCnLqBatch.datacollectionVariant = c.DataCollection_Variant.toString()
+					norcLoCnLqBatch.datacollectionEndquestion = c.DataCollection_EndQuestion.toString()
+					norcLoCnLqBatch.datacollectionTerminatesignal = c.DataCollection_TerminateSignal.toString()
+					norcLoCnLqBatch.datacollectionSeedvalue = c.DataCollection_SeedValue.toString()
+					norcLoCnLqBatch.datacollectionInterviewengine = c.DataCollection_InterviewEngine.toString()
+					norcLoCnLqBatch.datacollectionCurrentpage = c.DataCollection_CurrentPage.toString()
+					norcLoCnLqBatch.datacollectionDebug = c.DataCollection_Debug.toString()
+					norcLoCnLqBatch.datacollectionServertimezone = c.DataCollection_ServerTimeZone.toString()
+					norcLoCnLqBatch.datacIntrviwrtrtimzn5 = c.DataC_IntrviwrTrTimZn5.toString()
+					norcLoCnLqBatch.datacnRsndnttitimzn6 = c.DataCn_RsndntTiTimZn6.toString()
+					norcLoCnLqBatch.datacollectionBatchid = c.DataCollection_BatchID.toString()
+					norcLoCnLqBatch.datacollectionBatchname = c.DataCollection_BatchName.toString()
+					norcLoCnLqBatch.datactinDaentrymd7 = c.DataCtin_DaEntryMd7.toString()
+					norcLoCnLqBatch.datacollectionRemoved = c.DataCollection_Removed.toString()
+					norcLoCnLqBatch.datacleaningNote = c.DataCleaning_Note.toString()
+					norcLoCnLqBatch.datacleaningStatus01 = c.DataCleaning_Status_01.toString()
+					norcLoCnLqBatch.datacleaningStatus02 = c.DataCleaning_Status_02.toString()
+					norcLoCnLqBatch.datacleaningReviewstatus01 = c.DataCleaning_ReviewStatus_01.toString()
+					norcLoCnLqBatch.datacleaningReviewstatus02 = c.DataCleaning_ReviewStatus_02.toString()
+					norcLoCnLqBatch.datacleaningReviewstatus03 = c.DataCleaning_ReviewStatus_03.toString()
+					norcLoCnLqBatch.datacleaningReviewstatus04 = c.DataCleaning_ReviewStatus_04.toString()
+					norcLoCnLqBatch.suId = c.SU_ID.toString()
+					norcLoCnLqBatch.majority = c.MAJORITY.toString()
+					norcLoCnLqBatch.prFname = c.PR_FNAME.toString()
+					norcLoCnLqBatch.prFnameCodes = c.PR_FNAME_Codes.toString()
+					norcLoCnLqBatch.prLname = c.PR_LNAME.toString()
+					norcLoCnLqBatch.prLnameCodes = c.PR_LNAME_Codes.toString()
+					norcLoCnLqBatch.method = c.METHOD.toString()
+					norcLoCnLqBatch.hilosamp = c.HILOSAMP.toString()
+					norcLoCnLqBatch.rGender = c.R_GENDER.toString()
+					norcLoCnLqBatch.rGenderCodes = c.R_GENDER_Codes.toString()
+					norcLoCnLqBatch.scId = c.SC_ID.toString()
+					norcLoCnLqBatch.scIdCodes = c.SC_ID_Codes.toString()
+					norcLoCnLqBatch.scName = c.SC_NAME.toString()
+					norcLoCnLqBatch.scNameCodes = c.SC_NAME_Codes.toString()
+					norcLoCnLqBatch.sc800num = c.SC_800NUM.toString()
+					norcLoCnLqBatch.prAddress1 = c.PR_ADDRESS_1.toString()
+					norcLoCnLqBatch.prAddress1Codes = c.PR_ADDRESS_1_Codes.toString()
+					norcLoCnLqBatch.prAddress2 = c.PR_ADDRESS_2.toString()
+					norcLoCnLqBatch.prAddress2Codes = c.PR_ADDRESS_2_Codes.toString()
+					norcLoCnLqBatch.prUnit = c.PR_UNIT.toString()
+					norcLoCnLqBatch.prUnitCodes = c.PR_UNIT_Codes.toString()
+					norcLoCnLqBatch.prCity = c.PR_CITY.toString()
+					norcLoCnLqBatch.prCityCodes = c.PR_CITY_Codes.toString()
+					norcLoCnLqBatch.prState = c.PR_STATE.toString()
+					norcLoCnLqBatch.prStateCodes = c.PR_STATE_Codes.toString()
+					norcLoCnLqBatch.prZip = c.PR_ZIP.toString()
+					norcLoCnLqBatch.prZipCodes = c.PR_ZIP_Codes.toString()
+					norcLoCnLqBatch.prZip4 = c.PR_ZIP4.toString()
+					norcLoCnLqBatch.prZip4Codes = c.PR_ZIP4_Codes.toString()
+					norcLoCnLqBatch.tsuId = c.TSU_ID.toString()
+					norcLoCnLqBatch.tsuIdCodes = c.TSU_ID_Codes.toString()
+					norcLoCnLqBatch.psuId = c.PSU_ID.toString()
+					norcLoCnLqBatch.psuIdCodes = c.PSU_ID_Codes.toString()
+					norcLoCnLqBatch.incentive = c.INCENTIVE.toString()
+					norcLoCnLqBatch.incentivetx = c.INCENTIVETX.toString()
+					norcLoCnLqBatch.mode = c.MODE.toString()
+					norcLoCnLqBatch.quexlang = c.QUEXLANG.toString()
+					norcLoCnLqBatch.calltype = c.CALLTYPE.toString()
+					norcLoCnLqBatch.giftcard = c.giftcard.toString()
+					norcLoCnLqBatch.rNameRFname = c.R_NAME_R_FNAME.toString()
+					norcLoCnLqBatch.rNameRFnameCodes = c.R_NAME_R_FNAME_Codes.toString()
+					norcLoCnLqBatch.rNameRLname = c.R_NAME_R_LNAME.toString()
+					norcLoCnLqBatch.rNameRLnameCodes = c.R_NAME_R_LNAME_Codes.toString()
+					norcLoCnLqBatch.currmo = c.CURRMO.toString()
+					norcLoCnLqBatch.currdy = c.CURRDY.toString()
+					norcLoCnLqBatch.curryr = c.CURRYR.toString()
+					norcLoCnLqBatch.personDobMonth = c.PERSON_DOB_MONTH.toString()
+					norcLoCnLqBatch.personDobMonthCodes = c.PERSON_DOB_MONTH_Codes.toString()
+					norcLoCnLqBatch.personDobDay = c.PERSON_DOB_DAY.toString()
+					norcLoCnLqBatch.personDobDayCodes = c.PERSON_DOB_DAY_Codes.toString()
+					norcLoCnLqBatch.personDobYear = c.PERSON_DOB_YEAR.toString()
+					norcLoCnLqBatch.personDobYearCodes = c.PERSON_DOB_YEAR_Codes.toString()
+					norcLoCnLqBatch.age = c.AGE.toString()
+					norcLoCnLqBatch.ageCodes = c.AGE_Codes.toString()
+					norcLoCnLqBatch.ageRange = c.AGE_RANGE.toString()
+					norcLoCnLqBatch.ageElig = c.AGE_ELIG.toString()
+					norcLoCnLqBatch.ppgFirst = c.PPG_FIRST.toString()
+					norcLoCnLqBatch.addressDkrefaddr = c.ADDRESS_DKREFADDR.toString()
+					norcLoCnLqBatch.addressAddress1 = c.ADDRESS_ADDRESS_1.toString()
+					norcLoCnLqBatch.addressAddress1Codes = c.ADDRESS_ADDRESS_1_Codes.toString()
+					norcLoCnLqBatch.addressAddress2 = c.ADDRESS_ADDRESS_2.toString()
+					norcLoCnLqBatch.addressAddress2Codes = c.ADDRESS_ADDRESS_2_Codes.toString()
+					norcLoCnLqBatch.addressUnit = c.ADDRESS_UNIT.toString()
+					norcLoCnLqBatch.addressUnitCodes = c.ADDRESS_UNIT_Codes.toString()
+					norcLoCnLqBatch.addressCity = c.ADDRESS_CITY.toString()
+					norcLoCnLqBatch.addressCityCodes = c.ADDRESS_CITY_Codes.toString()
+					norcLoCnLqBatch.addressState = c.ADDRESS_STATE.toString()
+					norcLoCnLqBatch.addressZip = c.ADDRESS_ZIP.toString()
+					norcLoCnLqBatch.addressZipCodes = c.ADDRESS_ZIP_Codes.toString()
+					norcLoCnLqBatch.addressZip4 = c.ADDRESS_ZIP4.toString()
+					norcLoCnLqBatch.addressZip4Codes = c.ADDRESS_ZIP4_Codes.toString()
+					norcLoCnLqBatch.duEligConfirm = c.DU_ELIG_CONFIRM.toString()
+					norcLoCnLqBatch.maristat = c.MARISTAT.toString()
+					norcLoCnLqBatch.educ = c.EDUC.toString()
+					norcLoCnLqBatch.employ = c.EMPLOY.toString()
+					norcLoCnLqBatch.employOth = c.EMPLOY_OTH.toString()
+					norcLoCnLqBatch.employOthCodes = c.EMPLOY_OTH_Codes.toString()
+					norcLoCnLqBatch.ethnicity = c.ETHNICITY.toString()
+					norcLoCnLqBatch.race01 = c.RACE_01.toString()
+					norcLoCnLqBatch.race02 = c.RACE_02.toString()
+					norcLoCnLqBatch.race03 = c.RACE_03.toString()
+					norcLoCnLqBatch.race04 = c.RACE_04.toString()
+					norcLoCnLqBatch.race05 = c.RACE_05.toString()
+					norcLoCnLqBatch.race06 = c.RACE_06.toString()
+					norcLoCnLqBatch.race07 = c.RACE_07.toString()
+					norcLoCnLqBatch.race08 = c.RACE_08.toString()
+					norcLoCnLqBatch.raceOth = c.RACE_OTH.toString()
+					norcLoCnLqBatch.raceOthCodes = c.RACE_OTH_Codes.toString()
+					norcLoCnLqBatch.personLang = c.PERSON_LANG.toString()
+					norcLoCnLqBatch.personLangOth = c.PERSON_LANG_OTH.toString()
+					norcLoCnLqBatch.personLangOthCodes = c.PERSON_LANG_OTH_Codes.toString()
+					norcLoCnLqBatch.psTimeStamp9 = c.PS_TIME_STAMP_9.toString()
+					norcLoCnLqBatch.hhMembers = c.HH_MEMBERS.toString()
+					norcLoCnLqBatch.hhMembersCodes = c.HH_MEMBERS_Codes.toString()
+					norcLoCnLqBatch.numChild = c.NUM_CHILD.toString()
+					norcLoCnLqBatch.numChildCodes = c.NUM_CHILD_Codes.toString()
+					norcLoCnLqBatch.income = c.INCOME.toString()
+					norcLoCnLqBatch.phoneNbr = c.PHONE_NBR.toString()
+					norcLoCnLqBatch.phoneNbrCodes = c.PHONE_NBR_Codes.toString()
+					norcLoCnLqBatch.phoneType = c.PHONE_TYPE.toString()
+					norcLoCnLqBatch.phoneTypeOth = c.PHONE_TYPE_OTH.toString()
+					norcLoCnLqBatch.phoneTypeOthCodes = c.PHONE_TYPE_OTH_Codes.toString()
+					norcLoCnLqBatch.homePhone = c.HOME_PHONE.toString()
+					norcLoCnLqBatch.homePhoneCodes = c.HOME_PHONE_Codes.toString()
+					norcLoCnLqBatch.cellPhone1 = c.CELL_PHONE_1.toString()
+					norcLoCnLqBatch.cellPhone2 = c.CELL_PHONE_2.toString()
+					norcLoCnLqBatch.cellPhone3 = c.CELL_PHONE_3.toString()
+					norcLoCnLqBatch.cellPhone4 = c.CELL_PHONE_4.toString()
+					norcLoCnLqBatch.cellPhone = c.CELL_PHONE.toString()
+					norcLoCnLqBatch.cellPhoneCodes = c.CELL_PHONE_Codes.toString()
+					norcLoCnLqBatch.noPhNum = c.NO_PH_NUM.toString()
+					norcLoCnLqBatch.sameAddr = c.SAME_ADDR.toString()
+					norcLoCnLqBatch.mailaddrMailAddress1 = c.MAILADDR_MAIL_ADDRESS1.toString()
+					norcLoCnLqBatch.maiadmaiAress1Cds8 = c.MAIADMAI_ARESS1_Cds8.toString()
+					norcLoCnLqBatch.mailaddrMailAddress2 = c.MAILADDR_MAIL_ADDRESS2.toString()
+					norcLoCnLqBatch.maiadmaiAress2Cds9 = c.MAIADMAI_ARESS2_Cds9.toString()
+					norcLoCnLqBatch.mailaddrMailUnit = c.MAILADDR_MAIL_UNIT.toString()
+					norcLoCnLqBatch.mailaddrMailUnitCodes = c.MAILADDR_MAIL_UNIT_Codes.toString()
+					norcLoCnLqBatch.mailaddrMailCity = c.MAILADDR_MAIL_CITY.toString()
+					norcLoCnLqBatch.mailaddrMailCityCodes = c.MAILADDR_MAIL_CITY_Codes.toString()
+					norcLoCnLqBatch.mailaddrMailState = c.MAILADDR_MAIL_STATE.toString()
+					norcLoCnLqBatch.mailaddrMailZip = c.MAILADDR_MAIL_ZIP.toString()
+					norcLoCnLqBatch.mailaddrMailZipCodes = c.MAILADDR_MAIL_ZIP_Codes.toString()
+					norcLoCnLqBatch.mailaddrMailZip4 = c.MAILADDR_MAIL_ZIP4.toString()
+					norcLoCnLqBatch.mailaddrMailZip4Codes = c.MAILADDR_MAIL_ZIP4_Codes.toString()
+					norcLoCnLqBatch.haveEmail = c.HAVE_EMAIL.toString()
+					norcLoCnLqBatch.email = c.EMAIL.toString()
+					norcLoCnLqBatch.emailCodes = c.EMAIL_Codes.toString()
+					norcLoCnLqBatch.emailType = c.EMAIL_TYPE.toString()
+					norcLoCnLqBatch.emailShare = c.EMAIL_SHARE.toString()
+					norcLoCnLqBatch.planMove = c.PLAN_MOVE.toString()
+					norcLoCnLqBatch.whereMove = c.WHERE_MOVE.toString()
+					norcLoCnLqBatch.moveInfo = c.MOVE_INFO.toString()
+					norcLoCnLqBatch.newaddrNewAddress1 = c.NEWADDR_NEW_ADDRESS1.toString()
+					norcLoCnLqBatch.newaddrNewAddress1Codes = c.NEWADDR_NEW_ADDRESS1_Codes.toString()
+					norcLoCnLqBatch.newaddrNewAddress2 = c.NEWADDR_NEW_ADDRESS2.toString()
+					norcLoCnLqBatch.newaddrNewAddress2Codes = c.NEWADDR_NEW_ADDRESS2_Codes.toString()
+					norcLoCnLqBatch.newaddrNewUnit = c.NEWADDR_NEW_UNIT.toString()
+					norcLoCnLqBatch.newaddrNewUnitCodes = c.NEWADDR_NEW_UNIT_Codes.toString()
+					norcLoCnLqBatch.newaddrNewCity = c.NEWADDR_NEW_CITY.toString()
+					norcLoCnLqBatch.newaddrNewCityCodes = c.NEWADDR_NEW_CITY_Codes.toString()
+					norcLoCnLqBatch.newaddrNewState = c.NEWADDR_NEW_STATE.toString()
+					norcLoCnLqBatch.newaddrNewZip = c.NEWADDR_NEW_ZIP.toString()
+					norcLoCnLqBatch.newaddrNewZipCodes = c.NEWADDR_NEW_ZIP_Codes.toString()
+					norcLoCnLqBatch.newaddrNewZip4 = c.NEWADDR_NEW_ZIP4.toString()
+					norcLoCnLqBatch.newaddrNewZip4Codes = c.NEWADDR_NEW_ZIP4_Codes.toString()
+					norcLoCnLqBatch.whenMove = c.WHEN_MOVE.toString()
+					norcLoCnLqBatch.dateMoveMonth = c.DATE_MOVE_MONTH.toString()
+					norcLoCnLqBatch.dateMoveMonthCodes = c.DATE_MOVE_MONTH_Codes.toString()
+					norcLoCnLqBatch.dateMoveYear = c.DATE_MOVE_YEAR.toString()
+					norcLoCnLqBatch.dateMoveYearCodes = c.DATE_MOVE_YEAR_Codes.toString()
+					norcLoCnLqBatch.incentiveRequest = c.INCENTIVE_REQUEST.toString()
+					norcLoCnLqBatch.incentiveChoice = c.INCENTIVE_CHOICE.toString()
+					norcLoCnLqBatch.psTimeStamp11 = c.PS_TIME_STAMP_11.toString()
+					norcLoCnLqBatch.psTimeStamp12 = c.PS_TIME_STAMP_12.toString()
+					norcLoCnLqBatch.femaleEnd1a = c.FEMALE_END_1A.toString()
+					norcLoCnLqBatch.femaleEnd4 = c.FEMALE_END_4.toString()
+					norcLoCnLqBatch.noInterest = c.NO_INTEREST_.toString()
+					norcLoCnLqBatch.psTimeStamp13 = c.PS_TIME_STAMP_13.toString()
+					norcLoCnLqBatch.psTimeStamp14 = c.PS_TIME_STAMP_14.toString()
+					try {
+						dateTimeString = c.LC_TIME_STAMP_1.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lcTimeStamp1 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lcTimeStamp1 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LC_TIME_STAMP_1: ${c.LC_TIME_STAMP_1.toString()}"
+						logMessage response, "! parse LC_TIME_STAMP_1 Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.quexver = c.quexver.toString()
+					try {
+						dateTimeString = c.LC_TIME_STAMP_2.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lcTimeStamp2 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lcTimeStamp2 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LC_TIME_STAMP_2: ${c.LC_TIME_STAMP_2.toString()}"
+						logMessage response, "! parse LC_TIME_STAMP_2 Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.cn004c = c.CN004C.toString()
+					try {
+						dateTimeString = c.LC_TIME_STAMP_2A.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lcTimeStamp2a = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lcTimeStamp2a = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LC_TIME_STAMP_2A: ${c.LC_TIME_STAMP_2A.toString()}"
+						logMessage response, "! parse LC_TIME_STAMP_2A Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.consentComments = c.CONSENT_COMMENTS.toString()
+					norcLoCnLqBatch.cn006 = c.CN006.toString()
+					norcLoCnLqBatch.cn006a = c.CN006A.toString()
+					try {
+						dateTimeString = c.LC_TIME_STAMP_3.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lcTimeStamp3 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lcTimeStamp3 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LC_TIME_STAMP_3: ${c.LC_TIME_STAMP_3.toString()}"
+						logMessage response, "! parse LC_TIME_STAMP_3 Exception: ${e.toString()}"
+					}
+					try {
+						dateTimeString = c.CONSENT_DATE.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.consentDate = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.consentDate = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid CONSENT_DATE: ${c.CONSENT_DATE.toString()}"
+						logMessage response, "! parse CONSENT_DATE Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.cn007a = c.CN007A.toString()
+					try {
+						dateTimeString = c.LC_TIME_STAMP_4.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lcTimeStamp4 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lcTimeStamp4 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LC_TIME_STAMP_4: ${c.LC_TIME_STAMP_4.toString()}"
+						logMessage response, "! parse LC_TIME_STAMP_4 Exception: ${e.toString()}"
+					}
+					try {
+						dateTimeString = c.LQ_TIME_STAMP_1.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lqTimeStamp1 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lqTimeStamp1 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LQ_TIME_STAMP_1: ${c.LQ_TIME_STAMP_1.toString()}"
+						logMessage response, "! parse LQ_TIME_STAMP_1 Exception: ${e.toString()}"
+					}
+					try {
+						dateTimeString = c.LQ_TIME_STAMP_2.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lqTimeStamp2 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lqTimeStamp2 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LQ_TIME_STAMP_2: ${c.LQ_TIME_STAMP_2.toString()}"
+						logMessage response, "! parse LQ_TIME_STAMP_2 Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.ps002txt = c.ps002txt.toString()
+					norcLoCnLqBatch.pregnantloq = c.PREGNANTLOQ.toString()
+					norcLoCnLqBatch.ppgStatus = c.PPG_STATUS.toString()
+					try {
+						dateTimeString = c.LQ_TIME_STAMP_3.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lqTimeStamp3 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lqTimeStamp3 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LQ_TIME_STAMP_3: ${c.LQ_TIME_STAMP_3.toString()}"
+						logMessage response, "! parse LQ_TIME_STAMP_3 Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.dueDateMonth = c.DUE_DATE_MONTH.toString()
+					norcLoCnLqBatch.dueDateMonthCodes = c.DUE_DATE_MONTH_Codes.toString()
+					norcLoCnLqBatch.dueDateDay = c.DUE_DATE_DAY.toString()
+					norcLoCnLqBatch.dueDateDayCodes = c.DUE_DATE_DAY_Codes.toString()
+					norcLoCnLqBatch.dueDateYear = c.DUE_DATE_YEAR.toString()
+					norcLoCnLqBatch.dueDateYearCodes = c.DUE_DATE_YEAR_Codes.toString()
+					norcLoCnLqBatch.knowDate = c.KNOW_DATE.toString()
+					norcLoCnLqBatch.datePeriodloqMonth = c.DATE_PERIODLOQ_MONTH.toString()
+					norcLoCnLqBatch.datePeriodloqMonthCodes = c.DATE_PERIODLOQ_MONTH_Codes.toString()
+					norcLoCnLqBatch.datePeriodloqDay = c.DATE_PERIODLOQ_DAY.toString()
+					norcLoCnLqBatch.datePeriodloqDayCodes = c.DATE_PERIODLOQ_DAY_Codes.toString()
+					norcLoCnLqBatch.datePeriodloqYear = c.DATE_PERIODLOQ_YEAR.toString()
+					norcLoCnLqBatch.datePeriodloqYearCodes = c.DATE_PERIODLOQ_YEAR_Codes.toString()
+					norcLoCnLqBatch.knewDate = c.KNEW_DATE.toString()
+					try {
+						dateTimeString = c.LQ_TIME_STAMP_4.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lqTimeStamp4 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lqTimeStamp4 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LQ_TIME_STAMP_4: ${c.LQ_TIME_STAMP_4.toString()}"
+						logMessage response, "! parse LQ_TIME_STAMP_4 Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.homeTest = c.HOME_TEST.toString()
+					norcLoCnLqBatch.brthtxt = c.brthtxt.toString()
+					norcLoCnLqBatch.birthPlan = c.BIRTH_PLAN.toString()
+					norcLoCnLqBatch.birthplaceBirthPlace = c.BirthPlace_BIRTH_PLACE.toString()
+					norcLoCnLqBatch.birthcBirPaceCds10 = c.Birthc_BIR_PACE_Cds10.toString()
+					norcLoCnLqBatch.birthplaceBAddress1 = c.BirthPlace_B_ADDRESS_1.toString()
+					norcLoCnLqBatch.birthcBAress1Cds11 = c.Birthc_B_ARESS_1_Cds11.toString()
+					norcLoCnLqBatch.birthplaceBAddress2 = c.BirthPlace_B_ADDRESS_2.toString()
+					norcLoCnLqBatch.birthcBAress2Cds12 = c.Birthc_B_ARESS_2_Cds12.toString()
+					norcLoCnLqBatch.birthplaceBCity = c.BirthPlace_B_CITY.toString()
+					norcLoCnLqBatch.birthplaceBCityCodes = c.BirthPlace_B_CITY_Codes.toString()
+					norcLoCnLqBatch.birthplaceBState = c.BirthPlace_B_STATE.toString()
+					norcLoCnLqBatch.birthplaceBZipcode = c.BirthPlace_B_ZIPCODE.toString()
+					norcLoCnLqBatch.birthplaceBZipcodeCodes = c.BirthPlace_B_ZIPCODE_Codes.toString()
+					norcLoCnLqBatch.pnVitamin = c.PN_VITAMIN.toString()
+					norcLoCnLqBatch.pregVitamin = c.PREG_VITAMIN.toString()
+					norcLoCnLqBatch.dateVisitMonth = c.DATE_VISIT_MONTH.toString()
+					norcLoCnLqBatch.dateVisitMonthCodes = c.DATE_VISIT_MONTH_Codes.toString()
+					norcLoCnLqBatch.dateVisitDay = c.DATE_VISIT_DAY.toString()
+					norcLoCnLqBatch.dateVisitDayCodes = c.DATE_VISIT_DAY_Codes.toString()
+					norcLoCnLqBatch.dateVisitYear = c.DATE_VISIT_YEAR.toString()
+					norcLoCnLqBatch.dateVisitYearCodes = c.DATE_VISIT_YEAR_Codes.toString()
+					norcLoCnLqBatch.diabtxt = c.diabtxt.toString()
+					norcLoCnLqBatch.diabtxt2 = c.diabtxt2.toString()
+					norcLoCnLqBatch.diabetes1 = c.DIABETES_1.toString()
+					norcLoCnLqBatch.highbpPreg = c.HIGHBP_PREG.toString()
+					norcLoCnLqBatch.urine = c.URINE.toString()
+					norcLoCnLqBatch.preeclamp = c.PREECLAMP.toString()
+					norcLoCnLqBatch.earlyLabor = c.EARLY_LABOR.toString()
+					norcLoCnLqBatch.anemia = c.ANEMIA.toString()
+					norcLoCnLqBatch.nausea = c.NAUSEA.toString()
+					norcLoCnLqBatch.kidney = c.KIDNEY.toString()
+					norcLoCnLqBatch.rhDisease = c.RH_DISEASE.toString()
+					norcLoCnLqBatch.groupB = c.GROUP_B.toString()
+					norcLoCnLqBatch.herpes = c.HERPES.toString()
+					norcLoCnLqBatch.vaginosis = c.VAGINOSIS.toString()
+					norcLoCnLqBatch.othCondition = c.OTH_CONDITION.toString()
+					norcLoCnLqBatch.conditionOth = c.CONDITION_OTH.toString()
+					norcLoCnLqBatch.conditionOthCodes = c.CONDITION_OTH_Codes.toString()
+					try {
+						dateTimeString = c.LQ_TIME_STAMP_5.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lqTimeStamp5 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lqTimeStamp5 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LQ_TIME_STAMP_5: ${c.LQ_TIME_STAMP_5.toString()}"
+						logMessage response, "! parse LQ_TIME_STAMP_5 Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.healthtxt = c.healthtxt.toString()
+					norcLoCnLqBatch.health = c.HEALTH.toString()
+					norcLoCnLqBatch.heightHeightFt = c.Height_HEIGHT_FT.toString()
+					norcLoCnLqBatch.heightHeightFtCodes = c.Height_HEIGHT_FT_Codes.toString()
+					norcLoCnLqBatch.heightHtInch = c.Height_HT_INCH.toString()
+					norcLoCnLqBatch.heightHtInchCodes = c.Height_HT_INCH_Codes.toString()
+					norcLoCnLqBatch.weight = c.WEIGHT.toString()
+					norcLoCnLqBatch.weightCodes = c.WEIGHT_Codes.toString()
+					norcLoCnLqBatch.asthma = c.ASTHMA.toString()
+					norcLoCnLqBatch.highbpNotpreg = c.HIGHBP_NOTPREG.toString()
+					norcLoCnLqBatch.diabetesNotpreg = c.DIABETES_NOTPREG.toString()
+					norcLoCnLqBatch.diabetes2 = c.DIABETES_2.toString()
+					norcLoCnLqBatch.diabetes3 = c.DIABETES_3.toString()
+					norcLoCnLqBatch.thyroid1 = c.THYROID_1.toString()
+					norcLoCnLqBatch.thyroid2 = c.THYROID_2.toString()
+					norcLoCnLqBatch.hlthCare = c.HLTH_CARE.toString()
+					try {
+						dateTimeString = c.LQ_TIME_STAMP_6.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lqTimeStamp6 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lqTimeStamp6 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LQ_TIME_STAMP_6: ${c.LQ_TIME_STAMP_6.toString()}"
+						logMessage response, "! parse LQ_TIME_STAMP_6 Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.insure = c.INSURE.toString()
+					norcLoCnLqBatch.insEmploy = c.INS_EMPLOY.toString()
+					norcLoCnLqBatch.insMedicaid = c.INS_MEDICAID.toString()
+					norcLoCnLqBatch.insTricare = c.INS_TRICARE.toString()
+					norcLoCnLqBatch.insIhs = c.INS_IHS.toString()
+					norcLoCnLqBatch.insMedicare = c.INS_MEDICARE.toString()
+					norcLoCnLqBatch.insOth = c.INS_OTH.toString()
+					try {
+						dateTimeString = c.LQ_TIME_STAMP_7.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lqTimeStamp7 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lqTimeStamp7 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! parse LQ_TIME_STAMP_7 Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.ageHome = c.AGE_HOME.toString()
+					norcLoCnLqBatch.mainHeat = c.MAIN_HEAT.toString()
+					norcLoCnLqBatch.mainHeatOth = c.MAIN_HEAT_OTH.toString()
+					norcLoCnLqBatch.mainHeatOthCodes = c.MAIN_HEAT_OTH_Codes.toString()
+					norcLoCnLqBatch.cool01 = c.COOL_01.toString()
+					norcLoCnLqBatch.cool02 = c.COOL_02.toString()
+					norcLoCnLqBatch.cool03 = c.COOL_03.toString()
+					norcLoCnLqBatch.cool04 = c.COOL_04.toString()
+					norcLoCnLqBatch.cool05 = c.COOL_05.toString()
+					norcLoCnLqBatch.cool06 = c.COOL_06.toString()
+					norcLoCnLqBatch.cool07 = c.COOL_07.toString()
+					norcLoCnLqBatch.coolOth = c.COOL_OTH.toString()
+					norcLoCnLqBatch.coolOthCodes = c.COOL_OTH_Codes.toString()
+					norcLoCnLqBatch.waterDrink = c.WATER_DRINK.toString()
+					norcLoCnLqBatch.waterDrinkOth = c.WATER_DRINK_OTH.toString()
+					norcLoCnLqBatch.waterDrinkOthCodes = c.WATER_DRINK_OTH_Codes.toString()
+					try {
+						dateTimeString = c.LQ_TIME_STAMP_8.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lqTimeStamp8 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lqTimeStamp8 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LQ_TIME_STAMP_8: ${c.LQ_TIME_STAMP_8.toString()}"
+						logMessage response, "! parse LQ_TIME_STAMP_8 Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.cigNow = c.CIG_NOW.toString()
+					norcLoCnLqBatch.cigNowFreq = c.CIG_NOW_FREQ.toString()
+					norcLoCnLqBatch.cigNowNum = c.CIG_NOW_NUM.toString()
+					norcLoCnLqBatch.cigNowNumCodes = c.CIG_NOW_NUM_Codes.toString()
+					norcLoCnLqBatch.cigNowNumField = c.CIG_NOW_NUM_FIELD.toString()
+					norcLoCnLqBatch.drinkNow = c.DRINK_NOW.toString()
+					norcLoCnLqBatch.drinkNowNum = c.DRINK_NOW_NUM.toString()
+					norcLoCnLqBatch.drinkNowNumCodes = c.DRINK_NOW_NUM_Codes.toString()
+					norcLoCnLqBatch.drinkNow5 = c.DRINK_NOW_5.toString()
+					try {
+						dateTimeString = c.LQ_TIME_STAMP_9.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lqTimeStamp9 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lqTimeStamp9 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LQ_TIME_STAMP_9: ${c.LQ_TIME_STAMP_9.toString()}"
+						logMessage response, "! parse LQ_TIME_STAMP_9 Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.learn = c.LEARN.toString()
+					norcLoCnLqBatch.help = c.HELP.toString()
+					norcLoCnLqBatch.incent = c.INCENT.toString()
+					norcLoCnLqBatch.research = c.RESEARCH.toString()
+					norcLoCnLqBatch.envir = c.ENVIR.toString()
+					norcLoCnLqBatch.community = c.COMMUNITY.toString()
+					norcLoCnLqBatch.knowOthers = c.KNOW_OTHERS.toString()
+					norcLoCnLqBatch.family = c.FAMILY.toString()
+					norcLoCnLqBatch.doctor = c.DOCTOR.toString()
+					norcLoCnLqBatch.opinSpouse = c.OPIN_SPOUSE.toString()
+					norcLoCnLqBatch.opinFamily = c.OPIN_FAMILY.toString()
+					norcLoCnLqBatch.opinFriend = c.OPIN_FRIEND.toString()
+					norcLoCnLqBatch.opinDr = c.OPIN_DR.toString()
+					norcLoCnLqBatch.experience = c.EXPERIENCE.toString()
+					norcLoCnLqBatch.improve = c.IMPROVE.toString()
+					norcLoCnLqBatch.intLength = c.INT_LENGTH.toString()
+					norcLoCnLqBatch.intStress = c.INT_STRESS.toString()
+					norcLoCnLqBatch.intRepeat = c.INT_REPEAT.toString()
+					try {
+						dateTimeString = c.LQ_TIME_STAMP_11.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lqTimeStamp11 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lqTimeStamp11 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LQ_TIME_STAMP_11: ${c.LQ_TIME_STAMP_11.toString()}"
+						logMessage response, "! parse LQ_TIME_STAMP_11 Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.end11txt = c.END1_1txt.toString()
+					try {
+						dateTimeString = c.LQ_TIME_STAMP_12.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.lqTimeStamp12 = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.lqTimeStamp12 = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid LQ_TIME_STAMP_12: ${c.LQ_TIME_STAMP_12.toString()}"
+						logMessage response, "! parse LQ_TIME_STAMP_12 Exception: ${e.toString()}"
+					}
+					norcLoCnLqBatch.elapsedtime = c.ElapsedTime.toString()
+					try {
+						dateTimeString = c.TempTimeVariable.toString()
+						if ( ! dateTimeString ) {
+							norcLoCnLqBatch.temptimevariable = null
+						} else {
+							DateTime dt = fmt.parseDateTime(dateTimeString)
+							norcLoCnLqBatch.temptimevariable = dt.toCalendar().getTime()
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}"
+						logMessage response, "! parse TempTimeVariable Exception: ${e.toString()}"
+					}
+
+					// Save the record
+					if (norcLoCnLqBatch.hasErrors()) {
+						logMessage response, "! norcLoCnLqBatch has errors."
+					} else if (norcLoCnLqBatch.save()) {
+						saveCount++
+					}
+					else {
+						// logMessage response, "Error saving norcLoCnLqBatch record with Respondent Serial ${norcLoCnLqBatch.respondentSerial}"
+						norcLoCnLqBatch.errors.each{ e ->
+							// logMessage response, "norcLoCnLqBatch:error::${e}"
+							e.fieldErrors.each{ fe -> 
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
+							}
+						}
+					} 				
+				}
+			}
+		}
+		
+		def endTime = System.nanoTime()
+		def diff = (endTime - startTime)/1000000000
+		if (debug) {
+			logMessage response, "    Done! ${saveCount} records saved to norcLoCnLqBatch in ${diff} seconds"			
+		}
+		// end LOCNLQ_BATCH1
+	}
+
+
+	def parseHiConBatch(table, response) {
+		def now = new Date()
+		// logMessage response, "ready to load. ${now}"
+				
+		def saveCount = 0
+		if (debug){
+			logMessage response, "Parsing HICON_BATCH1"			
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
@@ -54,7 +774,7 @@ class DataParserService {
 				
 				//def affiliate = c.AFFILIATE.toString()
 				//def institutionName = c.INSTITUTION.toString()
-				//println "${affiliate}: ${institutionName}"
+				//logMessage response, "${affiliate}: ${institutionName}"
 				NorcHiConBatch.withTransaction {
 					def dateTimeString = ""
 					def checkSerial = c.Respondent_Serial.toString()
@@ -64,11 +784,11 @@ class DataParserService {
 	
 					if (!norcHiConBatch) {
 						norcHiConBatch = new NorcHiConBatch()
-						response <<  " + Creating new NorcHiConBatch(${checkSerial})\n"
+						logMessage response, " + Creating new NorcHiConBatch(${checkSerial})"
 					} else {
 						// Lock object for update
 						norcHiConBatch.lock()
-						response <<  " ~ Updating existing NorcHiConBatch(${checkSerial})\n"
+						logMessage response, " ~ Updating existing NorcHiConBatch(${checkSerial})"
 					}
 
 					norcHiConBatch.respondentSerial = c.Respondent_Serial.toString()
@@ -100,9 +820,8 @@ class DataParserService {
 							norcHiConBatch.datacollectionStarttime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}'
-						println '! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}'
-						println '! parse DataCollection_StartTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}"
+						logMessage response, "! parse DataCollection_StartTime Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.DataCollection_FinishTime.toString()
@@ -113,9 +832,8 @@ class DataParserService {
 							norcHiConBatch.datacollectionFinishtime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}'
-						println '! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}'
-						println '! parse DataCollection_FinishTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}"
+						logMessage response, "! parse DataCollection_FinishTime Exception: ${e.toString()}"
 					}
 					norcHiConBatch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
 					norcHiConBatch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
@@ -166,9 +884,8 @@ class DataParserService {
 							norcHiConBatch.timeStamp1 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}'
-						println '! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}'
-						println '! parse TIME_STAMP_1 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}"
+						logMessage response, "! parse TIME_STAMP_1 Exception: ${e.toString()}"
 					}
 					norcHiConBatch.quexlang = c.QUEXLANG.toString()
 					norcHiConBatch.visWhoConsented = c.VIS_WHO_CONSENTED.toString()
@@ -182,9 +899,8 @@ class DataParserService {
 							norcHiConBatch.timeStamp2 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}'
-						println '! parse TIME_STAMP_2 Input: ${c.TIME_STAMP_2.toString()}'
-						println '! parse TIME_STAMP_2 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}"
+						logMessage response, "! parse TIME_STAMP_2 Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.TIME_STAMP_2A.toString()
@@ -195,9 +911,8 @@ class DataParserService {
 							norcHiConBatch.timeStamp2a = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_2A: ${c.TIME_STAMP_2A.toString()}'
-						println '! parse TIME_STAMP_2A Input: ${c.TIME_STAMP_2A.toString()}'
-						println '! parse TIME_STAMP_2A Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_2A: ${c.TIME_STAMP_2A.toString()}"
+						logMessage response, "! parse TIME_STAMP_2A Exception: ${e.toString()}"
 					}
 					norcHiConBatch.discussBook = c.DISCUSS_BOOK.toString()
 					try {
@@ -209,9 +924,8 @@ class DataParserService {
 							norcHiConBatch.timeStamp2b = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_2B: ${c.TIME_STAMP_2B.toString()}'
-						println '! parse TIME_STAMP_2B Input: ${c.TIME_STAMP_2B.toString()}'
-						println '! parse TIME_STAMP_2B Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_2B: ${c.TIME_STAMP_2B.toString()}"
+						logMessage response, "! parse TIME_STAMP_2B Exception: ${e.toString()}"
 					}
 					norcHiConBatch.cn005text = c.CN005text.toString()
 					norcHiConBatch.consentType1 = c.CONSENT_TYPE_1.toString()
@@ -235,9 +949,8 @@ class DataParserService {
 							norcHiConBatch.timeStamp3 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}'
-						println '! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}'
-						println '! parse TIME_STAMP_3 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}"
+						logMessage response, "! parse TIME_STAMP_3 Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.CONSENT_DATE.toString()
@@ -248,9 +961,8 @@ class DataParserService {
 							norcHiConBatch.consentDate = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid CONSENT_DATE: ${c.CONSENT_DATE.toString()}'
-						println '! parse CONSENT_DATE Input: ${c.CONSENT_DATE.toString()}'
-						println '! parse CONSENT_DATE Exception: ${e.toString()}'
+						logMessage response, "! Invalid CONSENT_DATE: ${c.CONSENT_DATE.toString()}"
+						logMessage response, "! parse CONSENT_DATE Exception: ${e.toString()}"
 					}
 					norcHiConBatch.english = c.ENGLISH.toString()
 					norcHiConBatch.contactLang = c.CONTACT_LANG.toString()
@@ -271,9 +983,8 @@ class DataParserService {
 							norcHiConBatch.timeStamp4 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}'
-						println '! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}'
-						println '! parse TIME_STAMP_4 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}"
+						logMessage response, "! parse TIME_STAMP_4 Exception: ${e.toString()}"
 					}
 					norcHiConBatch.elapsedtime = c.ElapsedTime.toString()
 					try {
@@ -285,23 +996,22 @@ class DataParserService {
 							norcHiConBatch.temptimevariable = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}'
-						println '! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}'
-						println '! parse TempTimeVariable Exception: ${e.toString()}'
+						logMessage response, "! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}"
+						logMessage response, "! parse TempTimeVariable Exception: ${e.toString()}"
 					}
 					// Save the record
 					if (norcHiConBatch.hasErrors()) {
-						response << "! norcHiConBatch has errors.\n"
+						logMessage response, "! norcHiConBatch has errors."
 					} else if (norcHiConBatch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcHiConBatch record with Respondent Serial ${norcHiConBatch.respondentSerial}"
+						// logMessage response, "Error saving norcHiConBatch record with Respondent Serial ${norcHiConBatch.respondentSerial}"
 						norcHiConBatch.errors.each{ e ->
-							// println "norcHiConBatch:error::${e}"
+							// logMessage response, "norcHiConBatch:error::${e}"
 							e.fieldErrors.each{ fe -> 
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n" 
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
 							}
 						}
 					} 				
@@ -312,18 +1022,18 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug) {
-			println "    Done! ${saveCount} records saved to norcHiConBatch in ${diff} seconds"			
+			logMessage response, "    Done! ${saveCount} records saved to norcHiConBatch in ${diff} seconds"			
 		}
 		// end HICON_BATCH1
 	}
 
 	def parseBirthIncentiveBatch(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 				
 		def saveCount = 0
 		if (debug){
-			println "Parsing BIRTHINCENTIVE_BATCH1"			
+			logMessage response, "Parsing BIRTHINCENTIVE_BATCH1"			
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
@@ -333,25 +1043,24 @@ class DataParserService {
 				
 				//def affiliate = c.AFFILIATE.toString()
 				//def institutionName = c.INSTITUTION.toString()
-				//println "${affiliate}: ${institutionName}"
+				//logMessage response, "${affiliate}: ${institutionName}"
 				NorcBirthIncentiveBatch.withTransaction {
 					def dateTimeString = ""
-					def checkSerial = c.Respondent_Serial.toString()
+					def checkSuId = c.SU_ID.toString()
 					
-					// Verify that the current respondent serial has not already been saved
-					def norcBirthIncentiveBatch = NorcBirthIncentiveBatch.findByRespondentSerial(checkSerial)				
+					// Verify that the current SU_ID has not already been saved
+					def norcBirthIncentiveBatch = NorcBirthIncentiveBatch.findBySuId(checkSuId)				
 		
 					if (!norcBirthIncentiveBatch) {
 						norcBirthIncentiveBatch = new NorcBirthIncentiveBatch()
-						response <<  " + Creating new NorcBirthIncentiveBatch(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcBirthIncentiveBatch(${checkSuId})"
 					} else {
 						// Lock object for update
 						norcBirthIncentiveBatch.lock()
-						response <<  " ~ Updating existing NorcBirthIncentiveBatch(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcBirthIncentiveBatch(${checkSuId})"
 					}
 
 
-					norcBirthIncentiveBatch.respondentSerial = c.Respondent_Serial.toString()
 					norcBirthIncentiveBatch.fname = c.fName.toString()
 					norcBirthIncentiveBatch.lname = c.lName.toString()
 					norcBirthIncentiveBatch.address1 = c.Address1.toString()
@@ -382,25 +1091,24 @@ class DataParserService {
 							norcBirthIncentiveBatch.datein = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid dateIn: ${c.dateIn.toString()}'
-						println '! parse dateIn Input: ${c.dateIn.toString()}'
-						println '! parse dateIn Exception: ${e.toString()}'
+						logMessage response, "! Invalid dateIn: ${c.dateIn.toString()}"
+						logMessage response, "! parse dateIn Exception: ${e.toString()}"
 					}
 					norcBirthIncentiveBatch.apptime = c.apptime.toString()
 
 					// Save the record
 					if (norcBirthIncentiveBatch.hasErrors()) {
-						response << "! norcBirthIncentiveBatch has errors.\n"
+						logMessage response, "! norcBirthIncentiveBatch has errors."
 					} else if (norcBirthIncentiveBatch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcBirthIncentiveBatch record with Respondent Serial ${norcBirthIncentiveBatch.respondentSerial}"
+						// logMessage response, "Error saving norcBirthIncentiveBatch record with SU ID ${norcBirthIncentiveBatch.suId}"
 						norcBirthIncentiveBatch.errors.each{ e ->
-							// println "norcBirthIncentiveBatch:error::${e}"
+							// logMessage response, "norcBirthIncentiveBatch:error::${e}"
 							e.fieldErrors.each{ fe -> 
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n" 
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
 							}
 						}
 					} 				
@@ -411,18 +1119,101 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug) {
-			println "    Done! ${saveCount} records saved to norcBirthIncentiveBatch in ${diff} seconds"			
+			logMessage response, "    Done! ${saveCount} records saved to norcBirthIncentiveBatch in ${diff} seconds"			
 		}
 		// end BIRTHINCENTIVE_BATCH1
 	}
 
-	def parseLbBatch(table, response) {
+
+	def parseLbReminderBatch(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 				
 		def saveCount = 0
 		if (debug){
-			println "Parsing LB1_BATCH1"			
+			logMessage response, "Parsing LBREMINDER_BATCH1"			
+		}
+		// Save data in batches
+		def startTime = System.nanoTime()
+
+		GParsPool.withPool {
+			table?.LBREMINDER_BATCH1?.eachParallel { c ->
+				
+				//def affiliate = c.AFFILIATE.toString()
+				//def institutionName = c.INSTITUTION.toString()
+				//logMessage response, "${affiliate}: ${institutionName}"
+				NorcLbReminderBatch.withTransaction {
+					def dateTimeString = ""
+					def checkSuId = c.SU_ID.toString()
+					
+					// Verify that the current SU_ID has not already been saved
+					def norcLbReminderBatch = NorcLbReminderBatch.findBySuId(checkSuId)				
+		
+					if (!norcLbReminderBatch) {
+						norcLbReminderBatch = new NorcLbReminderBatch()
+						logMessage response,  " + Creating new NorcLbReminderBatch(${checkSuId})"
+					} else {
+						// Lock object for update
+						norcLbReminderBatch.lock()
+						logMessage response,  " ~ Updating existing NorcLbReminderBatch(${checkSuId})"
+					}
+
+					norcLbReminderBatch.fname = c.fName.toString()
+					norcLbReminderBatch.lname = c.lName.toString()
+					norcLbReminderBatch.address1 = c.Address1.toString()
+					norcLbReminderBatch.address2 = c.Address2.toString()
+					norcLbReminderBatch.unit = c.Unit.toString()
+					norcLbReminderBatch.city = c.City.toString()
+					norcLbReminderBatch.state = c.State.toString()
+					norcLbReminderBatch.zip = c.Zip.toString()
+					norcLbReminderBatch.zip4 = c.Zip4.toString()
+					norcLbReminderBatch.suId = c.SU_ID.toString()
+					norcLbReminderBatch.mailingid = c.MailingID.toString()
+					norcLbReminderBatch.doctype = c.DocType.toString()
+					norcLbReminderBatch.source = c.Source.toString()
+					norcLbReminderBatch.status = c.Status.toString()
+					norcLbReminderBatch.mode = c.Mode.toString()
+					norcLbReminderBatch.email = c.email.toString()
+					norcLbReminderBatch.phonenumber = c.phoneNumber.toString()
+					norcLbReminderBatch.segmentid = c.SegmentID.toString()
+					norcLbReminderBatch.datein = c.dateIn.toString()
+					norcLbReminderBatch.apptime = c.apptime.toString()
+
+					// Save the record
+					if (norcLbReminderBatch.hasErrors()) {
+						logMessage response, "! norcLbReminderBatch has errors."
+					} else if (norcLbReminderBatch.save()) {
+						saveCount++
+					}
+					else {
+						// logMessage response, "Error saving norcLbReminderBatch record with SU ID ${norcLbReminderBatch.suId}"
+						norcLbReminderBatch.errors.each{ e ->
+							// logMessage response, "norcLbReminderBatch:error::${e}"
+							e.fieldErrors.each{ fe -> 
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
+							}
+						}
+					} 				
+				}
+			}
+		}
+		
+		def endTime = System.nanoTime()
+		def diff = (endTime - startTime)/1000000000
+		if (debug) {
+			logMessage response, "    Done! ${saveCount} records saved to norcLbReminderBatch in ${diff} seconds"			
+		}
+		// end LBREMINDER_BATCH1 
+	}
+
+	def parseLbBatch(table, response) {
+		def now = new Date()
+		// logMessage response, "ready to load. ${now}"
+				
+		def saveCount = 0
+		if (debug){
+			logMessage response, "Parsing LB1_BATCH1"			
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
@@ -432,7 +1223,7 @@ class DataParserService {
 				
 				//def affiliate = c.AFFILIATE.toString()
 				//def institutionName = c.INSTITUTION.toString()
-				//println "${affiliate}: ${institutionName}"
+				//logMessage response, "${affiliate}: ${institutionName}"
 				NorcLbBatch.withTransaction {
 					def dateTimeString = ""
 					def checkSerial = c.Respondent_Serial.toString()
@@ -442,11 +1233,11 @@ class DataParserService {
 		
 					if (!norcLbBatch) {
 						norcLbBatch = new NorcLbBatch()
-						response <<  " + Creating new NorcLbBatch(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcLbBatch(${checkSerial})"
 					} else {
 						// Lock object for update
 						norcLbBatch.lock()
-						response <<  " ~ Updating existing NorcLbBatch(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcLbBatch(${checkSerial})"
 					}
 					
 
@@ -479,9 +1270,8 @@ class DataParserService {
 								norcLbBatch.datacollectionStarttime = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}'
-							println '! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}'
-							println '! parse DataCollection_StartTime Exception: ${e.toString()}'
+							logMessage response, "! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}"
+							logMessage response, "! parse DataCollection_StartTime Exception: ${e.toString()}"
 						}
 						try {
 							dateTimeString = c.DataCollection_FinishTime.toString()
@@ -492,9 +1282,8 @@ class DataParserService {
 								norcLbBatch.datacollectionFinishtime = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}'
-							println '! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}'
-							println '! parse DataCollection_FinishTime Exception: ${e.toString()}'
+							logMessage response, "! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}"
+							logMessage response, "! parse DataCollection_FinishTime Exception: ${e.toString()}"
 						}
 						norcLbBatch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
 						norcLbBatch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
@@ -543,9 +1332,8 @@ class DataParserService {
 								norcLbBatch.timeStamp1a = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TIME_STAMP_1A: ${c.TIME_STAMP_1A.toString()}'
-							println '! parse TIME_STAMP_1A Input: ${c.TIME_STAMP_1A.toString()}'
-							println '! parse TIME_STAMP_1A Exception: ${e.toString()}'
+							logMessage response, "! Invalid TIME_STAMP_1A: ${c.TIME_STAMP_1A.toString()}"
+							logMessage response, "! parse TIME_STAMP_1A Exception: ${e.toString()}"
 						}
 						norcLbBatch.quexlang = c.QUEXLANG.toString()
 						norcLbBatch.english = c.ENGLISH.toString()
@@ -564,9 +1352,8 @@ class DataParserService {
 								norcLbBatch.timeStamp1 = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}'
-							println '! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}'
-							println '! parse TIME_STAMP_1 Exception: ${e.toString()}'
+							logMessage response, "! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}"
+							logMessage response, "! parse TIME_STAMP_1 Exception: ${e.toString()}"
 						}
 						norcLbBatch.currmo = c.CURRMO.toString()
 						norcLbBatch.currdy = c.CURRDY.toString()
@@ -708,9 +1495,8 @@ class DataParserService {
 								norcLbBatch.timeStamp2 = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}'
-							println '! parse TIME_STAMP_2 Input: ${c.TIME_STAMP_2.toString()}'
-							println '! parse TIME_STAMP_2 Exception: ${e.toString()}'
+							logMessage response, "! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}"
+							logMessage response, "! parse TIME_STAMP_2 Exception: ${e.toString()}"
 						}
 						norcLbBatch.recentMove = c.RECENT_MOVE.toString()
 						norcLbBatch.ownHome = c.OWN_HOME.toString()
@@ -729,9 +1515,8 @@ class DataParserService {
 								norcLbBatch.timeStamp3 = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}'
-							println '! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}'
-							println '! parse TIME_STAMP_3 Exception: ${e.toString()}'
+							logMessage response, "! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}"
+							logMessage response, "! parse TIME_STAMP_3 Exception: ${e.toString()}"
 						}
 						norcLbBatch.renovate = c.RENOVATE.toString()
 						norcLbBatch.renovateRoom01 = c.RENOVATE_ROOM_01.toString()
@@ -770,9 +1555,8 @@ class DataParserService {
 								norcLbBatch.timeStamp4 = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}'
-							println '! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}'
-							println '! parse TIME_STAMP_4 Exception: ${e.toString()}'
+							logMessage response, "! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}"
+							logMessage response, "! parse TIME_STAMP_4 Exception: ${e.toString()}"
 						}
 						norcLbBatch.babytxt301 = c.babytxt3_01.toString()
 						norcLbBatch.babytxt302 = c.babytxt3_02.toString()
@@ -789,9 +1573,8 @@ class DataParserService {
 								norcLbBatch.timeStamp5 = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}'
-							println '! parse TIME_STAMP_5 Input: ${c.TIME_STAMP_5.toString()}'
-							println '! parse TIME_STAMP_5 Exception: ${e.toString()}'
+							logMessage response, "! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}"
+							logMessage response, "! parse TIME_STAMP_5 Exception: ${e.toString()}"
 						}
 						norcLbBatch.postxt = c.postxt.toString()
 						norcLbBatch.babygend3 = c.babygend3.toString()
@@ -813,9 +1596,8 @@ class DataParserService {
 								norcLbBatch.timeStamp6 = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}'
-							println '! parse TIME_STAMP_6 Input: ${c.TIME_STAMP_6.toString()}'
-							println '! parse TIME_STAMP_6 Exception: ${e.toString()}'
+							logMessage response, "! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}"
+							logMessage response, "! parse TIME_STAMP_6 Exception: ${e.toString()}"
 						}
 						norcLbBatch.hcareYet = c.HCARE_YET.toString()
 						norcLbBatch.hcaretxt01 = c.hcaretxt_01.toString()
@@ -834,9 +1616,8 @@ class DataParserService {
 								norcLbBatch.timeStamp7 = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}'
-							println '! parse TIME_STAMP_7 Input: ${c.TIME_STAMP_7.toString()}'
-							println '! parse TIME_STAMP_7 Exception: ${e.toString()}'
+							logMessage response, "! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}"
+							logMessage response, "! parse TIME_STAMP_7 Exception: ${e.toString()}"
 						}
 						norcLbBatch.employ2 = c.EMPLOY2.toString()
 						norcLbBatch.returnJobYet = c.RETURN_JOB_YET.toString()
@@ -869,9 +1650,8 @@ class DataParserService {
 								norcLbBatch.timeStamp8 = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}'
-							println '! parse TIME_STAMP_8 Input: ${c.TIME_STAMP_8.toString()}'
-							println '! parse TIME_STAMP_8 Exception: ${e.toString()}'
+							logMessage response, "! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}"
+							logMessage response, "! parse TIME_STAMP_8 Exception: ${e.toString()}"
 						}
 						norcLbBatch.rNameRFname = c.R_NAME_R_FNAME.toString()
 						norcLbBatch.rNameRLname = c.R_NAME_R_LNAME.toString()
@@ -900,9 +1680,8 @@ class DataParserService {
 								norcLbBatch.timeStamp9 = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}'
-							println '! parse TIME_STAMP_9 Input: ${c.TIME_STAMP_9.toString()}'
-							println '! parse TIME_STAMP_9 Exception: ${e.toString()}'
+							logMessage response, "! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}"
+							logMessage response, "! parse TIME_STAMP_9 Exception: ${e.toString()}"
 						}
 						norcLbBatch.recmoveInfo = c.RECMOVE_INFO.toString()
 						norcLbBatch.recaddrRecAddress1 = c.RECADDR_REC_ADDRESS1.toString()
@@ -967,9 +1746,8 @@ class DataParserService {
 								norcLbBatch.timeStamp10 = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TIME_STAMP_10: ${c.TIME_STAMP_10.toString()}'
-							println '! parse TIME_STAMP_10 Input: ${c.TIME_STAMP_10.toString()}'
-							println '! parse TIME_STAMP_10 Exception: ${e.toString()}'
+							logMessage response, "! Invalid TIME_STAMP_10: ${c.TIME_STAMP_10.toString()}"
+							logMessage response, "! parse TIME_STAMP_10 Exception: ${e.toString()}"
 						}
 						try {
 							dateTimeString = c.TIME_STAMP_11.toString()
@@ -980,9 +1758,8 @@ class DataParserService {
 								norcLbBatch.timeStamp11 = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}'
-							println '! parse TIME_STAMP_11 Input: ${c.TIME_STAMP_11.toString()}'
-							println '! parse TIME_STAMP_11 Exception: ${e.toString()}'
+							logMessage response, "! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}"
+							logMessage response, "! parse TIME_STAMP_11 Exception: ${e.toString()}"
 						}
 						norcLbBatch.respndnt = c.RESPNDNT.toString()
 						norcLbBatch.contactType = c.CONTACT_TYPE.toString()
@@ -997,9 +1774,8 @@ class DataParserService {
 								norcLbBatch.timeStamp12 = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}'
-							println '! parse TIME_STAMP_12 Input: ${c.TIME_STAMP_12.toString()}'
-							println '! parse TIME_STAMP_12 Exception: ${e.toString()}'
+							logMessage response, "! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}"
+							logMessage response, "! parse TIME_STAMP_12 Exception: ${e.toString()}"
 						}
 						norcLbBatch.elapsedtime = c.ElapsedTime.toString()
 						try {
@@ -1011,23 +1787,22 @@ class DataParserService {
 								norcLbBatch.temptimevariable = dt.toCalendar().getTime()
 							}
 						} catch (Exception e) {
-							response << '! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}'
-							println '! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}'
-							println '! parse TempTimeVariable Exception: ${e.toString()}'
+							logMessage response, "! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}"
+							logMessage response, "! parse TempTimeVariable Exception: ${e.toString()}"
 						}
 					// Save the record
 					if (norcLbBatch.hasErrors()) {
-						response << "! norcLbBatch has errors.\n"
+						logMessage response, "! norcLbBatch has errors."
 					} else if (norcLbBatch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcLbBatch record with Respondent Serial ${norcLbBatch.respondentSerial}"
+						// logMessage response, "Error saving norcLbBatch record with Respondent Serial ${norcLbBatch.respondentSerial}"
 						norcLbBatch.errors.each{ e ->
-							// println "norcLbBatch:error::${e}"
+							// logMessage response, "norcLbBatch:error::${e}"
 							e.fieldErrors.each{ fe -> 
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n" 
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
 							}
 						}
 					} 				
@@ -1038,17 +1813,17 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug) {
-			println "    Done! ${saveCount} records saved to norcLbBatch in ${diff} seconds"			
+			logMessage response, "    Done! ${saveCount} records saved to norcLbBatch in ${diff} seconds"			
 		}
 		// end LB1_BATCH1
 	}
 	def parseHhBatch(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 				
 		def saveCount = 0
 		if (debug){
-			println "Parsing HH_BATCH1"			
+			logMessage response, "Parsing HH_BATCH1"			
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
@@ -1058,7 +1833,7 @@ class DataParserService {
 				
 				//def affiliate = c.AFFILIATE.toString()
 				//def institutionName = c.INSTITUTION.toString()
-				//println "${affiliate}: ${institutionName}"
+				//logMessage response, "${affiliate}: ${institutionName}"
 				NorcHhBatch.withTransaction {
 					def dateTimeString = ""
 					def checkSerial = c.Respondent_Serial.toString()
@@ -1068,11 +1843,11 @@ class DataParserService {
 		
 					if (!norcHhBatch) {
 						norcHhBatch = new NorcHhBatch()
-						response <<  " + Creating new NorcHhBatch(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcHhBatch(${checkSerial})"
 					} else {
 						// Lock object for update
 						norcHhBatch.lock()
-						response <<  " ~ Updating existing NorcHhBatch(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcHhBatch(${checkSerial})"
 					}
 					
 					norcHhBatch.respondentSerial = c.Respondent_Serial.toString()
@@ -1105,9 +1880,9 @@ class DataParserService {
 							norcHhBatch.datacollectionStarttime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}'
-						// println '! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}'
-						// println '! parse DataCollection_StartTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}"
+						// logMessage response, "! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}"
+						// logMessage response, "! parse DataCollection_StartTime Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.DataCollection_FinishTime.toString()
@@ -1118,9 +1893,9 @@ class DataParserService {
 							norcHhBatch.datacollectionFinishtime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}'
-						// println '! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}'
-						// println '! parse DataCollection_FinishTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}"
+						// logMessage response, "! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}"
+						// logMessage response, "! parse DataCollection_FinishTime Exception: ${e.toString()}"
 					}
 					norcHhBatch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
 					norcHhBatch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
@@ -1389,9 +2164,9 @@ class DataParserService {
 							norcHhBatch.timeStamp1 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}'
-						// println '! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}'
-						// println '! parse TIME_STAMP_1 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}"
+						// logMessage response, "! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}"
+						// logMessage response, "! parse TIME_STAMP_1 Exception: ${e.toString()}"
 					}
 					norcHhBatch.incoming = c.INCOMING.toString()
 					norcHhBatch.incomingCodes = c.INCOMING_Codes.toString()
@@ -1460,9 +2235,9 @@ class DataParserService {
 							norcHhBatch.timeStamp3 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}'
-						// println '! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}'
-						// println '! parse TIME_STAMP_3 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}"
+						// logMessage response, "! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}"
+						// logMessage response, "! parse TIME_STAMP_3 Exception: ${e.toString()}"
 					}
 					norcHhBatch.pregnantHh = c.PREGNANT_HH.toString()
 					norcHhBatch.numPreg = c.NUM_PREG.toString()
@@ -1612,9 +2387,9 @@ class DataParserService {
 							norcHhBatch.timeStamp4 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}'
-						// println '! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}'
-						// println '! parse TIME_STAMP_4 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}"
+						// logMessage response, "! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}"
+						// logMessage response, "! parse TIME_STAMP_4 Exception: ${e.toString()}"
 					}
 					norcHhBatch.selfpreg = c.SELFPREG.toString()
 					norcHhBatch.selfelig = c.SELFELIG.toString()
@@ -1767,9 +2542,9 @@ class DataParserService {
 							norcHhBatch.timeStamp5 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}'
-						// println '! parse TIME_STAMP_5 Input: ${c.TIME_STAMP_5.toString()}'
-						// println '! parse TIME_STAMP_5 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}"
+						// logMessage response, "! parse TIME_STAMP_5 Input: ${c.TIME_STAMP_5.toString()}"
+						// logMessage response, "! parse TIME_STAMP_5 Exception: ${e.toString()}"
 					}
 					norcHhBatch.allElig = c.ALL_ELIG.toString()
 					norcHhBatch.finloopP1Fname = c.FinLoop_p1_FNAME.toString()
@@ -1904,9 +2679,9 @@ class DataParserService {
 							norcHhBatch.timeStamp6 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}'
-						// println '! parse TIME_STAMP_6 Input: ${c.TIME_STAMP_6.toString()}'
-						// println '! parse TIME_STAMP_6 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}"
+						// logMessage response, "! parse TIME_STAMP_6 Input: ${c.TIME_STAMP_6.toString()}"
+						// logMessage response, "! parse TIME_STAMP_6 Exception: ${e.toString()}"
 					}
 					norcHhBatch.rFname = c.R_FNAME.toString()
 					norcHhBatch.rFnameCodes = c.R_FNAME_Codes.toString()
@@ -1932,9 +2707,9 @@ class DataParserService {
 							norcHhBatch.timeStamp7 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}'
-						// println '! parse TIME_STAMP_7 Input: ${c.TIME_STAMP_7.toString()}'
-						// println '! parse TIME_STAMP_7 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}"
+						// logMessage response, "! parse TIME_STAMP_7 Input: ${c.TIME_STAMP_7.toString()}"
+						// logMessage response, "! parse TIME_STAMP_7 Exception: ${e.toString()}"
 					}
 					norcHhBatch.incentiveRequest = c.INCENTIVE_REQUEST.toString()
 					norcHhBatch.incentiveChoice = c.INCENTIVE_CHOICE.toString()
@@ -1949,9 +2724,9 @@ class DataParserService {
 							norcHhBatch.timeStamp8 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}'
-						// println '! parse TIME_STAMP_8 Input: ${c.TIME_STAMP_8.toString()}'
-						// println '! parse TIME_STAMP_8 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}"
+						// logMessage response, "! parse TIME_STAMP_8 Input: ${c.TIME_STAMP_8.toString()}"
+						// logMessage response, "! parse TIME_STAMP_8 Exception: ${e.toString()}"
 					}
 					norcHhBatch.contactType = c.CONTACT_TYPE.toString()
 					norcHhBatch.contactTypeOther = c.CONTACT_TYPE_OTHER.toString()
@@ -1972,9 +2747,9 @@ class DataParserService {
 							norcHhBatch.temptimevariable = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}'
-						// println '! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}'
-						// println '! parse TempTimeVariable Exception: ${e.toString()}'
+						logMessage response, "! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}"
+						// logMessage response, "! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}"
+						// logMessage response, "! parse TempTimeVariable Exception: ${e.toString()}"
 					}
 					norcHhBatch.barcode = c.barcode.toString()
 					norcHhBatch.tracking = c.TRACKING__.toString()
@@ -1987,9 +2762,9 @@ class DataParserService {
 							norcHhBatch.transmlDate = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TRANSML_DATE: ${c.TRANSML_DATE.toString()}'
-						// println '! parse TRANSML_DATE Input: ${c.TRANSML_DATE.toString()}'
-						// println '! parse TRANSML_DATE Exception: ${e.toString()}'
+						logMessage response, "! Invalid TRANSML_DATE: ${c.TRANSML_DATE.toString()}"
+						// logMessage response, "! parse TRANSML_DATE Input: ${c.TRANSML_DATE.toString()}"
+						// logMessage response, "! parse TRANSML_DATE Exception: ${e.toString()}"
 					}
 					norcHhBatch.comments = c.COMMENTS.toString()
 					try {
@@ -2001,26 +2776,26 @@ class DataParserService {
 							norcHhBatch.theDate = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DATE: ${c.DATE.toString()}'
-						// println '! parse DATE Input: ${c.DATE.toString()}'
-						// println '! parse DATE Exception: ${e.toString()}'
+						logMessage response, "! Invalid DATE: ${c.DATE.toString()}"
+						// logMessage response, "! parse DATE Input: ${c.DATE.toString()}"
+						// logMessage response, "! parse DATE Exception: ${e.toString()}"
 					}
 					norcHhBatch.rcuser = c.RCUSER.toString()
 					norcHhBatch.flagMail = c.flag_mail.toString()
 					
 					// Save the record
 					if (norcHhBatch.hasErrors()) {
-						response << "! norcHhBatch has errors.\n"
+						logMessage response, "! norcHhBatch has errors."
 					} else if (norcHhBatch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcHhBatch record with Respondent Serial ${norcHhBatch.respondentSerial}"
+						// logMessage response, "Error saving norcHhBatch record with Respondent Serial ${norcHhBatch.respondentSerial}"
 						norcHhBatch.errors.each{ e ->
-							// println "norcHhBatch:error::${e}"
+							// logMessage response, "norcHhBatch:error::${e}"
 							e.fieldErrors.each{ fe -> 
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n" 
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'" 
 							}
 						}
 					} 				
@@ -2031,18 +2806,18 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug) {
-			println "    Done! ${saveCount} records saved to norcHhBatch in ${diff} seconds"			
+			logMessage response, "    Done! ${saveCount} records saved to norcHhBatch in ${diff} seconds"			
 		}
 		// end HH_BATCH1
 	}
 		
 	def parseLowConsentBatch(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 		
 		def saveCount = 0
 		if (debug) {
-			println "Parsing LOWCONSENT_BATCH1"
+			logMessage response, "Parsing LOWCONSENT_BATCH1"
 		}
 		def startTime = System.nanoTime()
 		//table?.LOWCONSENT_BATCH1?.each{ c ->
@@ -2055,11 +2830,11 @@ class DataParserService {
 					
 					if (!norcLowConsentBatch) {
 						norcLowConsentBatch = new NorcLowConsentBatch()
-						response <<  " + Creating new NorcLowConsentBatch(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcLowConsentBatch(${checkSerial})"
 					} else {
 						// Lock object for update
 						norcLowConsentBatch.lock()
-						response <<  " ~ Updating existing NorcLowConsentBatch(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcLowConsentBatch(${checkSerial})"
 					}
 					norcLowConsentBatch.respondentSerial = c.Respondent_Serial.toString()
 					norcLowConsentBatch.respondentSerialSourcefile = c.Respondent_Serial_SourceFile.toString()
@@ -2090,9 +2865,9 @@ class DataParserService {
 							norcLowConsentBatch.datacollectionStarttime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}'
-						// println '! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}'
-						// println '! parse DataCollection_StartTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}"
+						// logMessage response, "! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}"
+						// logMessage response, "! parse DataCollection_StartTime Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.DataCollection_FinishTime.toString()
@@ -2103,9 +2878,9 @@ class DataParserService {
 							norcLowConsentBatch.datacollectionFinishtime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}'
-						// println '! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}'
-						// println '! parse DataCollection_FinishTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}"
+						// logMessage response, "! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}"
+						// logMessage response, "! parse DataCollection_FinishTime Exception: ${e.toString()}"
 					}
 					norcLowConsentBatch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
 					norcLowConsentBatch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
@@ -2155,9 +2930,9 @@ class DataParserService {
 							norcLowConsentBatch.timeStamp1 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}'
-						// println '! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}'
-						// println '! parse TIME_STAMP_1 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}"
+						// logMessage response, "! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}"
+						// logMessage response, "! parse TIME_STAMP_1 Exception: ${e.toString()}"
 					}
 					norcLowConsentBatch.currmo = c.CURRMO.toString()
 					norcLowConsentBatch.currdy = c.CURRDY.toString()
@@ -2183,9 +2958,9 @@ class DataParserService {
 							norcLowConsentBatch.timeStamp2 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}'
-						// println '! parse TIME_STAMP_2 Input: ${c.TIME_STAMP_2.toString()}'
-						// println '! parse TIME_STAMP_2 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}"
+						// logMessage response, "! parse TIME_STAMP_2 Input: ${c.TIME_STAMP_2.toString()}"
+						// logMessage response, "! parse TIME_STAMP_2 Exception: ${e.toString()}"
 					}
 					norcLowConsentBatch.whoConsented = c.WHO_CONSENTED.toString()
 					norcLowConsentBatch.cn004c = c.CN004C.toString()
@@ -2198,9 +2973,9 @@ class DataParserService {
 							norcLowConsentBatch.timeStamp2a = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_2A: ${c.TIME_STAMP_2A.toString()}'
-						// println '! parse TIME_STAMP_2A Input: ${c.TIME_STAMP_2A.toString()}'
-						// println '! parse TIME_STAMP_2A Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_2A: ${c.TIME_STAMP_2A.toString()}"
+						// logMessage response, "! parse TIME_STAMP_2A Input: ${c.TIME_STAMP_2A.toString()}"
+						// logMessage response, "! parse TIME_STAMP_2A Exception: ${e.toString()}"
 					}
 					norcLowConsentBatch.consentComments = c.CONSENT_COMMENTS.toString()
 					norcLowConsentBatch.cn006 = c.CN006.toString()
@@ -2214,9 +2989,9 @@ class DataParserService {
 							norcLowConsentBatch.timeStamp3 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}'
-						// println '! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}'
-						// println '! parse TIME_STAMP_3 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}"
+						// logMessage response, "! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}"
+						// logMessage response, "! parse TIME_STAMP_3 Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.CONSENT_DATE.toString()
@@ -2227,9 +3002,9 @@ class DataParserService {
 							norcLowConsentBatch.consentDate = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid CONSENT_DATE: ${c.CONSENT_DATE.toString()}'
-						// println '! parse CONSENT_DATE Input: ${c.CONSENT_DATE.toString()}'
-						// println '! parse CONSENT_DATE Exception: ${e.toString()}'
+						logMessage response, "! Invalid CONSENT_DATE: ${c.CONSENT_DATE.toString()}"
+						// logMessage response, "! parse CONSENT_DATE Input: ${c.CONSENT_DATE.toString()}"
+						// logMessage response, "! parse CONSENT_DATE Exception: ${e.toString()}"
 					}
 					norcLowConsentBatch.english = c.ENGLISH.toString()
 					norcLowConsentBatch.contactLang = c.CONTACT_LANG.toString()
@@ -2248,9 +3023,9 @@ class DataParserService {
 							norcLowConsentBatch.timeStamp4 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}'
-						// println '! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}'
-						// println '! parse TIME_STAMP_4 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}"
+						// logMessage response, "! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}"
+						// logMessage response, "! parse TIME_STAMP_4 Exception: ${e.toString()}"
 					}
 					norcLowConsentBatch.elapsedtime = c.ElapsedTime.toString()
 					try {
@@ -2262,24 +3037,24 @@ class DataParserService {
 							norcLowConsentBatch.temptimevariable = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}'
-						// println '! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}'
-						// println '! parse TempTimeVariable Exception: ${e.toString()}'
+						logMessage response, "! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}"
+						// logMessage response, "! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}"
+						// logMessage response, "! parse TempTimeVariable Exception: ${e.toString()}"
 					}
 					
 					// Save the record
 					if (norcLowConsentBatch.hasErrors()) {
-						response << "! norcLowConsentBatch has errors.\n"
+						logMessage response, "! norcLowConsentBatch has errors."
 					} else if (norcLowConsentBatch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcLowConsentBatch record with Respondent Serial ${norcLowConsentBatch.respondentSerial}"
+						// logMessage response, "Error saving norcLowConsentBatch record with Respondent Serial ${norcLowConsentBatch.respondentSerial}"
 						norcLowConsentBatch.errors.each{ e ->
-							// println "norcLowConsentBatch:error::${e}"
+							// logMessage response, "norcLowConsentBatch:error::${e}"
 							e.fieldErrors.each{ fe ->
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
 							}
 						}
 					}				
@@ -2289,7 +3064,7 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug){
-			println "    Done! ${saveCount} records saved to norcLowConsentBatch in ${diff} seconds"			
+			logMessage response, "    Done! ${saveCount} records saved to norcLowConsentBatch in ${diff} seconds"			
 		}
 		// end LOWCONSENT_BATCH1
 
@@ -2297,13 +3072,13 @@ class DataParserService {
 	
 	def parseLowQuex1Batch(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 
 		now = new Date()
 
 		def saveCount = 0
 		if (debug) {
-			println "Parsing LOWQUEX1_BATCH1"
+			logMessage response, "Parsing LOWQUEX1_BATCH1"
 		}
 		def startTime = System.nanoTime()
 		//table?.LOWQUEX1_BATCH1?.each{ c ->
@@ -2315,11 +3090,11 @@ class DataParserService {
 					def norcLowQuex1Batch = NorcLowQuex1Batch.findByRespondentSerial(checkSerial)
 					if (!norcLowQuex1Batch) {
 						norcLowQuex1Batch = new NorcLowQuex1Batch()
-						response <<  " + Creating new NorcLowQuex1Batch(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcLowQuex1Batch(${checkSerial})"
 					} else {
 						// Lock object for update
 						norcLowQuex1Batch.lock()
-						response <<  " ~ Updating existing NorcLowQuex1Batch(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcLowQuex1Batch(${checkSerial})"
 					}
 					norcLowQuex1Batch.respondentSerial = c.Respondent_Serial.toString()
 					norcLowQuex1Batch.respondentSerialSourcefile = c.Respondent_Serial_SourceFile.toString()
@@ -2350,9 +3125,9 @@ class DataParserService {
 							norcLowQuex1Batch.datacollectionStarttime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}'
-						// println '! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}'
-						// println '! parse DataCollection_StartTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}"
+						// logMessage response, "! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}"
+						// logMessage response, "! parse DataCollection_StartTime Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.DataCollection_FinishTime.toString()
@@ -2363,9 +3138,9 @@ class DataParserService {
 							norcLowQuex1Batch.datacollectionFinishtime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}'
-						// println '! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}'
-						// println '! parse DataCollection_FinishTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}"
+						// logMessage response, "! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}"
+						// logMessage response, "! parse DataCollection_FinishTime Exception: ${e.toString()}"
 					}
 					norcLowQuex1Batch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
 					norcLowQuex1Batch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
@@ -2410,9 +3185,9 @@ class DataParserService {
 							norcLowQuex1Batch.timeStamp1 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}'
-						// println '! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}'
-						// println '! parse TIME_STAMP_1 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}"
+						// logMessage response, "! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}"
+						// logMessage response, "! parse TIME_STAMP_1 Exception: ${e.toString()}"
 					}
 					norcLowQuex1Batch.currmo = c.CURRMO.toString()
 					norcLowQuex1Batch.currdy = c.CURRDY.toString()
@@ -2436,9 +3211,9 @@ class DataParserService {
 							norcLowQuex1Batch.timeStamp2 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}'
-						// println '! parse TIME_STAMP_2 Input: ${c.TIME_STAMP_2.toString()}'
-						// println '! parse TIME_STAMP_2 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}"
+						// logMessage response, "! parse TIME_STAMP_2 Input: ${c.TIME_STAMP_2.toString()}"
+						// logMessage response, "! parse TIME_STAMP_2 Exception: ${e.toString()}"
 					}
 					norcLowQuex1Batch.ps002txt = c.ps002txt.toString()
 					norcLowQuex1Batch.pregnant = c.PREGNANT.toString()
@@ -2452,9 +3227,9 @@ class DataParserService {
 							norcLowQuex1Batch.timeStamp3 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}'
-						// println '! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}'
-						// println '! parse TIME_STAMP_3 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}"
+						// logMessage response, "! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}"
+						// logMessage response, "! parse TIME_STAMP_3 Exception: ${e.toString()}"
 					}
 					norcLowQuex1Batch.lossInfo = c.LOSS_INFO.toString()
 					norcLowQuex1Batch.dueDateMonth = c.DUE_DATE_MONTH.toString()
@@ -2480,9 +3255,9 @@ class DataParserService {
 							norcLowQuex1Batch.timeStamp4 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}'
-						// println '! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}'
-						// println '! parse TIME_STAMP_4 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}"
+						// logMessage response, "! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}"
+						// logMessage response, "! parse TIME_STAMP_4 Exception: ${e.toString()}"
 					}
 					norcLowQuex1Batch.homeTest = c.HOME_TEST.toString()
 					norcLowQuex1Batch.brthtxt = c.brthtxt.toString()
@@ -2532,9 +3307,9 @@ class DataParserService {
 							norcLowQuex1Batch.timeStamp5 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}'
-						// println '! parse TIME_STAMP_5 Input: ${c.TIME_STAMP_5.toString()}'
-						// println '! parse TIME_STAMP_5 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}"
+						// logMessage response, "! parse TIME_STAMP_5 Input: ${c.TIME_STAMP_5.toString()}"
+						// logMessage response, "! parse TIME_STAMP_5 Exception: ${e.toString()}"
 					}
 					norcLowQuex1Batch.healthtxt = c.healthtxt.toString()
 					norcLowQuex1Batch.health = c.HEALTH.toString()
@@ -2561,9 +3336,9 @@ class DataParserService {
 							norcLowQuex1Batch.timeStamp6 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}'
-						// println '! parse TIME_STAMP_6 Input: ${c.TIME_STAMP_6.toString()}'
-						// println '! parse TIME_STAMP_6 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}"
+						// logMessage response, "! parse TIME_STAMP_6 Input: ${c.TIME_STAMP_6.toString()}"
+						// logMessage response, "! parse TIME_STAMP_6 Exception: ${e.toString()}"
 					}
 					norcLowQuex1Batch.insure = c.INSURE.toString()
 					norcLowQuex1Batch.insEmploy = c.INS_EMPLOY.toString()
@@ -2581,9 +3356,9 @@ class DataParserService {
 							norcLowQuex1Batch.timeStamp7 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}'
-						// println '! parse TIME_STAMP_7 Input: ${c.TIME_STAMP_7.toString()}'
-						// println '! parse TIME_STAMP_7 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}"
+						// logMessage response, "! parse TIME_STAMP_7 Input: ${c.TIME_STAMP_7.toString()}"
+						// logMessage response, "! parse TIME_STAMP_7 Exception: ${e.toString()}"
 					}
 					norcLowQuex1Batch.ageHome = c.AGE_HOME.toString()
 					norcLowQuex1Batch.mainHeat = c.MAIN_HEAT.toString()
@@ -2610,9 +3385,9 @@ class DataParserService {
 							norcLowQuex1Batch.timeStamp8 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}'
-						// println '! parse TIME_STAMP_8 Input: ${c.TIME_STAMP_8.toString()}'
-						// println '! parse TIME_STAMP_8 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}"
+						// logMessage response, "! parse TIME_STAMP_8 Input: ${c.TIME_STAMP_8.toString()}"
+						// logMessage response, "! parse TIME_STAMP_8 Exception: ${e.toString()}"
 					}
 					norcLowQuex1Batch.cigNow = c.CIG_NOW.toString()
 					norcLowQuex1Batch.cigNowFreq = c.CIG_NOW_FREQ.toString()
@@ -2632,9 +3407,9 @@ class DataParserService {
 							norcLowQuex1Batch.timeStamp9 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}'
-						// println '! parse TIME_STAMP_9 Input: ${c.TIME_STAMP_9.toString()}'
-						// println '! parse TIME_STAMP_9 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}"
+						// logMessage response, "! parse TIME_STAMP_9 Input: ${c.TIME_STAMP_9.toString()}"
+						// logMessage response, "! parse TIME_STAMP_9 Exception: ${e.toString()}"
 					}
 					norcLowQuex1Batch.learn = c.LEARN.toString()
 					norcLowQuex1Batch.help = c.HELP.toString()
@@ -2663,9 +3438,9 @@ class DataParserService {
 							norcLowQuex1Batch.timeStamp11 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}'
-						// println '! parse TIME_STAMP_11 Input: ${c.TIME_STAMP_11.toString()}'
-						// println '! parse TIME_STAMP_11 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}"
+						// logMessage response, "! parse TIME_STAMP_11 Input: ${c.TIME_STAMP_11.toString()}"
+						// logMessage response, "! parse TIME_STAMP_11 Exception: ${e.toString()}"
 					}
 					norcLowQuex1Batch.end11txt = c.END1_1txt.toString()
 					try {
@@ -2677,9 +3452,9 @@ class DataParserService {
 							norcLowQuex1Batch.timeStamp12 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}'
-						// println '! parse TIME_STAMP_12 Input: ${c.TIME_STAMP_12.toString()}'
-						// println '! parse TIME_STAMP_12 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}"
+						// logMessage response, "! parse TIME_STAMP_12 Input: ${c.TIME_STAMP_12.toString()}"
+						// logMessage response, "! parse TIME_STAMP_12 Exception: ${e.toString()}"
 					}
 					norcLowQuex1Batch.elapsedtime = c.ElapsedTime.toString()
 					try {
@@ -2691,24 +3466,24 @@ class DataParserService {
 							norcLowQuex1Batch.temptimevariable = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}'
-						// println '! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}'
-						// println '! parse TempTimeVariable Exception: ${e.toString()}'
+						logMessage response, "! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}"
+						// logMessage response, "! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}"
+						// logMessage response, "! parse TempTimeVariable Exception: ${e.toString()}"
 					}
 					
 					// Save the record
 					if (norcLowQuex1Batch.hasErrors()) {
-						response << "! norcLowQuex1Batch has errors.\n"
+						logMessage response, "! norcLowQuex1Batch has errors."
 					} else if (norcLowQuex1Batch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcLowQuex1Batch record with Respondent Serial ${norcLowQuex1Batch.respondentSerial}"
+						// logMessage response, "Error saving norcLowQuex1Batch record with Respondent Serial ${norcLowQuex1Batch.respondentSerial}"
 						norcLowQuex1Batch.errors.each{ e ->
-							// println "norcLowQuex1Batch:error::${e}"
+							// logMessage response, "norcLowQuex1Batch:error::${e}"
 							e.fieldErrors.each{ fe ->
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
 							}
 						}
 					}				
@@ -2719,7 +3494,7 @@ class DataParserService {
 		def diff = (endTime - startTime)/1000000000
 
 		if (debug){
-			println "    Done! ${saveCount} records saved to norcLowQuex1Batch"			
+			logMessage response, "    Done! ${saveCount} records saved to norcLowQuex1Batch"			
 		}
 		// end LOWQUEX1_BATCH1
 
@@ -2727,13 +3502,13 @@ class DataParserService {
 
 	def parseScreenerBatch(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 
 		now = new Date()
 
 		def saveCount = 0
 		if (debug) {
-			println "Parsing SCREENER_BATCH1"
+			logMessage response, "Parsing SCREENER_BATCH1"
 		}
 		def startTime = System.nanoTime()
 		//table?.SCREENER_BATCH1?.each{ c ->
@@ -2746,11 +3521,11 @@ class DataParserService {
 		
 					if (!norcScreenerBatch) {
 						norcScreenerBatch = new NorcScreenerBatch()
-						response <<  " + Creating new NorcScreenerBatch(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcScreenerBatch(${checkSerial})"
 					} else {
 						// Lock object for update
 						norcScreenerBatch.lock()
-						response <<  " ~ Updating existing NorcScreenerBatch(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcScreenerBatch(${checkSerial})"
 					}
 					norcScreenerBatch.respondentSerial = c.Respondent_Serial.toString()
 					norcScreenerBatch.respondentSerialSourcefile = c.Respondent_Serial_SourceFile.toString()
@@ -2781,9 +3556,9 @@ class DataParserService {
 							norcScreenerBatch.datacollectionStarttime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}'
-						// println '! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}'
-						// println '! parse DataCollection_StartTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}"
+						// logMessage response, "! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}"
+						// logMessage response, "! parse DataCollection_StartTime Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.DataCollection_FinishTime.toString()
@@ -2794,9 +3569,9 @@ class DataParserService {
 							norcScreenerBatch.datacollectionFinishtime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}'
-						// println '! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}'
-						// println '! parse DataCollection_FinishTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}"
+						// logMessage response, "! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}"
+						// logMessage response, "! parse DataCollection_FinishTime Exception: ${e.toString()}"
 					}
 					norcScreenerBatch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
 					norcScreenerBatch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
@@ -2864,9 +3639,9 @@ class DataParserService {
 							norcScreenerBatch.timeStamp1 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}'
-						// println '! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}'
-						// println '! parse TIME_STAMP_1 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}"
+						// logMessage response, "! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}"
+						// logMessage response, "! parse TIME_STAMP_1 Exception: ${e.toString()}"
 					}
 					norcScreenerBatch.quexlang = c.QUEXLANG.toString()
 					norcScreenerBatch.timeStamp2 = c.TIME_STAMP_2.toString()
@@ -2908,9 +3683,9 @@ class DataParserService {
 							norcScreenerBatch.timeStamp4 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}'
-						// println '! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}'
-						// println '! parse TIME_STAMP_4 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}"
+						// logMessage response, "! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}"
+						// logMessage response, "! parse TIME_STAMP_4 Exception: ${e.toString()}"
 					}
 					norcScreenerBatch.addressDkrefaddr = c.ADDRESS_DKREFADDR.toString()
 					norcScreenerBatch.addressAddress1 = c.ADDRESS_ADDRESS_1.toString()
@@ -2936,9 +3711,9 @@ class DataParserService {
 							norcScreenerBatch.timeStamp5 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}'
-						// println '! parse TIME_STAMP_5 Input: ${c.TIME_STAMP_5.toString()}'
-						// println '! parse TIME_STAMP_5 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}"
+						// logMessage response, "! parse TIME_STAMP_5 Input: ${c.TIME_STAMP_5.toString()}"
+						// logMessage response, "! parse TIME_STAMP_5 Exception: ${e.toString()}"
 					}
 					norcScreenerBatch.knowNcs = c.KNOW_NCS.toString()
 					norcScreenerBatch.howKnowNcs01 = c.HOW_KNOW_NCS_01.toString()
@@ -2975,9 +3750,9 @@ class DataParserService {
 							norcScreenerBatch.timeStamp6 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}'
-						// println '! parse TIME_STAMP_6 Input: ${c.TIME_STAMP_6.toString()}'
-						// println '! parse TIME_STAMP_6 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}"
+						// logMessage response, "! parse TIME_STAMP_6 Input: ${c.TIME_STAMP_6.toString()}"
+						// logMessage response, "! parse TIME_STAMP_6 Exception: ${e.toString()}"
 					}
 					norcScreenerBatch.pregnant = c.PREGNANT.toString()
 					norcScreenerBatch.origDueDateMonth = c.ORIG_DUE_DATE_MONTH.toString()
@@ -3006,9 +3781,9 @@ class DataParserService {
 							norcScreenerBatch.timeStamp7 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}'
-						// println '! parse TIME_STAMP_7 Input: ${c.TIME_STAMP_7.toString()}'
-						// println '! parse TIME_STAMP_7 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}"
+						// logMessage response, "! parse TIME_STAMP_7 Input: ${c.TIME_STAMP_7.toString()}"
+						// logMessage response, "! parse TIME_STAMP_7 Exception: ${e.toString()}"
 					}
 					norcScreenerBatch.trying = c.TRYING.toString()
 					norcScreenerBatch.hyster = c.HYSTER.toString()
@@ -3027,9 +3802,9 @@ class DataParserService {
 							norcScreenerBatch.timeStamp8 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}'
-						// println '! parse TIME_STAMP_8 Input: ${c.TIME_STAMP_8.toString()}'
-						// println '! parse TIME_STAMP_8 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}"
+						// logMessage response, "! parse TIME_STAMP_8 Input: ${c.TIME_STAMP_8.toString()}"
+						// logMessage response, "! parse TIME_STAMP_8 Exception: ${e.toString()}"
 					}
 					norcScreenerBatch.maristat = c.MARISTAT.toString()
 					norcScreenerBatch.educ = c.EDUC.toString()
@@ -3059,9 +3834,9 @@ class DataParserService {
 							norcScreenerBatch.timeStamp9 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}'
-						// println '! parse TIME_STAMP_9 Input: ${c.TIME_STAMP_9.toString()}'
-						// println '! parse TIME_STAMP_9 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}"
+						// logMessage response, "! parse TIME_STAMP_9 Input: ${c.TIME_STAMP_9.toString()}"
+						// logMessage response, "! parse TIME_STAMP_9 Exception: ${e.toString()}"
 					}
 					norcScreenerBatch.hhMembers = c.HH_MEMBERS.toString()
 					norcScreenerBatch.hhMembersCodes = c.HH_MEMBERS_Codes.toString()
@@ -3077,9 +3852,9 @@ class DataParserService {
 							norcScreenerBatch.timeStamp10 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_10: ${c.TIME_STAMP_10.toString()}'
-						// println '! parse TIME_STAMP_10 Input: ${c.TIME_STAMP_10.toString()}'
-						// println '! parse TIME_STAMP_10 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_10: ${c.TIME_STAMP_10.toString()}"
+						// logMessage response, "! parse TIME_STAMP_10 Input: ${c.TIME_STAMP_10.toString()}"
+						// logMessage response, "! parse TIME_STAMP_10 Exception: ${e.toString()}"
 					}
 					norcScreenerBatch.phoneNbr = c.PHONE_NBR.toString()
 					norcScreenerBatch.phoneNbrCodes = c.PHONE_NBR_Codes.toString()
@@ -3144,9 +3919,9 @@ class DataParserService {
 							norcScreenerBatch.timeStamp11 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}'
-						// println '! parse TIME_STAMP_11 Input: ${c.TIME_STAMP_11.toString()}'
-						// println '! parse TIME_STAMP_11 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}"
+						// logMessage response, "! parse TIME_STAMP_11 Input: ${c.TIME_STAMP_11.toString()}"
+						// logMessage response, "! parse TIME_STAMP_11 Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.TIME_STAMP_12.toString()
@@ -3157,9 +3932,9 @@ class DataParserService {
 							norcScreenerBatch.timeStamp12 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}'
-						// println '! parse TIME_STAMP_12 Input: ${c.TIME_STAMP_12.toString()}'
-						// println '! parse TIME_STAMP_12 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}"
+						// logMessage response, "! parse TIME_STAMP_12 Input: ${c.TIME_STAMP_12.toString()}"
+						// logMessage response, "! parse TIME_STAMP_12 Exception: ${e.toString()}"
 					}
 					norcScreenerBatch.otherFemale = c.OTHER_FEMALE.toString()
 					norcScreenerBatch.femaleEnd1a = c.FEMALE_END_1A.toString()
@@ -3173,9 +3948,9 @@ class DataParserService {
 							norcScreenerBatch.timeStamp13 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_13: ${c.TIME_STAMP_13.toString()}'
-						// println '! parse TIME_STAMP_13 Input: ${c.TIME_STAMP_13.toString()}'
-						// println '! parse TIME_STAMP_13 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_13: ${c.TIME_STAMP_13.toString()}"
+						// logMessage response, "! parse TIME_STAMP_13 Input: ${c.TIME_STAMP_13.toString()}"
+						// logMessage response, "! parse TIME_STAMP_13 Exception: ${e.toString()}"
 					}
 					norcScreenerBatch.english = c.ENGLISH.toString()
 					norcScreenerBatch.contactLang = c.CONTACT_LANG.toString()
@@ -3193,9 +3968,9 @@ class DataParserService {
 							norcScreenerBatch.timeStamp14 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_14: ${c.TIME_STAMP_14.toString()}'
-						// println '! parse TIME_STAMP_14 Input: ${c.TIME_STAMP_14.toString()}'
-						// println '! parse TIME_STAMP_14 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_14: ${c.TIME_STAMP_14.toString()}"
+						// logMessage response, "! parse TIME_STAMP_14 Input: ${c.TIME_STAMP_14.toString()}"
+						// logMessage response, "! parse TIME_STAMP_14 Exception: ${e.toString()}"
 					}
 					norcScreenerBatch.elapsedtime = c.ElapsedTime.toString()
 					try {
@@ -3207,24 +3982,24 @@ class DataParserService {
 							norcScreenerBatch.temptimevariable = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}'
-						// println '! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}'
-						// println '! parse TempTimeVariable Exception: ${e.toString()}'
+						logMessage response, "! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}"
+						// logMessage response, "! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}"
+						// logMessage response, "! parse TempTimeVariable Exception: ${e.toString()}"
 					}
 					
 					// Save the record
 					if (norcScreenerBatch.hasErrors()) {
-						response << "! norcScreenerBatch has errors.\n"
+						logMessage response, "! norcScreenerBatch has errors."
 					} else if (norcScreenerBatch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcHhBatch record with Respondent Serial ${norcScreenerBatch.respondentSerial}"
+						// logMessage response, "Error saving norcHhBatch record with Respondent Serial ${norcScreenerBatch.respondentSerial}"
 						norcScreenerBatch.errors.each{ e ->
-							// println "norcScreenerBatch:error::${e}"
+							// logMessage response, "norcScreenerBatch:error::${e}"
 							e.fieldErrors.each{ fe ->
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
 							}
 						}
 					}				
@@ -3234,20 +4009,20 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug) {
-			println "    Done! ${saveCount} records saved to norcScreenerBatch in ${diff} seconds"			
+			logMessage response, "    Done! ${saveCount} records saved to norcScreenerBatch in ${diff} seconds"			
 		}
 		// end SCREENER_BATCH1
 	}
 
 	def parseNonResponseList(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 
 		now = new Date()
 		
 		def saveCount = 0
 		if (debug){
-			println "Parsing NONRESPONSE_LIST"			
+			logMessage response, "Parsing NONRESPONSE_LIST"			
 		}
 		def startTime = System.nanoTime()
 		//table?.NONRESPONSE_LIST?.each{ c ->
@@ -3259,9 +4034,9 @@ class DataParserService {
 					def norcNonResponseList = NorcNonResponseList.findBySuId(checkSerial)
 					if (!norcNonResponseList) {
 						norcNonResponseList = new NorcNonResponseList()
-						response <<  " + Creating new NorcNonResponseList(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcNonResponseList(${checkSerial})"
 					} else {
-						response <<  " ~ Updating existing NorcNonResponseList(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcNonResponseList(${checkSerial})"
 					}
 		
 					norcNonResponseList.suId = c.su_id.toString()
@@ -3276,17 +4051,17 @@ class DataParserService {
 
 					// Save the record
 					if (norcNonResponseList.hasErrors()) {
-						response << "! norcNonResponseList has errors.\n"
+						logMessage response, "! norcNonResponseList has errors."
 					} else if (norcNonResponseList.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcNonResponseList record with Respondent Serial ${norcNonResponseList.suId}"
+						// logMessage response, "Error saving norcNonResponseList record with Respondent Serial ${norcNonResponseList.suId}"
 						norcNonResponseList.errors.each{ e ->
-							// println "norcNonResponseList:error::${e}"
+							// logMessage response, "norcNonResponseList:error::${e}"
 							e.fieldErrors.each{ fe ->
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
 							}
 						}
 					}				
@@ -3296,7 +4071,7 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug) {			
-			println "    Done! ${saveCount} records saved to norcNonResponseList in ${diff} seconds"
+			logMessage response, "    Done! ${saveCount} records saved to norcNonResponseList in ${diff} seconds"
 		}
 		// end NONRESPONSE_LIST
 	}
@@ -3313,9 +4088,9 @@ class DataParserService {
 		
 					if (! norcIncentive) {
 						norcIncentive = new NorcIncentive()
-						response <<  " + Creating new NorcIncentive(${mailingId})\n"
+						logMessage response,  " + Creating new NorcIncentive(${mailingId})"
 					} else {
-						response <<  " ~ Updating existing NorcIncentive(${mailingId})\n"
+						logMessage response,  " ~ Updating existing NorcIncentive(${mailingId})"
 					}
 		
 		
@@ -3336,11 +4111,11 @@ class DataParserService {
 						if (incentiveAmountString.isBigDecimal()) {
 							norcIncentive.incentiveAmount = incentiveAmountString.toBigDecimal()
 						} else {
-							response <<  "! Invalid incentiveAmount: ${c.incentiveAmount.toString()}.\n"
+							logMessage response,  "! Invalid incentiveAmount: ${c.incentiveAmount.toString()}."
 						}
 					} catch (Exception e) {
-						println "! parse incentiveAmount Exception: ${e.toString()}"
-						response <<  "! Invalid incentiveAmount: ${c.incentiveAmount.toString()}.\n"
+						logMessage response, "! parse incentiveAmount Exception: ${e.toString()}"
+						logMessage response,  "! Invalid incentiveAmount: ${c.incentiveAmount.toString()}."
 					}
 		
 					def incentiveMailed = c.incentiveMailed.toString()
@@ -3351,7 +4126,7 @@ class DataParserService {
 					} else if ( ! incentiveMailed ) {
 						norcIncentive.incentiveMailed = null
 					} else {
-						response <<  "! Unknown incentiveMailed: ${incentiveMailed}.  1 or 0 expect.\n"
+						logMessage response,  "! Unknown incentiveMailed: ${incentiveMailed}.  1 or 0 expect."
 					}
 		
 		
@@ -3366,11 +4141,11 @@ class DataParserService {
 							if (docType) {
 								norcIncentive.docType = docType
 							} else {
-								response <<  "! Unknown DocType: ${docTypeString}.  Please update FMTS.DOCTYPE first.\n"
+								logMessage response,  "! Unknown DocType: ${docTypeString}.  Please update FMTS.DOCTYPE first."
 							}
 						}
 					} catch (Exception e) {
-						response << "! Invalid DocType: ${docTypeString}"
+						logMessage response, "! Invalid DocType: ${docTypeString}"
 					}
 		
 					// Read, parse, and lookup the Source
@@ -3383,11 +4158,11 @@ class DataParserService {
 							if (source) {
 								norcIncentive.source = source
 							} else {
-								response <<  "! Unknown Source: ${sourceString}.  Please update FMTS.SOURCE first.\n"
+								logMessage response,  "! Unknown Source: ${sourceString}.  Please update FMTS.SOURCE first."
 							}
 						}
 					} catch (Exception e) {
-						response << "! Invalid Source: ${sourceString}"
+						logMessage response, "! Invalid Source: ${sourceString}"
 					}
 		
 					// Read, parse, and lookup the Status
@@ -3400,12 +4175,12 @@ class DataParserService {
 							if (status) {
 								norcIncentive.status = status
 							} else {
-								response <<  "! Unknown Status: ${statusString}.  Please update FMTS.STATUS first.\n"
+								logMessage response,  "! Unknown Status: ${statusString}.  Please update FMTS.STATUS first."
 							}
 						}
 					} catch (Exception e) {
-						response << "! Invalid Status: ${statusString}\n"
-						println "! parse Status Exception: ${e.toString()}"
+						logMessage response, "! Invalid Status: ${statusString}"
+						logMessage response, "! parse Status Exception: ${e.toString()}"
 					}
 		
 					// Read, parse, and lookup the Mode
@@ -3418,12 +4193,12 @@ class DataParserService {
 							if (mode) {
 								norcIncentive.mode = mode
 							} else {
-								response <<  "! Unknown Mode: ${modeString}.  Please update FMTS.MODE first.\n"
+								logMessage response,  "! Unknown Mode: ${modeString}.  Please update FMTS.MODE first."
 							}
 						}
 					} catch (Exception e) {
-						response << "! Invalid Mode: ${modeString}\n"
-						println "! parse Mode Exception: ${e.toString()}"
+						logMessage response, "! Invalid Mode: ${modeString}"
+						logMessage response, "! parse Mode Exception: ${e.toString()}"
 					}
 		
 					// Incentive Date
@@ -3436,9 +4211,8 @@ class DataParserService {
 							norcIncentive.incentiveDate = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << "! Invalid DateIn: ${c.DateIn.toString()}\n"
-						println "! parse DateIn Input: ${c.DateIn.toString()}"
-						println "! parse DateIn Exception: ${e.toString()}"
+						logMessage response, "! Invalid DateIn: ${c.DateIn.toString()}"
+						logMessage response, "! parse DateIn Exception: ${e.toString()}"
 					}
 		
 					// App Time & Date
@@ -3451,9 +4225,8 @@ class DataParserService {
 							norcIncentive.appTime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << "! Invalid AppTime: ${c.AppTime.toString()}\n"
-						println "! parse AppTime Input: ${c.AppTime.toString()}"
-						println "! parse AppTime Exception: ${e.toString()}"
+						logMessage response, "! Invalid AppTime: ${c.AppTime.toString()}"
+						logMessage response, "! parse AppTime Exception: ${e.toString()}"
 					}
 		
 					// PS Date
@@ -3466,9 +4239,8 @@ class DataParserService {
 							norcIncentive.pregnancyScreenerDate = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << "! Invalid DatePS: ${c.DatePS.toString()}\n"
-						println "! parse DatePS Input: ${c.DatePS.toString()}"
-						println "! parse DatePS Exception: ${e.toString()}"
+						logMessage response, "! Invalid DatePS: ${c.DatePS.toString()}"
+						logMessage response, "! parse DatePS Exception: ${e.toString()}"
 					}
 		
 		
@@ -3477,21 +4249,21 @@ class DataParserService {
 					try {
 						norcIncentive.segmentId = Integer.parseInt(c.SegmentID.toString())
 					} catch (Exception e) {
-						response << "! Invalid SegmentID: ${c.SegmentID.toString()}\n"
+						logMessage response, "! Invalid SegmentID: ${c.SegmentID.toString()}"
 					}
 		
 					// DONE SETTING VALUES, NOW WE SAVE.
 		
 					if (norcIncentive.hasErrors()) {
-						response << "! consent has errors.\n"
+						logMessage response, "! consent has errors."
 					} else if (norcIncentive.save(flush:true)) {
-						response << "= saved data\n"
+						logMessage response, "= saved data"
 					} else {
-						response << "! unable to save data.\n"
+						logMessage response, "! unable to save data."
 		
 						norcIncentive.errors.each{ e ->
-							// println "norcIncentive:error::${e}"
-							e.fieldErrors.each{ fe -> response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n" }
+							// logMessage response, "norcIncentive:error::${e}"
+							e.fieldErrors.each{ fe -> logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n" }
 						}
 					}
 				}
@@ -3506,150 +4278,215 @@ class DataParserService {
 				NorcConsent.withTransaction {
 	
 					def mailingId = c.MailingID.toString()
-					
-					def norcConsent = NorcConsent.findByMailingId(mailingId)
-					
-					if (! norcConsent) {
-						norcConsent = new NorcConsent()
-						response <<  " + Creating new NorcConsent(${mailingId})\n"
-					} else {
-						response <<  " ~ Updating existing NorcConsent(${mailingId})\n"
-					}
-					
-					
-					norcConsent.firstName = c.fName.toString()
-					norcConsent.lastName = c.lName.toString()
-					norcConsent.address1 = c.Address1.toString()
-					norcConsent.address2 = c.Address2.toString()
-					norcConsent.addressUnit = c.Unit.toString()
-					norcConsent.city = c.City.toString()
-					norcConsent.state = c.State.toString()
-					norcConsent.zipCode = c.Zip.toString()
-					norcConsent.zipFour = c.Zip4.toString()
-					norcConsent.norcSuId = c.SU_ID.toString()
-					norcConsent.mailingId = c.MailingID.toString()
-					norcConsent.email = c.email.toString()
-					norcConsent.phoneNumber = c.phoneNumber.toString()
-		
 					// Read, parse, and lookup the docType
 					def docTypeString = c.DocType.toString()
+					def docType = null
 					try {
 						if ( ! docTypeString ) {
-							norcConsent.docType = null
+							docType = null
 						} else {
-							def docType = NorcDocType.findByValue(Integer.parseInt(docTypeString))
-							if (docType) {
-								norcConsent.docType = docType
-							} else {
-								response <<  "! Unknown DocType: ${docTypeString}.  Please update FMTS.DOCTYPE first.\n"
+							docType = NorcDocType.findByValue(Integer.parseInt(docTypeString))
+						}
+					} catch (Exception e) {
+						logMessage response, "! Invalid DocType: ${docTypeString}"
+						logMessage response, "! Not Saving NorcConsent Record: ${mailingId}"
+					}
+
+					if (docType && mailingId) {
+
+						// AJZ Breakpoint Line: 3528
+						def norcConsent = NorcConsent.findByMailingIdAndDocType(mailingId, docType)
+						/*
+						def norcConsent = NorcConsent.createCriteria().get{
+							and {
+								eq('mailingId', mailingId)
+								docType {
+									idEq(docType.id)
+								}
 							}
+							maxResults(1)
 						}
-					} catch (Exception e) {
-						response << "! Invalid DocType: ${docTypeString}"
-					}
-					
-					// Read, parse, and lookup the Source
-					def sourceString = c.Source.toString()
-					try {
-						if ( ! sourceString ) {
-							norcConsent.source = null
+						*/
+
+						if (! norcConsent) {
+							norcConsent = new NorcConsent()
+							logMessage response,  " + Creating new NorcConsent(${mailingId}, ${docType})\n".toString()
 						} else {
-							def source = NorcSource.findByValue(Integer.parseInt(sourceString))
-							if (source) {
-								norcConsent.source = source
+							logMessage response,  " ~ Updating existing NorcConsent(${mailingId}, ${docType})\n".toString()
+						}
+
+
+						norcConsent.firstName = c.fName.toString()
+						norcConsent.lastName = c.lName.toString()
+						norcConsent.address1 = c.Address1.toString()
+						norcConsent.address2 = c.Address2.toString()
+						norcConsent.addressUnit = c.Unit.toString()
+						norcConsent.city = c.City.toString()
+						norcConsent.state = c.State.toString()
+						norcConsent.zipCode = c.Zip.toString()
+						norcConsent.zipFour = c.Zip4.toString()
+						norcConsent.norcSuId = c.SU_ID.toString()
+						norcConsent.mailingId = c.MailingID.toString()
+						norcConsent.email = c.email.toString()
+						norcConsent.phoneNumber = c.phoneNumber.toString()
+
+						// save doc type that was loaded above
+						if (docType) {
+							norcConsent.docType = docType
+						} else {
+							logMessage response,  "! Unknown DocType: ${docTypeString}.  Please update FMTS.DOCTYPE first."
+						}
+
+						norcConsent.ppgCurrent = c.ppg_current?.toString()
+						def ppgStatus = c.ppg_status.toString()
+						try {
+							if (ppgStatus) {
+								norcConsent.ppgStatus = Integer.parseInt(ppgStatus)
 							} else {
-								response <<  "! Unknown Source: ${sourceString}.  Please update FMTS.SOURCE first.\n"
+								norcConsent.ppgStatus = null
 							}
+						} catch (ex) {
+							logMessage response, "! Invalid ppg_status integer '${ppgStatus}'!"
+							logMessage response, "! Invalid ppg_status integer '${ppgStatus}'!"
 						}
-					} catch (Exception e) {
-						response << "! Invalid Source: ${sourceString}"
-					}
-					
-					// Read, parse, and lookup the Status
-					def statusString = c.Status.toString()
-					try {
-						if ( ! statusString ) {
-							norcConsent.status = null
-						} else {
-							def status = NorcStatus.findByValue(Integer.parseInt(statusString))
-							if (status) {
-								norcConsent.status = status
+						norcConsent.homePhone = c.HOME_PHONE?.toString()
+						norcConsent.sampleUnitKey = c.sample_unit_key?.toString()
+						norcConsent.area = c.area?.toString()
+						norcConsent.pscrDisp = c.pscr_disp?.toString()
+						norcConsent.flagPpgfollow = c.flag_ppgfollow?.toString()
+						norcConsent.in3 = c.in3?.toString()
+						norcConsent.localApptime = c.LocalAPPTIME?.toString()
+						norcConsent.hhId = c.hh_id?.toString()
+						def flagCaticombo = c.flag_CATICOMBO.toString()
+						try {
+							if (flagCaticombo) {
+								norcConsent.flagCaticombo = Integer.parseInt(flagCaticombo)
 							} else {
-								response <<  "! Unknown Status: ${statusString}.  Please update FMTS.STATUS first.\n"
+								norcConsent.flagCaticombo = null
 							}
+						} catch (ex) {
+							logMessage response, "! Invalid flag_CATICOMBO integer '${flagCaticombo}'!"
+							logMessage response, "! Invalid flag_CATICOMBO integer '${flagCaticombo}'!"
 						}
-					} catch (Exception e) {
-						response << "! Invalid Status: ${statusString}\n"
-						println "! parse Status Exception: ${e.toString()}"
-					}
-					
-					// Read, parse, and lookup the Mode
-					def modeString = c.Mode.toString()
-					try {
-						if ( ! modeString ) {
-							norcConsent.mode = null
-						} else {
-							def mode = NorcDocMode.findByValue(Integer.parseInt(modeString))
-							if (mode) {
-								norcConsent.mode = mode
+						norcConsent.datePS = c.datePS?.toString()
+
+						// Instrument Disp Date
+						try {
+							def instrumentDispDate = c.instrument_disp_date.toString()
+							// remove milliseconds
+							instrumentDispDate = instrumentDispDate.replaceAll(/\.[0-9]*/,'')
+							if ( ! instrumentDispDate ) {
+								norcConsent.instrumentDispDate = null
 							} else {
-								response <<  "! Unknown Mode: ${modeString}.  Please update FMTS.MODE first.\n"
+								DateTime dt = fmt.parseDateTime(instrumentDispDate)
+								norcConsent.instrumentDispDate = dt.toCalendar().getTime()
 							}
+						} catch (Exception e) {
+							logMessage response, "! Invalid instrument_disp_date: ${c.instrument_disp_date.toString()}"
+							logMessage response, "! parse instrument_disp_date Exception: ${e.toString()}"
 						}
-					} catch (Exception e) {
-						response << "! Invalid Mode: ${modeString}\n"
-						println "! parse Mode Exception: ${e.toString()}"
-					}
-		
-					// PS Date
-					try {
-						def pregnancyScreenerDateString = c.DatePS.toString()
-						if ( ! pregnancyScreenerDateString ) {
-							norcConsent.pregnancyScreenerDate = null
+
+						// Read, parse, and lookup the Source
+						def sourceString = c.Source.toString()
+						try {
+							if ( ! sourceString ) {
+								norcConsent.source = null
+							} else {
+								def source = NorcSource.findByValue(Integer.parseInt(sourceString))
+								if (source) {
+									norcConsent.source = source
+								} else {
+									logMessage response,  "! Unknown Source: ${sourceString}.  Please update FMTS.SOURCE first."
+								}
+							}
+						} catch (Exception e) {
+							logMessage response, "! Invalid Source: ${sourceString}"
+						}
+
+						// Read, parse, and lookup the Status
+						def statusString = c.Status.toString()
+						try {
+							if ( ! statusString ) {
+								norcConsent.status = null
+							} else {
+								def status = NorcStatus.findByValue(Integer.parseInt(statusString))
+								if (status) {
+									norcConsent.status = status
+								} else {
+									logMessage response,  "! Unknown Status: ${statusString}.  Please update FMTS.STATUS first."
+								}
+							}
+						} catch (Exception e) {
+							logMessage response, "! Invalid Status: ${statusString}"
+							logMessage response, "! parse Status Exception: ${e.toString()}"
+						}
+
+						// Read, parse, and lookup the Mode
+						def modeString = c.Mode.toString()
+						try {
+							if ( ! modeString ) {
+								norcConsent.mode = null
+							} else {
+								def mode = NorcDocMode.findByValue(Integer.parseInt(modeString))
+								if (mode) {
+									norcConsent.mode = mode
+								} else {
+									logMessage response,  "! Unknown Mode: ${modeString}.  Please update FMTS.MODE first."
+								}
+							}
+						} catch (Exception e) {
+							logMessage response, "! Invalid Mode: ${modeString}"
+							logMessage response, "! parse Mode Exception: ${e.toString()}"
+						}
+
+						// PS Date
+						try {
+							def pregnancyScreenerDateString = c.DatePS.toString()
+							if ( ! pregnancyScreenerDateString ) {
+								norcConsent.pregnancyScreenerDate = null
+							} else {
+								DateTime dt = fmt.parseDateTime(pregnancyScreenerDateString)
+								norcConsent.pregnancyScreenerDate = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							logMessage response, "! Invalid DatePS: ${c.DatePS.toString()}"
+							logMessage response, "! parse DatePS Exception: ${e.toString()}"
+						}
+
+						// App Time & Date
+						try {
+							def appTimeString = c.AppTime.toString()
+							if ( ! appTimeString ) {
+								norcConsent.appTime = null
+							} else {
+								DateTime dt = fmt.parseDateTime(appTimeString)
+								norcConsent.appTime = dt.toCalendar().getTime()
+							}
+						} catch (Exception e) {
+							logMessage response, "! Invalid AppTime: ${c.AppTime.toString()}"
+							logMessage response, "! parse AppTime Exception: ${e.toString()}"
+						}
+
+						try {
+							norcConsent.segmentId = Integer.parseInt(c.SegmentID.toString())
+						} catch (Exception e) {
+							logMessage response, "! Invalid SegmentID: ${c.SegmentID.toString()}"
+						}
+
+						if (norcConsent.hasErrors()) {
+							logMessage response, "! consent has errors."
+						} else if (norcConsent.save(flush:true)) {
+							logMessage response, "= saved data"
 						} else {
-							DateTime dt = fmt.parseDateTime(pregnancyScreenerDateString)
-							norcConsent.pregnancyScreenerDate = dt.toCalendar().getTime()
+							logMessage response, "! unable to save data."
+
+							norcConsent.errors.each{ e ->
+								// logMessage response, "NorcConsent:error::${e}"
+								e.fieldErrors.each{ fe ->
+									logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								}							
+							}		
 						}
-					} catch (Exception e) {
-						response << "! Invalid DatePS: ${c.DatePS.toString()}\n"
-						println "! parse DatePS Input: ${c.DatePS.toString()}"
-						println "! parse DatePS Exception: ${e.toString()}"
-					}
-					
-					// App Time & Date
-					try {
-						def appTimeString = c.AppTime.toString()
-						if ( ! appTimeString ) {
-							norcConsent.appTime = null
-						} else {
-							DateTime dt = fmt.parseDateTime(appTimeString)
-							norcConsent.appTime = dt.toCalendar().getTime()
-						}
-					} catch (Exception e) {
-						response << "! Invalid AppTime: ${c.AppTime.toString()}\n"
-						println "! parse AppTime Input: ${c.AppTime.toString()}"
-						println "! parse AppTime Exception: ${e.toString()}"
-					}
-					
-					try {
-						norcConsent.segmentId = Integer.parseInt(c.SegmentID.toString())
-					} catch (Exception e) {
-						response << "! Invalid SegmentID: ${c.SegmentID.toString()}\n"
-					}
-					
-					if (norcConsent.hasErrors()) {
-						response << "! consent has errors.\n"
-					} else if (norcConsent.save(flush:true)) {
-						response << "= saved data\n"
-					} else {
-						response << "! unable to save data.\n"
-						
-						norcConsent.errors.each{ e ->
-							// println "NorcConsent:error::${e}"
-							e.fieldErrors.each{ fe ->
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-							}							
-						}		
 					}
 				}
 			}
@@ -3670,15 +4507,15 @@ class DataParserService {
 					if ( ! norcDocType ) {
 						norcDocType = new NorcDocType(name:fName, label:fLabel, value:fValue)
 						norcDocType.save(flush:true)
-						response << "Saved new NorcDocType: ${norcDocType.label}\n"
+						logMessage response, "Saved new NorcDocType: ${norcDocType.label}"
 					} else {
 						if (norcDocType.label != fLabel) {
 							norcDocType.label = fLabel
 							norcDocType.save(flush:true)
 	
-							response << "Updated NorcDocType(${norcDocType.value}) = ${norcDocType.name}\n"
+							logMessage response, "Updated NorcDocType(${norcDocType.value}) = ${norcDocType.name}"
 						} else {
-							response << "NorcDocType(${norcDocType.value}) already in the system.\n"
+							logMessage response, "NorcDocType(${norcDocType.value}) already in the system."
 						}
 					}
 					break
@@ -3687,15 +4524,15 @@ class DataParserService {
 					if ( ! norcDocMode ) {
 						norcDocMode = new NorcDocMode(name:fName, label:fLabel, value:fValue)
 						norcDocMode.save(flush:true)
-						response << "Saved new NorcDocType: ${norcDocMode.label}\n"
+						logMessage response, "Saved new NorcDocType: ${norcDocMode.label}"
 					} else {
 						if (norcDocMode.label != fLabel) {
 							norcDocMode.label = fLabel
 							norcDocMode.save(flush:true)
 	
-							response << "Updated NorcDocMode(${norcDocMode.value}) = ${norcDocMode.name}\n"
+							logMessage response, "Updated NorcDocMode(${norcDocMode.value}) = ${norcDocMode.name}"
 						} else {
-							response << "NorcDocMode(${norcDocMode.value}) already in the system.\n"
+							logMessage response, "NorcDocMode(${norcDocMode.value}) already in the system."
 						}
 					}
 					break
@@ -3704,15 +4541,15 @@ class DataParserService {
 					if ( ! norcSource ) {
 						norcSource = new NorcSource(name:fName, label:fLabel, value:fValue)
 						norcSource.save(flush:true)
-						response << "Saved new NorcSource: ${norcSource.label}\n"
+						logMessage response, "Saved new NorcSource: ${norcSource.label}"
 					} else {
 						if (norcSource.label != fLabel) {
 							norcSource.label = fLabel
 							norcSource.save(flush:true)
 	
-							response << "Updated NorcSource(${norcSource.value}) = ${norcSource.name}\n"
+							logMessage response, "Updated NorcSource(${norcSource.value}) = ${norcSource.name}"
 						} else {
-							response << "NorcSource(${norcSource.value}) already in the system.\n"
+							logMessage response, "NorcSource(${norcSource.value}) already in the system."
 						}
 					}
 					break
@@ -3721,31 +4558,31 @@ class DataParserService {
 					if ( ! norcStatus ) {
 						norcStatus = new NorcStatus(name:fName, label:fLabel, value:fValue)
 						norcStatus.save(flush:true)
-						response << "Saved new NorcStatus: ${norcStatus.label}\n"
+						logMessage response, "Saved new NorcStatus: ${norcStatus.label}"
 					} else {
 						if (norcStatus.label != fLabel) {
 							norcStatus.label = fLabel
 							norcStatus.save(flush:true)
 	
-							response << "Updated NorcStatus(${norcStatus.value}) = ${norcStatus.name}\n"
+							logMessage response, "Updated NorcStatus(${norcStatus.value}) = ${norcStatus.name}"
 						} else {
-							response << "NorcStatus(${norcStatus.value}) already in the system.\n"
+							logMessage response, "NorcStatus(${norcStatus.value}) already in the system."
 						}
 					}
 					break
 				default:
-					response << "Unknown FMTS: ${fName}\n"
+					logMessage response, "Unknown FMTS: ${fName}"
 			}
 		}
 	}
 	
 	def parseBirthBatch(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 				
 		def saveCount = 0
 		if (debug){
-			println "Parsing BIRTH_BATCH1"
+			logMessage response, "Parsing BIRTH_BATCH1"
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
@@ -3755,7 +4592,7 @@ class DataParserService {
 				
 				//def affiliate = c.AFFILIATE.toString()
 				//def institutionName = c.INSTITUTION.toString()
-				//println "${affiliate}: ${institutionName}"
+				//logMessage response, "${affiliate}: ${institutionName}"
 				NorcBirthBatch.withTransaction {
 					def dateTimeString = ""
 					def checkSerial = c.Respondent_Serial.toString()
@@ -3765,11 +4602,11 @@ class DataParserService {
 		
 					if (!norcBirthBatch) {
 						norcBirthBatch = new NorcBirthBatch()
-						response <<  " + Creating new NorcBirthBatch(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcBirthBatch(${checkSerial})"
 					} else {
 						// Lock object for update
 						norcBirthBatch.lock()
-						response <<  " ~ Updating existing NorcBirthBatch(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcBirthBatch(${checkSerial})"
 					}
 
 					norcBirthBatch.respondentSerial = c.Respondent_Serial.toString()
@@ -3801,9 +4638,8 @@ class DataParserService {
 							norcBirthBatch.datacollectionStarttime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}'
-						println '! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}'
-						println '! parse DataCollection_StartTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}"
+						logMessage response, "! parse DataCollection_StartTime Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.DataCollection_FinishTime.toString()
@@ -3814,9 +4650,8 @@ class DataParserService {
 							norcBirthBatch.datacollectionFinishtime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}'
-						println '! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}'
-						println '! parse DataCollection_FinishTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}"
+						logMessage response, "! parse DataCollection_FinishTime Exception: ${e.toString()}"
 					}
 					norcBirthBatch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
 					norcBirthBatch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
@@ -3865,9 +4700,8 @@ class DataParserService {
 							norcBirthBatch.timeStamp1a = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1A: ${c.TIME_STAMP_1A.toString()}'
-						println '! parse TIME_STAMP_1A Input: ${c.TIME_STAMP_1A.toString()}'
-						println '! parse TIME_STAMP_1A Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1A: ${c.TIME_STAMP_1A.toString()}"
+						logMessage response, "! parse TIME_STAMP_1A Exception: ${e.toString()}"
 					}
 					norcBirthBatch.quexlang = c.QUEXLANG.toString()
 					norcBirthBatch.birthvisitLocation = c.BIRTHVISIT_LOCATION.toString()
@@ -3896,9 +4730,8 @@ class DataParserService {
 							norcBirthBatch.timeStamp1b = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1B: ${c.TIME_STAMP_1B.toString()}'
-						println '! parse TIME_STAMP_1B Input: ${c.TIME_STAMP_1B.toString()}'
-						println '! parse TIME_STAMP_1B Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1B: ${c.TIME_STAMP_1B.toString()}"
+						logMessage response, "! parse TIME_STAMP_1B Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.TIME_STAMP_1.toString()
@@ -3909,9 +4742,8 @@ class DataParserService {
 							norcBirthBatch.timeStamp1 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}'
-						println '! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}'
-						println '! parse TIME_STAMP_1 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}"
+						logMessage response, "! parse TIME_STAMP_1 Exception: ${e.toString()}"
 					}
 					norcBirthBatch.currmo = c.CURRMO.toString()
 					norcBirthBatch.currdy = c.CURRDY.toString()
@@ -4051,9 +4883,8 @@ class DataParserService {
 							norcBirthBatch.timeStamp2 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}'
-						println '! parse TIME_STAMP_2 Input: ${c.TIME_STAMP_2.toString()}'
-						println '! parse TIME_STAMP_2 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}"
+						logMessage response, "! parse TIME_STAMP_2 Exception: ${e.toString()}"
 					}
 					norcBirthBatch.recentMove = c.RECENT_MOVE.toString()
 					norcBirthBatch.ownHome = c.OWN_HOME.toString()
@@ -4072,9 +4903,8 @@ class DataParserService {
 							norcBirthBatch.timeStamp3 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}'
-						println '! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}'
-						println '! parse TIME_STAMP_3 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}"
+						logMessage response, "! parse TIME_STAMP_3 Exception: ${e.toString()}"
 					}
 					norcBirthBatch.renovate = c.RENOVATE.toString()
 					norcBirthBatch.renovateRoom01 = c.RENOVATE_ROOM_01.toString()
@@ -4113,9 +4943,9 @@ class DataParserService {
 							norcBirthBatch.timeStamp4 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}'
-						println '! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}'
-						println '! parse TIME_STAMP_4 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_4 Exception: ${e.toString()}"
 					}
 					norcBirthBatch.babytxt301 = c.babytxt3_01.toString()
 					norcBirthBatch.babytxt302 = c.babytxt3_02.toString()
@@ -4132,9 +4962,9 @@ class DataParserService {
 							norcBirthBatch.timeStamp5 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}'
-						println '! parse TIME_STAMP_5 Input: ${c.TIME_STAMP_5.toString()}'
-						println '! parse TIME_STAMP_5 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_5 Exception: ${e.toString()}"
 					}
 					norcBirthBatch.postxt = c.postxt.toString()
 					norcBirthBatch.babygend3 = c.babygend3.toString()
@@ -4156,9 +4986,9 @@ class DataParserService {
 							norcBirthBatch.timeStamp6 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}'
-						println '! parse TIME_STAMP_6 Input: ${c.TIME_STAMP_6.toString()}'
-						println '! parse TIME_STAMP_6 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_6 Exception: ${e.toString()}"
 					}
 					norcBirthBatch.hcare = c.HCARE.toString()
 					norcBirthBatch.hcareOth = c.HCARE_OTH.toString()
@@ -4173,9 +5003,9 @@ class DataParserService {
 							norcBirthBatch.timeStamp7 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}'
-						println '! parse TIME_STAMP_7 Input: ${c.TIME_STAMP_7.toString()}'
-						println '! parse TIME_STAMP_7 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_7 Exception: ${e.toString()}"
 					}
 					norcBirthBatch.employ2 = c.EMPLOY2.toString()
 					norcBirthBatch.returnJobReturnJobNum = c.RETURN_JOB_RETURN_JOB_NUM.toString()
@@ -4201,9 +5031,9 @@ class DataParserService {
 							norcBirthBatch.timeStamp8 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}'
-						println '! parse TIME_STAMP_8 Input: ${c.TIME_STAMP_8.toString()}'
-						println '! parse TIME_STAMP_8 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_8 Exception: ${e.toString()}"
 					}
 					norcBirthBatch.rNameRFname = c.R_NAME_R_FNAME.toString()
 					norcBirthBatch.rNameRLname = c.R_NAME_R_LNAME.toString()
@@ -4232,9 +5062,9 @@ class DataParserService {
 							norcBirthBatch.timeStamp9 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}'
-						println '! parse TIME_STAMP_9 Input: ${c.TIME_STAMP_9.toString()}'
-						println '! parse TIME_STAMP_9 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_9 Exception: ${e.toString()}"
 					}
 					norcBirthBatch.recmoveInfo = c.RECMOVE_INFO.toString()
 					norcBirthBatch.recaddrRecAddress1 = c.RECADDR_REC_ADDRESS1.toString()
@@ -4299,9 +5129,9 @@ class DataParserService {
 							norcBirthBatch.timeStamp10 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_10: ${c.TIME_STAMP_10.toString()}'
-						println '! parse TIME_STAMP_10 Input: ${c.TIME_STAMP_10.toString()}'
-						println '! parse TIME_STAMP_10 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_10: ${c.TIME_STAMP_10.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_10 Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.TIME_STAMP_11.toString()
@@ -4312,9 +5142,9 @@ class DataParserService {
 							norcBirthBatch.timeStamp11 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}'
-						println '! parse TIME_STAMP_11 Input: ${c.TIME_STAMP_11.toString()}'
-						println '! parse TIME_STAMP_11 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_11 Exception: ${e.toString()}"
 					}
 					norcBirthBatch.respndnt = c.RESPNDNT.toString()
 					norcBirthBatch.contactType = c.CONTACT_TYPE.toString()
@@ -4329,9 +5159,9 @@ class DataParserService {
 							norcBirthBatch.timeStamp12 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}'
-						println '! parse TIME_STAMP_12 Input: ${c.TIME_STAMP_12.toString()}'
-						println '! parse TIME_STAMP_12 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_12 Exception: ${e.toString()}"
 					}
 					norcBirthBatch.elapsedtime = c.ElapsedTime.toString()
 					try {
@@ -4343,24 +5173,24 @@ class DataParserService {
 							norcBirthBatch.temptimevariable = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}'
-						println '! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}'
-						println '! parse TempTimeVariable Exception: ${e.toString()}'
+						logMessage response, "! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}"
+
+						logMessage response, "! parse TempTimeVariable Exception: ${e.toString()}"
 					}
 					
 					// Save the record
 					if (norcBirthBatch.hasErrors()) {
-						response << "! norcBirthBatch has errors.\n"
+						logMessage response, "! norcBirthBatch has errors."
 					} else if (norcBirthBatch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcBirthBatch record with Respondent Serial ${norcBirthBatch.suId}"
+						// logMessage response, "Error saving norcBirthBatch record with Respondent Serial ${norcBirthBatch.suId}"
 						norcBirthBatch.errors.each{ e ->
-							// println "norcBirthBatch:error::${e}"
+							// logMessage response, "norcBirthBatch:error::${e}"
 							e.fieldErrors.each{ fe ->
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
 							}
 						}
 					}
@@ -4370,18 +5200,18 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug) {
-			println "    Done! ${saveCount} records saved to norcBirthBatch in ${diff} seconds"
+			logMessage response, "    Done! ${saveCount} records saved to norcBirthBatch in ${diff} seconds"
 		}
 		// end BIRTH_BATCH
 	}
 
 	def parsePpv1Batch(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 				
 		def saveCount = 0
 		if (debug){
-			println "Parsing PPV1_BATCH1"
+			logMessage response, "Parsing PPV1_BATCH1"
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
@@ -4391,7 +5221,7 @@ class DataParserService {
 				
 				//def affiliate = c.AFFILIATE.toString()
 				//def institutionName = c.INSTITUTION.toString()
-				//println "${affiliate}: ${institutionName}"
+				//logMessage response, "${affiliate}: ${institutionName}"
 				NorcPpv1Batch.withTransaction {
 					def dateTimeString = ""
 					def checkSerial = c.Respondent_Serial.toString()
@@ -4401,11 +5231,11 @@ class DataParserService {
 		
 					if (!norcPpv1Batch) {
 						norcPpv1Batch = new NorcPpv1Batch()
-						response <<  " + Creating new NorcPpv1Batch(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcPpv1Batch(${checkSerial})"
 					} else {
 						// Lock object for update
 						norcPpv1Batch.lock()
-						response <<  " ~ Updating existing NorcPpv1Batch(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcPpv1Batch(${checkSerial})"
 					}
 
 					norcPpv1Batch.respondentSerial = c.Respondent_Serial.toString()
@@ -4437,9 +5267,9 @@ class DataParserService {
 							norcPpv1Batch.datacollectionStarttime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}'
-						println '! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}'
-						println '! parse DataCollection_StartTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}"
+
+						logMessage response, "! parse DataCollection_StartTime Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.DataCollection_FinishTime.toString()
@@ -4450,9 +5280,9 @@ class DataParserService {
 							norcPpv1Batch.datacollectionFinishtime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}'
-						println '! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}'
-						println '! parse DataCollection_FinishTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}"
+
+						logMessage response, "! parse DataCollection_FinishTime Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
 					norcPpv1Batch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
@@ -4499,9 +5329,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp1a = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1A: ${c.TIME_STAMP_1A.toString()}'
-						println '! parse TIME_STAMP_1A Input: ${c.TIME_STAMP_1A.toString()}'
-						println '! parse TIME_STAMP_1A Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1A: ${c.TIME_STAMP_1A.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_1A Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.quexlang = c.QUEXLANG.toString()
 					norcPpv1Batch.sameday = c.SAMEDAY.toString()
@@ -4528,9 +5358,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp1b = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1B: ${c.TIME_STAMP_1B.toString()}'
-						println '! parse TIME_STAMP_1B Input: ${c.TIME_STAMP_1B.toString()}'
-						println '! parse TIME_STAMP_1B Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1B: ${c.TIME_STAMP_1B.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_1B Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.TIME_STAMP_1.toString()
@@ -4541,9 +5371,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp1 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}'
-						println '! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}'
-						println '! parse TIME_STAMP_1 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_1 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.nameConfirm = c.NAME_CONFIRM.toString()
 					norcPpv1Batch.rNameRFname = c.R_NAME_R_FNAME.toString()
@@ -4570,9 +5400,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp2 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}'
-						println '! parse TIME_STAMP_2 Input: ${c.TIME_STAMP_2.toString()}'
-						println '! parse TIME_STAMP_2 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_2 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.health = c.HEALTH.toString()
 					norcPpv1Batch.everPreg = c.EVER_PREG.toString()
@@ -4595,9 +5425,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp3 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}'
-						println '! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}'
-						println '! parse TIME_STAMP_3 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_3 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.insure = c.INSURE.toString()
 					norcPpv1Batch.insEmploy = c.INS_EMPLOY.toString()
@@ -4615,9 +5445,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp4 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}'
-						println '! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}'
-						println '! parse TIME_STAMP_4 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_4 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.recentMove = c.RECENT_MOVE.toString()
 					norcPpv1Batch.ownHome = c.OWN_HOME.toString()
@@ -4663,9 +5493,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp5 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}'
-						println '! parse TIME_STAMP_5 Input: ${c.TIME_STAMP_5.toString()}'
-						println '! parse TIME_STAMP_5 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_5 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.water = c.WATER.toString()
 					norcPpv1Batch.mold = c.MOLD.toString()
@@ -4690,9 +5520,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp6 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}'
-						println '! parse TIME_STAMP_6 Input: ${c.TIME_STAMP_6.toString()}'
-						println '! parse TIME_STAMP_6 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_6 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.renovate = c.RENOVATE.toString()
 					norcPpv1Batch.renovateRoom01 = c.RENOVATE_ROOM_01.toString()
@@ -4729,9 +5559,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp7 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}'
-						println '! parse TIME_STAMP_7 Input: ${c.TIME_STAMP_7.toString()}'
-						println '! parse TIME_STAMP_7 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_7 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.waterDrink = c.WATER_DRINK.toString()
 					norcPpv1Batch.waterDrinkOth = c.WATER_DRINK_OTH.toString()
@@ -4748,9 +5578,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp8 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}'
-						println '! parse TIME_STAMP_8 Input: ${c.TIME_STAMP_8.toString()}'
-						println '! parse TIME_STAMP_8 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_8 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.educ = c.EDUC.toString()
 					norcPpv1Batch.working = c.WORKING.toString()
@@ -4766,9 +5596,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp9 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}'
-						println '! parse TIME_STAMP_9 Input: ${c.TIME_STAMP_9.toString()}'
-						println '! parse TIME_STAMP_9 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_9 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.maristat = c.MARISTAT.toString()
 					norcPpv1Batch.spEduc = c.SP_EDUC.toString()
@@ -4792,9 +5622,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp10 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_10: ${c.TIME_STAMP_10.toString()}'
-						println '! parse TIME_STAMP_10 Input: ${c.TIME_STAMP_10.toString()}'
-						println '! parse TIME_STAMP_10 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_10: ${c.TIME_STAMP_10.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_10 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.hhMembers = c.HH_MEMBERS.toString()
 					norcPpv1Batch.hhMembersCodes = c.HH_MEMBERS_Codes.toString()
@@ -4810,9 +5640,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp11 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}'
-						println '! parse TIME_STAMP_11 Input: ${c.TIME_STAMP_11.toString()}'
-						println '! parse TIME_STAMP_11 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_11 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.haveEmail = c.HAVE_EMAIL.toString()
 					norcPpv1Batch.email2 = c.EMAIL_2.toString()
@@ -4880,9 +5710,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp12 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}'
-						println '! parse TIME_STAMP_12 Input: ${c.TIME_STAMP_12.toString()}'
-						println '! parse TIME_STAMP_12 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_12 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.contactLocation = c.CONTACT_LOCATION.toString()
 					norcPpv1Batch.contactLocationOth = c.CONTACT_LOCATION_OTH.toString()
@@ -4895,9 +5725,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp13 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_13: ${c.TIME_STAMP_13.toString()}'
-						println '! parse TIME_STAMP_13 Input: ${c.TIME_STAMP_13.toString()}'
-						println '! parse TIME_STAMP_13 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_13: ${c.TIME_STAMP_13.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_13 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.saqintro = c.SAQINTRO.toString()
 					norcPpv1Batch.saqagree = c.SAQAGREE.toString()
@@ -4932,9 +5762,9 @@ class DataParserService {
 							norcPpv1Batch.timeStamp14 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_14: ${c.TIME_STAMP_14.toString()}'
-						println '! parse TIME_STAMP_14 Input: ${c.TIME_STAMP_14.toString()}'
-						println '! parse TIME_STAMP_14 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_14: ${c.TIME_STAMP_14.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_14 Exception: ${e.toString()}"
 					}
 					norcPpv1Batch.elapsedtime = c.ElapsedTime.toString()
 					try {
@@ -4946,24 +5776,24 @@ class DataParserService {
 							norcPpv1Batch.temptimevariable = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}'
-						println '! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}'
-						println '! parse TempTimeVariable Exception: ${e.toString()}'
+						logMessage response, "! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}"
+
+						logMessage response, "! parse TempTimeVariable Exception: ${e.toString()}"
 					}
 					
 					// Save the record
 					if (norcPpv1Batch.hasErrors()) {
-						response << "! norcPpv1Batch has errors.\n"
+						logMessage response, "! norcPpv1Batch has errors."
 					} else if (norcPpv1Batch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcPpv1Batch record with Respondent Serial ${norcPpv1Batch.suId}"
+						// logMessage response, "Error saving norcPpv1Batch record with Respondent Serial ${norcPpv1Batch.suId}"
 						norcPpv1Batch.errors.each{ e ->
-							// println "norcPpv1Batch:error::${e}"
+							// logMessage response, "norcPpv1Batch:error::${e}"
 							e.fieldErrors.each{ fe ->
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
 							}
 						}
 					}
@@ -4973,18 +5803,18 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug) {
-			println "    Done! ${saveCount} records saved to norcPpv1Batch in ${diff} seconds"
+			logMessage response, "    Done! ${saveCount} records saved to norcPpv1Batch in ${diff} seconds"
 		}
 		// end PPV1_BATCH
 	}
 
 	def parsePv1Batch(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 				
 		def saveCount = 0
 		if (debug){
-			println "Parsing PV1_BATCH1"
+			logMessage response, "Parsing PV1_BATCH1"
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
@@ -4994,7 +5824,7 @@ class DataParserService {
 				
 				//def affiliate = c.AFFILIATE.toString()
 				//def institutionName = c.INSTITUTION.toString()
-				//println "${affiliate}: ${institutionName}"
+				//logMessage response, "${affiliate}: ${institutionName}"
 				NorcPv1Batch.withTransaction {
 					def dateTimeString = ""
 					def checkSerial = c.Respondent_Serial.toString()
@@ -5004,11 +5834,11 @@ class DataParserService {
 		
 					if (!norcPv1Batch) {
 						norcPv1Batch = new NorcPv1Batch()
-						response <<  " + Creating new NorcPv1Batch(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcPv1Batch(${checkSerial})"
 					} else {
 						// Lock object for update
 						norcPv1Batch.lock()
-						response <<  " ~ Updating existing NorcPv1Batch(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcPv1Batch(${checkSerial})"
 					}
 
 					norcPv1Batch.respondentSerial = c.Respondent_Serial.toString()
@@ -5040,9 +5870,9 @@ class DataParserService {
 							norcPv1Batch.datacollectionStarttime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}'
-						println '! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}'
-						println '! parse DataCollection_StartTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}"
+
+						logMessage response, "! parse DataCollection_StartTime Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.DataCollection_FinishTime.toString()
@@ -5053,9 +5883,9 @@ class DataParserService {
 							norcPv1Batch.datacollectionFinishtime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}'
-						println '! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}'
-						println '! parse DataCollection_FinishTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}"
+
+						logMessage response, "! parse DataCollection_FinishTime Exception: ${e.toString()}"
 					}
 					norcPv1Batch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
 					norcPv1Batch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
@@ -5108,9 +5938,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp1a = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1A: ${c.TIME_STAMP_1A.toString()}'
-						println '! parse TIME_STAMP_1A Input: ${c.TIME_STAMP_1A.toString()}'
-						println '! parse TIME_STAMP_1A Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1A: ${c.TIME_STAMP_1A.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_1A Exception: ${e.toString()}"
 					}
 					norcPv1Batch.quexlang = c.QUEXLANG.toString()
 					norcPv1Batch.sameday = c.SAMEDAY.toString()
@@ -5137,9 +5967,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp1b = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1B: ${c.TIME_STAMP_1B.toString()}'
-						println '! parse TIME_STAMP_1B Input: ${c.TIME_STAMP_1B.toString()}'
-						println '! parse TIME_STAMP_1B Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1B: ${c.TIME_STAMP_1B.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_1B Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.TIME_STAMP_1.toString()
@@ -5150,9 +5980,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp1 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}'
-						println '! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}'
-						println '! parse TIME_STAMP_1 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_1 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.nameConfirm = c.NAME_CONFIRM.toString()
 					norcPv1Batch.rNameRFname = c.R_NAME_R_FNAME.toString()
@@ -5179,9 +6009,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp2 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}'
-						println '! parse TIME_STAMP_2 Input: ${c.TIME_STAMP_2.toString()}'
-						println '! parse TIME_STAMP_2 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_2 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.pregnant = c.PREGNANT.toString()
 					try {
@@ -5193,9 +6023,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp3 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}'
-						println '! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}'
-						println '! parse TIME_STAMP_3 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_3 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.lossInfo = c.LOSS_INFO.toString()
 					norcPv1Batch.dueDateMonth = c.DUE_DATE_MONTH.toString()
@@ -5221,9 +6051,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp4 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}'
-						println '! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}'
-						println '! parse TIME_STAMP_4 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_4 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.homeTest = c.HOME_TEST.toString()
 					norcPv1Batch.multipleGestation = c.MULTIPLE_GESTATION.toString()
@@ -5273,9 +6103,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp5 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}'
-						println '! parse TIME_STAMP_5 Input: ${c.TIME_STAMP_5.toString()}'
-						println '! parse TIME_STAMP_5 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_5 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.health = c.HEALTH.toString()
 					norcPv1Batch.heightHeightFt = c.Height_HEIGHT_FT.toString()
@@ -5301,9 +6131,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp6 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}'
-						println '! parse TIME_STAMP_6 Input: ${c.TIME_STAMP_6.toString()}'
-						println '! parse TIME_STAMP_6 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_6 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.insure = c.INSURE.toString()
 					norcPv1Batch.insEmploy = c.INS_EMPLOY.toString()
@@ -5321,9 +6151,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp7 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}'
-						println '! parse TIME_STAMP_7 Input: ${c.TIME_STAMP_7.toString()}'
-						println '! parse TIME_STAMP_7 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_7 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.recentMove = c.RECENT_MOVE.toString()
 					norcPv1Batch.ownHome = c.OWN_HOME.toString()
@@ -5338,9 +6168,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp8 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}'
-						println '! parse TIME_STAMP_8 Input: ${c.TIME_STAMP_8.toString()}'
-						println '! parse TIME_STAMP_8 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_8 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.ageHome = c.AGE_HOME.toString()
 					norcPv1Batch.lengthReside = c.LENGTH_RESIDE.toString()
@@ -5382,9 +6212,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp9 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}'
-						println '! parse TIME_STAMP_9 Input: ${c.TIME_STAMP_9.toString()}'
-						println '! parse TIME_STAMP_9 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_9 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.waterDrink = c.WATER_DRINK.toString()
 					norcPv1Batch.waterDrinkOth = c.WATER_DRINK_OTH.toString()
@@ -5415,9 +6245,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp10 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_10: ${c.TIME_STAMP_10.toString()}'
-						println '! parse TIME_STAMP_10 Input: ${c.TIME_STAMP_10.toString()}'
-						println '! parse TIME_STAMP_10 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_10: ${c.TIME_STAMP_10.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_10 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.prenovate = c.PRENOVATE.toString()
 					norcPv1Batch.prenovateRoom01 = c.PRENOVATE_ROOM_01.toString()
@@ -5454,9 +6284,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp11 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}'
-						println '! parse TIME_STAMP_11 Input: ${c.TIME_STAMP_11.toString()}'
-						println '! parse TIME_STAMP_11 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_11 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.pets = c.PETS.toString()
 					norcPv1Batch.petType01 = c.PET_TYPE_01.toString()
@@ -5478,9 +6308,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp12 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}'
-						println '! parse TIME_STAMP_12 Input: ${c.TIME_STAMP_12.toString()}'
-						println '! parse TIME_STAMP_12 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_12 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.educ = c.EDUC.toString()
 					norcPv1Batch.working = c.WORKING.toString()
@@ -5518,9 +6348,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp13 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_13: ${c.TIME_STAMP_13.toString()}'
-						println '! parse TIME_STAMP_13 Input: ${c.TIME_STAMP_13.toString()}'
-						println '! parse TIME_STAMP_13 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_13: ${c.TIME_STAMP_13.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_13 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.maristat = c.MARISTAT.toString()
 					norcPv1Batch.spEduc = c.SP_EDUC.toString()
@@ -5544,9 +6374,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp14 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_14: ${c.TIME_STAMP_14.toString()}'
-						println '! parse TIME_STAMP_14 Input: ${c.TIME_STAMP_14.toString()}'
-						println '! parse TIME_STAMP_14 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_14: ${c.TIME_STAMP_14.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_14 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.hhMembers = c.HH_MEMBERS.toString()
 					norcPv1Batch.hhMembersCodes = c.HH_MEMBERS_Codes.toString()
@@ -5562,9 +6392,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp15 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_15: ${c.TIME_STAMP_15.toString()}'
-						println '! parse TIME_STAMP_15 Input: ${c.TIME_STAMP_15.toString()}'
-						println '! parse TIME_STAMP_15 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_15: ${c.TIME_STAMP_15.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_15 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.commEmail = c.COMM_EMAIL.toString()
 					norcPv1Batch.haveEmail = c.HAVE_EMAIL.toString()
@@ -5588,9 +6418,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp16 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_16: ${c.TIME_STAMP_16.toString()}'
-						println '! parse TIME_STAMP_16 Input: ${c.TIME_STAMP_16.toString()}'
-						println '! parse TIME_STAMP_16 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_16: ${c.TIME_STAMP_16.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_16 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.commContact = c.COMM_CONTACT.toString()
 					norcPv1Batch.contact1 = c.CONTACT_1.toString()
@@ -5650,9 +6480,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp17 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_17: ${c.TIME_STAMP_17.toString()}'
-						println '! parse TIME_STAMP_17 Input: ${c.TIME_STAMP_17.toString()}'
-						println '! parse TIME_STAMP_17 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_17: ${c.TIME_STAMP_17.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_17 Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.TIME_STAMP_18.toString()
@@ -5663,9 +6493,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp18 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_18: ${c.TIME_STAMP_18.toString()}'
-						println '! parse TIME_STAMP_18 Input: ${c.TIME_STAMP_18.toString()}'
-						println '! parse TIME_STAMP_18 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_18: ${c.TIME_STAMP_18.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_18 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.saqintro = c.SAQINTRO.toString()
 					norcPv1Batch.saqagree = c.SAQAGREE.toString()
@@ -5685,9 +6515,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp19 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_19: ${c.TIME_STAMP_19.toString()}'
-						println '! parse TIME_STAMP_19 Input: ${c.TIME_STAMP_19.toString()}'
-						println '! parse TIME_STAMP_19 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_19: ${c.TIME_STAMP_19.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_19 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.pastPreg = c.PAST_PREG.toString()
 					norcPv1Batch.numPreg = c.NUM_PREG.toString()
@@ -5705,9 +6535,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp20 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_20: ${c.TIME_STAMP_20.toString()}'
-						println '! parse TIME_STAMP_20 Input: ${c.TIME_STAMP_20.toString()}'
-						println '! parse TIME_STAMP_20 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_20: ${c.TIME_STAMP_20.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_20 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.cigPast = c.CIG_PAST.toString()
 					norcPv1Batch.cigPastFreq = c.CIG_PAST_FREQ.toString()
@@ -5736,9 +6566,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp21 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_21: ${c.TIME_STAMP_21.toString()}'
-						println '! parse TIME_STAMP_21 Input: ${c.TIME_STAMP_21.toString()}'
-						println '! parse TIME_STAMP_21 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_21: ${c.TIME_STAMP_21.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_21 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.learn = c.LEARN.toString()
 					norcPv1Batch.help = c.HELP.toString()
@@ -5769,9 +6599,9 @@ class DataParserService {
 							norcPv1Batch.timeStamp22 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_22: ${c.TIME_STAMP_22.toString()}'
-						println '! parse TIME_STAMP_22 Input: ${c.TIME_STAMP_22.toString()}'
-						println '! parse TIME_STAMP_22 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_22: ${c.TIME_STAMP_22.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_22 Exception: ${e.toString()}"
 					}
 					norcPv1Batch.elapsedtime = c.ElapsedTime.toString()
 					try {
@@ -5783,24 +6613,24 @@ class DataParserService {
 							norcPv1Batch.temptimevariable = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}'
-						println '! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}'
-						println '! parse TempTimeVariable Exception: ${e.toString()}'
+						logMessage response, "! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}"
+
+						logMessage response, "! parse TempTimeVariable Exception: ${e.toString()}"
 					}
 					
 					// Save the record
 					if (norcPv1Batch.hasErrors()) {
-						response << "! norcPv1Batch has errors.\n"
+						logMessage response, "! norcPv1Batch has errors."
 					} else if (norcPv1Batch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcPv1Batch record with Respondent Serial ${norcPv1Batch.suId}"
+						// logMessage response, "Error saving norcPv1Batch record with Respondent Serial ${norcPv1Batch.suId}"
 						norcPv1Batch.errors.each{ e ->
-							// println "norcPv1Batch:error::${e}"
+							// logMessage response, "norcPv1Batch:error::${e}"
 							e.fieldErrors.each{ fe ->
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
 							}
 						}
 					}
@@ -5810,18 +6640,18 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug) {
-			println "    Done! ${saveCount} records saved to norcPv1Batch in ${diff} seconds"
+			logMessage response, "    Done! ${saveCount} records saved to norcPv1Batch in ${diff} seconds"
 		}
 		// end PV1_BATCH
 	}
 
 	def parsePv2Batch(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 				
 		def saveCount = 0
 		if (debug){
-			println "Parsing PV2_BATCH1"
+			logMessage response, "Parsing PV2_BATCH1"
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
@@ -5831,7 +6661,7 @@ class DataParserService {
 				
 				//def affiliate = c.AFFILIATE.toString()
 				//def institutionName = c.INSTITUTION.toString()
-				//println "${affiliate}: ${institutionName}"
+				//logMessage response, "${affiliate}: ${institutionName}"
 				NorcPv2Batch.withTransaction {
 					def dateTimeString = ""
 					def checkSerial = c.Respondent_Serial.toString()
@@ -5841,11 +6671,11 @@ class DataParserService {
 		
 					if (!norcPv2Batch) {
 						norcPv2Batch = new NorcPv2Batch()
-						response <<  " + Creating new NorcPv2Batch(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcPv2Batch(${checkSerial})"
 					} else {
 						// Lock object for update
 						norcPv2Batch.lock()
-						response <<  " ~ Updating existing NorcPv2Batch(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcPv2Batch(${checkSerial})"
 					}
 
 					norcPv2Batch.respondentSerial = c.Respondent_Serial.toString()
@@ -5877,9 +6707,9 @@ class DataParserService {
 							norcPv2Batch.datacollectionStarttime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}'
-						println '! parse DataCollection_StartTime Input: ${c.DataCollection_StartTime.toString()}'
-						println '! parse DataCollection_StartTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_StartTime: ${c.DataCollection_StartTime.toString()}"
+
+						logMessage response, "! parse DataCollection_StartTime Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.DataCollection_FinishTime.toString()
@@ -5890,9 +6720,9 @@ class DataParserService {
 							norcPv2Batch.datacollectionFinishtime = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}'
-						println '! parse DataCollection_FinishTime Input: ${c.DataCollection_FinishTime.toString()}'
-						println '! parse DataCollection_FinishTime Exception: ${e.toString()}'
+						logMessage response, "! Invalid DataCollection_FinishTime: ${c.DataCollection_FinishTime.toString()}"
+
+						logMessage response, "! parse DataCollection_FinishTime Exception: ${e.toString()}"
 					}
 					norcPv2Batch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
 					norcPv2Batch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
@@ -5945,9 +6775,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp1a = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1A: ${c.TIME_STAMP_1A.toString()}'
-						println '! parse TIME_STAMP_1A Input: ${c.TIME_STAMP_1A.toString()}'
-						println '! parse TIME_STAMP_1A Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1A: ${c.TIME_STAMP_1A.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_1A Exception: ${e.toString()}"
 					}
 					norcPv2Batch.quexlang = c.QUEXLANG.toString()
 					norcPv2Batch.visWhoConsented = c.VIS_WHO_CONSENTED.toString()
@@ -5973,9 +6803,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp1b = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1B: ${c.TIME_STAMP_1B.toString()}'
-						println '! parse TIME_STAMP_1B Input: ${c.TIME_STAMP_1B.toString()}'
-						println '! parse TIME_STAMP_1B Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1B: ${c.TIME_STAMP_1B.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_1B Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.TIME_STAMP_1.toString()
@@ -5986,9 +6816,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp1 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}'
-						println '! parse TIME_STAMP_1 Input: ${c.TIME_STAMP_1.toString()}'
-						println '! parse TIME_STAMP_1 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_1: ${c.TIME_STAMP_1.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_1 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.nameConfirm = c.NAME_CONFIRM.toString()
 					norcPv2Batch.rNameRFname = c.R_NAME_R_FNAME.toString()
@@ -6015,9 +6845,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp2 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}'
-						println '! parse TIME_STAMP_2 Input: ${c.TIME_STAMP_2.toString()}'
-						println '! parse TIME_STAMP_2 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_2: ${c.TIME_STAMP_2.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_2 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.pregnant = c.PREGNANT.toString()
 					try {
@@ -6029,9 +6859,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp3 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}'
-						println '! parse TIME_STAMP_3 Input: ${c.TIME_STAMP_3.toString()}'
-						println '! parse TIME_STAMP_3 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_3: ${c.TIME_STAMP_3.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_3 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.lossInfo = c.LOSS_INFO.toString()
 					norcPv2Batch.dueDateMonth = c.DUE_DATE_MONTH.toString()
@@ -6087,9 +6917,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp4 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}'
-						println '! parse TIME_STAMP_4 Input: ${c.TIME_STAMP_4.toString()}'
-						println '! parse TIME_STAMP_4 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_4: ${c.TIME_STAMP_4.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_4 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.hospital = c.HOSPITAL.toString()
 					norcPv2Batch.adminDateMonth = c.ADMIN_DATE_MONTH.toString()
@@ -6121,9 +6951,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp5 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}'
-						println '! parse TIME_STAMP_5 Input: ${c.TIME_STAMP_5.toString()}'
-						println '! parse TIME_STAMP_5 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_5: ${c.TIME_STAMP_5.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_5 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.recentMove = c.RECENT_MOVE.toString()
 					norcPv2Batch.ownHome = c.OWN_HOME.toString()
@@ -6169,9 +6999,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp6 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}'
-						println '! parse TIME_STAMP_6 Input: ${c.TIME_STAMP_6.toString()}'
-						println '! parse TIME_STAMP_6 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_6: ${c.TIME_STAMP_6.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_6 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.waterDrink = c.WATER_DRINK.toString()
 					norcPv2Batch.waterDrinkOth = c.WATER_DRINK_OTH.toString()
@@ -6188,9 +7018,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp7 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}'
-						println '! parse TIME_STAMP_7 Input: ${c.TIME_STAMP_7.toString()}'
-						println '! parse TIME_STAMP_7 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_7: ${c.TIME_STAMP_7.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_7 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.water = c.WATER.toString()
 					norcPv2Batch.mold = c.MOLD.toString()
@@ -6215,9 +7045,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp8 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}'
-						println '! parse TIME_STAMP_8 Input: ${c.TIME_STAMP_8.toString()}'
-						println '! parse TIME_STAMP_8 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_8: ${c.TIME_STAMP_8.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_8 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.prenovate2 = c.PRENOVATE2.toString()
 					norcPv2Batch.prenovate2Room01 = c.PRENOVATE2_ROOM_01.toString()
@@ -6254,9 +7084,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp9 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}'
-						println '! parse TIME_STAMP_9 Input: ${c.TIME_STAMP_9.toString()}'
-						println '! parse TIME_STAMP_9 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_9: ${c.TIME_STAMP_9.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_9 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.working = c.WORKING.toString()
 					norcPv2Batch.hours = c.HOURS.toString()
@@ -6271,9 +7101,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp10 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_10: ${c.TIME_STAMP_10.toString()}'
-						println '! parse TIME_STAMP_10 Input: ${c.TIME_STAMP_10.toString()}'
-						println '! parse TIME_STAMP_10 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_10: ${c.TIME_STAMP_10.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_10 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.listen = c.LISTEN.toString()
 					norcPv2Batch.advice = c.ADVICE.toString()
@@ -6290,9 +7120,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp11 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}'
-						println '! parse TIME_STAMP_11 Input: ${c.TIME_STAMP_11.toString()}'
-						println '! parse TIME_STAMP_11 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_11: ${c.TIME_STAMP_11.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_11 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.insure = c.INSURE.toString()
 					norcPv2Batch.insEmploy = c.INS_EMPLOY.toString()
@@ -6310,9 +7140,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp12 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}'
-						println '! parse TIME_STAMP_12 Input: ${c.TIME_STAMP_12.toString()}'
-						println '! parse TIME_STAMP_12 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_12: ${c.TIME_STAMP_12.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_12 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.commEmail = c.COMM_EMAIL.toString()
 					norcPv2Batch.emailtxt = c.emailtxt.toString()
@@ -6338,9 +7168,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp13 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_13: ${c.TIME_STAMP_13.toString()}'
-						println '! parse TIME_STAMP_13 Input: ${c.TIME_STAMP_13.toString()}'
-						println '! parse TIME_STAMP_13 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_13: ${c.TIME_STAMP_13.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_13 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.commContact = c.COMM_CONTACT.toString()
 					norcPv2Batch.conttxt = c.conttxt.toString()
@@ -6399,9 +7229,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp14 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_14: ${c.TIME_STAMP_14.toString()}'
-						println '! parse TIME_STAMP_14 Input: ${c.TIME_STAMP_14.toString()}'
-						println '! parse TIME_STAMP_14 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_14: ${c.TIME_STAMP_14.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_14 Exception: ${e.toString()}"
 					}
 					try {
 						dateTimeString = c.TIME_STAMP_15.toString()
@@ -6412,9 +7242,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp15 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_15: ${c.TIME_STAMP_15.toString()}'
-						println '! parse TIME_STAMP_15 Input: ${c.TIME_STAMP_15.toString()}'
-						println '! parse TIME_STAMP_15 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_15: ${c.TIME_STAMP_15.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_15 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.contactLocation = c.CONTACT_LOCATION.toString()
 					norcPv2Batch.contactLocationOth = c.CONTACT_LOCATION_OTH.toString()
@@ -6450,9 +7280,9 @@ class DataParserService {
 							norcPv2Batch.timeStamp16 = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TIME_STAMP_16: ${c.TIME_STAMP_16.toString()}'
-						println '! parse TIME_STAMP_16 Input: ${c.TIME_STAMP_16.toString()}'
-						println '! parse TIME_STAMP_16 Exception: ${e.toString()}'
+						logMessage response, "! Invalid TIME_STAMP_16: ${c.TIME_STAMP_16.toString()}"
+
+						logMessage response, "! parse TIME_STAMP_16 Exception: ${e.toString()}"
 					}
 					norcPv2Batch.elapsedtime = c.ElapsedTime.toString()
 					try {
@@ -6464,24 +7294,24 @@ class DataParserService {
 							norcPv2Batch.temptimevariable = dt.toCalendar().getTime()
 						}
 					} catch (Exception e) {
-						response << '! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}'
-						println '! parse TempTimeVariable Input: ${c.TempTimeVariable.toString()}'
-						println '! parse TempTimeVariable Exception: ${e.toString()}'
+						logMessage response, "! Invalid TempTimeVariable: ${c.TempTimeVariable.toString()}"
+
+						logMessage response, "! parse TempTimeVariable Exception: ${e.toString()}"
 					}
 					
 					// Save the record
 					if (norcPv2Batch.hasErrors()) {
-						response << "! norcPv2Batch has errors.\n"
+						logMessage response, "! norcPv2Batch has errors."
 					} else if (norcPv2Batch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcPv2Batch record with Respondent Serial ${norcPv2Batch.suId}"
+						// logMessage response, "Error saving norcPv2Batch record with Respondent Serial ${norcPv2Batch.suId}"
 						norcPv2Batch.errors.each{ e ->
-							// println "norcPv2Batch:error::${e}"
+							// logMessage response, "norcPv2Batch:error::${e}"
 							e.fieldErrors.each{ fe ->
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
 							}
 						}
 					}
@@ -6491,7 +7321,7 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug) {
-			println "    Done! ${saveCount} records saved to norcPv2Batch in ${diff} seconds"
+			logMessage response, "    Done! ${saveCount} records saved to norcPv2Batch in ${diff} seconds"
 		}
 		// end PV2_BATCH
 	}
@@ -6499,11 +7329,11 @@ class DataParserService {
 	// Start COMBO_BATCH
 	def parseComboBatch(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 				
 		def saveCount = 0
 		if (debug){
-			println "Parsing COMBO_BATCH1"
+			logMessage response, "Parsing COMBO_BATCH1"
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
@@ -6513,7 +7343,7 @@ class DataParserService {
 				
 				//def affiliate = c.AFFILIATE.toString()
 				//def institutionName = c.INSTITUTION.toString()
-				//println "${affiliate}: ${institutionName}"
+				//logMessage response, "${affiliate}: ${institutionName}"
 				NorcComboBatch.withTransaction {
 					def dateTimeString = ""
 					def checkSerial = c.Respondent_Serial.toString()
@@ -6523,11 +7353,11 @@ class DataParserService {
 		
 					if (!norcComboBatch) {
 						norcComboBatch = new NorcComboBatch()
-						response <<  " + Creating new NorcComboBatch(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcComboBatch(${checkSerial})"
 					} else {
 						// Lock object for update
 						norcComboBatch.lock()
-						response <<  " ~ Updating existing NorcComboBatch(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcComboBatch(${checkSerial})"
 					}
 					
 					norcComboBatch.respondentSerial = c.Respondent_Serial.toString()
@@ -6950,17 +7780,17 @@ class DataParserService {
 										
 					// Save the record
 					if (norcComboBatch.hasErrors()) {
-						response << "! norcComboBatch has errors.\n"
+						logMessage response, "! norcComboBatch has errors."
 					} else if (norcComboBatch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcComboBatch record with Respondent Serial ${norcComboBatch.suId}"
+						// logMessage response, "Error saving norcComboBatch record with Respondent Serial ${norcComboBatch.suId}"
 						norcComboBatch.errors.each{ e ->
-							// println "norcComboBatch:error::${e}"
+							// logMessage response, "norcComboBatch:error::${e}"
 							e.fieldErrors.each{ fe ->
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
 							}
 						}
 					}
@@ -6970,7 +7800,7 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug) {
-			println "    Done! ${saveCount} records saved to norcComboBatch in ${diff} seconds"
+			logMessage response, "    Done! ${saveCount} records saved to norcComboBatch in ${diff} seconds"
 		}
 		// end COMBO_BATCH
 	}
@@ -6978,11 +7808,11 @@ class DataParserService {
 	// Start En_BATCH
 	def parseEnBatch(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 				
 		def saveCount = 0
 		if (debug){
-			println "Parsing EN_BATCH1"
+			logMessage response, "Parsing EN_BATCH1"
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
@@ -6991,7 +7821,7 @@ class DataParserService {
 				
 				//def affiliate = c.AFFILIATE.toString()
 				//def institutionName = c.INSTITUTION.toString()
-				//println "${affiliate}: ${institutionName}"
+				//logMessage response, "${affiliate}: ${institutionName}"
 				NorcEnBatch.withTransaction {
 					def dateTimeString = ""
 					def checkSerial = c.Respondent_Serial.toString()
@@ -7001,11 +7831,11 @@ class DataParserService {
 		
 					if (!norcEnBatch) {
 						norcEnBatch = new NorcEnBatch()
-						response <<  " + Creating new NorcEnBatch(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcEnBatch(${checkSerial})"
 					} else {
 						// Lock object for update
 						norcEnBatch.lock()
-						response <<  " ~ Updating existing NorcEnBatch(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcEnBatch(${checkSerial})"
 					}
 					
 					norcEnBatch.respondentSerial = c.Respondent_Serial.toString()
@@ -7827,17 +8657,17 @@ class DataParserService {
 					
 					// Save the record
 					if (norcEnBatch.hasErrors()) {
-						response << "! norcEnBatch has errors.\n"
+						logMessage response, "! norcEnBatch has errors."
 					} else if (norcEnBatch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcComboBatch record with Respondent Serial ${norcComboBatch.suId}"
+						// logMessage response, "Error saving norcComboBatch record with Respondent Serial ${norcComboBatch.suId}"
 						norcEnBatch.errors.each{ e ->
-							// println "norcEnBatch:error::${e}"
+							// logMessage response, "norcEnBatch:error::${e}"
 							e.fieldErrors.each{ fe ->
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								logMessage response,  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								// logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
 							}
 						}
 					}
@@ -7847,7 +8677,7 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug) {
-			println "    Done! ${saveCount} records saved to norcEnBatch in ${diff} seconds"
+			logMessage response, "    Done! ${saveCount} records saved to norcEnBatch in ${diff} seconds"
 		}
 		// end EN_BATCH1
 	}
@@ -7855,11 +8685,11 @@ class DataParserService {
 	// Start PPGFOLLOW_BATCH1
 	def parsePpgFollowBatch(table, response) {
 		def now = new Date()
-		// println "ready to load. ${now}"
+		// logMessage response, "ready to load. ${now}"
 				
 		def saveCount = 0
 		if (debug){
-			println "Parsing PPGFOLLOW_BATCH1"
+			logMessage response, "Parsing PPGFOLLOW_BATCH1"
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
@@ -7868,7 +8698,7 @@ class DataParserService {
 				
 				//def affiliate = c.AFFILIATE.toString()
 				//def institutionName = c.INSTITUTION.toString()
-				//println "${affiliate}: ${institutionName}"
+				//logMessage response, "${affiliate}: ${institutionName}"
 				NorcPpgFollowBatch.withTransaction {
 					def dateTimeString = ""
 					def checkSerial = c.Respondent_Serial.toString()
@@ -7878,27 +8708,142 @@ class DataParserService {
 		
 					if (!norcPpgFollowBatch) {
 						norcPpgFollowBatch = new NorcPpgFollowBatch()
-						response <<  " + Creating new NorcPpgFollowBatch(${checkSerial})\n"
+						logMessage response,  " + Creating new NorcPpgFollowBatch(${checkSerial})"
 					} else {
 						// Lock object for update
 						norcPpgFollowBatch.lock()
-						response <<  " ~ Updating existing NorcPpgFollowBatch(${checkSerial})\n"
+						logMessage response,  " ~ Updating existing NorcPpgFollowBatch(${checkSerial})"
 					}
 					
 					
+					norcPpgFollowBatch.respondentSerial = c.Respondent_Serial.toString()
+					norcPpgFollowBatch.respondentSerialSourcefile = c.Respondent_Serial_SourceFile.toString()
+					norcPpgFollowBatch.respondentOrigin01 = c.Respondent_Origin_01.toString()
+					norcPpgFollowBatch.respondentOrigin02 = c.Respondent_Origin_02.toString()
+					norcPpgFollowBatch.respondentOrigin03 = c.Respondent_Origin_03.toString()
+					norcPpgFollowBatch.respondentOrigin04 = c.Respondent_Origin_04.toString()
+					norcPpgFollowBatch.respondentOrigin05 = c.Respondent_Origin_05.toString()
+					norcPpgFollowBatch.respondentOrigin06 = c.Respondent_Origin_06.toString()
+					norcPpgFollowBatch.respondentOriginOther = c.Respondent_Origin_Other.toString()
+					norcPpgFollowBatch.respondentId = c.Respondent_ID.toString()
+					norcPpgFollowBatch.datacollectionStatus01 = c.DataCollection_Status_01.toString()
+					norcPpgFollowBatch.datacollectionStatus02 = c.DataCollection_Status_02.toString()
+					norcPpgFollowBatch.datacollectionStatus03 = c.DataCollection_Status_03.toString()
+					norcPpgFollowBatch.datacollectionStatus04 = c.DataCollection_Status_04.toString()
+					norcPpgFollowBatch.datacollectionStatus05 = c.DataCollection_Status_05.toString()
+					norcPpgFollowBatch.datacollectionStatus06 = c.DataCollection_Status_06.toString()
+					norcPpgFollowBatch.datacollectionStatus07 = c.DataCollection_Status_07.toString()
+					norcPpgFollowBatch.datacollectionStatus08 = c.DataCollection_Status_08.toString()
+					norcPpgFollowBatch.datacollectionStatus09 = c.DataCollection_Status_09.toString()
+					norcPpgFollowBatch.datacollectionInterviewerid = c.DataCollection_InterviewerID.toString()
+					norcPpgFollowBatch.datacollectionStarttime = c.DataCollection_StartTime.toString()
+					norcPpgFollowBatch.datacollectionFinishtime = c.DataCollection_FinishTime.toString()
+					norcPpgFollowBatch.datacmtadatavrssinnumbr2 = c.DataCMtadataVrssinNumbr2.toString()
+					norcPpgFollowBatch.datacMtadatavrvrsinguid3 = c.DataC_MtadataVrVrsinGUID3.toString()
+					norcPpgFollowBatch.datactinRngcntxt4 = c.DataCtin_RngCntxt4.toString()
+					norcPpgFollowBatch.datacollectionVariant = c.DataCollection_Variant.toString()
+					norcPpgFollowBatch.datacollectionEndquestion = c.DataCollection_EndQuestion.toString()
+					norcPpgFollowBatch.datacollectionTerminatesignal = c.DataCollection_TerminateSignal.toString()
+					norcPpgFollowBatch.datacollectionSeedvalue = c.DataCollection_SeedValue.toString()
+					norcPpgFollowBatch.datacollectionInterviewengine = c.DataCollection_InterviewEngine.toString()
+					norcPpgFollowBatch.datacollectionCurrentpage = c.DataCollection_CurrentPage.toString()
+					norcPpgFollowBatch.datacollectionDebug = c.DataCollection_Debug.toString()
+					norcPpgFollowBatch.datacollectionServertimezone = c.DataCollection_ServerTimeZone.toString()
+					norcPpgFollowBatch.datacIntrviwrtrtimzn5 = c.DataC_IntrviwrTrTimZn5.toString()
+					norcPpgFollowBatch.datacnRsndnttitimzn6 = c.DataCn_RsndntTiTimZn6.toString()
+					norcPpgFollowBatch.datacollectionBatchid = c.DataCollection_BatchID.toString()
+					norcPpgFollowBatch.datacollectionBatchname = c.DataCollection_BatchName.toString()
+					norcPpgFollowBatch.datactinDaentrymd7 = c.DataCtin_DaEntryMd7.toString()
+					norcPpgFollowBatch.datacollectionRemoved = c.DataCollection_Removed.toString()
+					norcPpgFollowBatch.datacleaningNote = c.DataCleaning_Note.toString()
+					norcPpgFollowBatch.datacleaningStatus01 = c.DataCleaning_Status_01.toString()
+					norcPpgFollowBatch.datacleaningStatus02 = c.DataCleaning_Status_02.toString()
+					norcPpgFollowBatch.datacleaningReviewstatus01 = c.DataCleaning_ReviewStatus_01.toString()
+					norcPpgFollowBatch.datacleaningReviewstatus02 = c.DataCleaning_ReviewStatus_02.toString()
+					norcPpgFollowBatch.datacleaningReviewstatus03 = c.DataCleaning_ReviewStatus_03.toString()
+					norcPpgFollowBatch.datacleaningReviewstatus04 = c.DataCleaning_ReviewStatus_04.toString()
+					norcPpgFollowBatch.suId = c.SU_ID.toString()
+					norcPpgFollowBatch.prFname = c.PR_FNAME.toString()
+					norcPpgFollowBatch.prFnameCodes = c.PR_FNAME_Codes.toString()
+					norcPpgFollowBatch.prLname = c.PR_LNAME.toString()
+					norcPpgFollowBatch.prLnameCodes = c.PR_LNAME_Codes.toString()
+					norcPpgFollowBatch.scId = c.SC_ID.toString()
+					norcPpgFollowBatch.scIdCodes = c.SC_ID_Codes.toString()
+					norcPpgFollowBatch.scName = c.SC_NAME.toString()
+					norcPpgFollowBatch.sc800num = c.SC_800NUM.toString()
+					norcPpgFollowBatch.method = c.METHOD.toString()
+					norcPpgFollowBatch.tsuId = c.TSU_ID.toString()
+					norcPpgFollowBatch.tsuIdCodes = c.TSU_ID_Codes.toString()
+					norcPpgFollowBatch.hilo = c.HILO.toString()
+					norcPpgFollowBatch.currppg = c.CURRPPG.toString()
+					norcPpgFollowBatch.compm3capi = c.COMPM3CAPI.toString()
+					norcPpgFollowBatch.compppv = c.COMPPPV.toString()
+					norcPpgFollowBatch.hiprot = c.HIPROT.toString()
+					norcPpgFollowBatch.comploq1 = c.COMPLOQ1.toString()
+					norcPpgFollowBatch.timeStamp1 = c.TIME_STAMP_1.toString()
+					norcPpgFollowBatch.currmo = c.CURRMO.toString()
+					norcPpgFollowBatch.currdy = c.CURRDY.toString()
+					norcPpgFollowBatch.curryr = c.CURRYR.toString()
+					norcPpgFollowBatch.quexlang = c.QUEXLANG.toString()
+					norcPpgFollowBatch.pregnant = c.PREGNANT.toString()
+					norcPpgFollowBatch.ppgDueDate1Month = c.PPG_DUE_DATE_1_MONTH.toString()
+					norcPpgFollowBatch.ppgDueDate1MonthCodes01 = c.PPG_DUE_DATE_1_MONTH_Codes_01.toString()
+					norcPpgFollowBatch.ppgDueDate1MonthCodes02 = c.PPG_DUE_DATE_1_MONTH_Codes_02.toString()
+					norcPpgFollowBatch.ppgDueDate1Day = c.PPG_DUE_DATE_1_DAY.toString()
+					norcPpgFollowBatch.ppgDueDate1DayCodes01 = c.PPG_DUE_DATE_1_DAY_Codes_01.toString()
+					norcPpgFollowBatch.ppgDueDate1DayCodes02 = c.PPG_DUE_DATE_1_DAY_Codes_02.toString()
+					norcPpgFollowBatch.ppgDueDate1Year = c.PPG_DUE_DATE_1_YEAR.toString()
+					norcPpgFollowBatch.ppgDueDate1YearCodes01 = c.PPG_DUE_DATE_1_YEAR_Codes_01.toString()
+					norcPpgFollowBatch.ppgDueDate1YearCodes02 = c.PPG_DUE_DATE_1_YEAR_Codes_02.toString()
+					norcPpgFollowBatch.datePeriodMonth = c.DATE_PERIOD_MONTH.toString()
+					norcPpgFollowBatch.datePeriodMonthCodes01 = c.DATE_PERIOD_MONTH_Codes_01.toString()
+					norcPpgFollowBatch.datePeriodMonthCodes02 = c.DATE_PERIOD_MONTH_Codes_02.toString()
+					norcPpgFollowBatch.datePeriodDay = c.DATE_PERIOD_DAY.toString()
+					norcPpgFollowBatch.datePeriodDayCodes01 = c.DATE_PERIOD_DAY_Codes_01.toString()
+					norcPpgFollowBatch.datePeriodDayCodes02 = c.DATE_PERIOD_DAY_Codes_02.toString()
+					norcPpgFollowBatch.datePeriodYear = c.DATE_PERIOD_YEAR.toString()
+					norcPpgFollowBatch.datePeriodYearCodes01 = c.DATE_PERIOD_YEAR_Codes_01.toString()
+					norcPpgFollowBatch.datePeriodYearCodes02 = c.DATE_PERIOD_YEAR_Codes_02.toString()
+					norcPpgFollowBatch.weeksPreg = c.WEEKS_PREG.toString()
+					norcPpgFollowBatch.weeksPregCodes01 = c.WEEKS_PREG_Codes_01.toString()
+					norcPpgFollowBatch.weeksPregCodes02 = c.WEEKS_PREG_Codes_02.toString()
+					norcPpgFollowBatch.monthPreg = c.MONTH_PREG.toString()
+					norcPpgFollowBatch.monthPregCodes01 = c.MONTH_PREG_Codes_01.toString()
+					norcPpgFollowBatch.monthPregCodes02 = c.MONTH_PREG_Codes_02.toString()
+					norcPpgFollowBatch.trimester = c.TRIMESTER.toString()
+					norcPpgFollowBatch.timeStamp67 = c.TIME_STAMP_6_7.toString()
+					norcPpgFollowBatch.trying = c.TRYING.toString()
+					norcPpgFollowBatch.medUnable = c.MED_UNABLE.toString()
+					norcPpgFollowBatch.ppgGroup = c.PPG_GROUP.toString()
+					norcPpgFollowBatch.endscriptfill = c.ENDSCRIPTfill.toString()
+					norcPpgFollowBatch.nextStepFlag = c.next_step_flag.toString()
+					norcPpgFollowBatch.timeStamp2 = c.TIME_STAMP_2.toString()
+					norcPpgFollowBatch.bstNmbr = c.BST_NMBR.toString()
+					norcPpgFollowBatch.phoneNbr = c.PHONE_NBR.toString()
+					norcPpgFollowBatch.phoneNbrCodes01 = c.PHONE_NBR_Codes_01.toString()
+					norcPpgFollowBatch.phoneNbrCodes02 = c.PHONE_NBR_Codes_02.toString()
+					norcPpgFollowBatch.phoneNbrCodes03 = c.PHONE_NBR_Codes_03.toString()
+					norcPpgFollowBatch.phoneType = c.PHONE_TYPE.toString()
+					norcPpgFollowBatch.phoneTypeOth = c.PHONE_TYPE_OTH.toString()
+					norcPpgFollowBatch.phoneTypeOthCodes01 = c.PHONE_TYPE_OTH_Codes_01.toString()
+					norcPpgFollowBatch.phoneTypeOthCodes02 = c.PHONE_TYPE_OTH_Codes_02.toString()
+					norcPpgFollowBatch.noPhNum = c.NO_PH_NUM.toString()
+					norcPpgFollowBatch.timeStamp3 = c.TIME_STAMP_3.toString()
+					norcPpgFollowBatch.elapsedtime = c.ElapsedTime.toString()
+					norcPpgFollowBatch.temptimevariable = c.TempTimeVariable.toString()
+
 					// Save the record
 					if (norcPpgFollowBatch.hasErrors()) {
-						response << "! norcPpgFollowBatch has errors.\n"
+						logMessage response, "! norcPpgFollowBatch has errors."
 					} else if (norcPpgFollowBatch.save()) {
 						saveCount++
 					}
 					else {
-						// println "Error saving norcPpgFollowBatch record with Respondent Serial ${norcPpgFollowBatch.suId}"
+						// logMessage response, "Error saving norcPpgFollowBatch record with Respondent Serial ${norcPpgFollowBatch.suId}"
 						norcPpgFollowBatch.errors.each{ e ->
-							// println "norcPpgFollowBatch:error::${e}"
+							// logMessage response, "norcPpgFollowBatch:error::${e}"
 							e.fieldErrors.each{ fe ->
-								response <<  "! Rejected '${fe.rejectedValue}' for field '${fe.field}'\n"
-								// println "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
+								logMessage response, "! Rejected '${fe.rejectedValue}' for field '${fe.field}'"
 							}
 						}
 					}
@@ -7908,13 +8853,14 @@ class DataParserService {
 		def endTime = System.nanoTime()
 		def diff = (endTime - startTime)/1000000000
 		if (debug) {
-			println "    Done! ${saveCount} records saved to norcPpgFollowBatch in ${diff} seconds"
+			logMessage response, "    Done! ${saveCount} records saved to norcPpgFollowBatch in ${diff} seconds"
 		}
 		// end PPGFOLLOW_BATCH1
 	}
-					
-					
-					
-					
 	
+	/** Logs a message to remote user and to local logfile/output */
+	def logMessage(response, String message) {
+		println message
+		response << (message + '\n')
+	}
 }

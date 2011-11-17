@@ -295,7 +295,7 @@ class BootStrap {
 				 * 1265 3RD ST E             |           |          | SAINT PAUL | MN         | 55106 | 5778 |
 				 * 1528 BREDA AVE            |           |          | SAINT PAUL | MN         | 55108 | 2610 |
 				 */
-
+/*
 				def myAddressList = [
 					['1636 BREDA AVE', 'SAINT PAUL', 'MN', '55108', '2701'],
 					['WYOMING ST E', 'SAINT PAUL', 'MN', '55107', '3240'],
@@ -422,6 +422,9 @@ class BootStrap {
 					println "Created Batch: ${batchAdv.id}"
 
 				}
+
+*/
+
 			}
 		}
 		// END DEVELOPMENT ENVIRONMENT CODE

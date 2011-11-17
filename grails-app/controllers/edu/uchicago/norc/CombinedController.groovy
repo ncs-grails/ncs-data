@@ -33,21 +33,24 @@ class CombinedController {
 				// println "table class: ${table.class}"
 				// save the XML data somewhere?
 
-				println " ~ Saving Local Copy..."
-				response << " ~ Saving Local Copy... \n"
+				def saveLocal = false
 
-				def now = new Date()
-				def fileName = 'textXmlParser-upload_' + g.formatDate(date:now, format: 'yyyy-MM-dd-hh-mm') + '.xml'
-				def xmlFileWriter = new File(fileName).newWriter()
-				
-				def smb = new StreamingMarkupBuilder().bind {xml -> xml.mkp.yield table}
-				
-				xmlFileWriter.write(smb.toString())
-				xmlFileWriter.flush()
-				
-				println " ~ Done Saving Local Copy."
-				response << " ~ Saving Local Copy. \n"
+				if (saveLocal) {
+					println " ~ Saving Local Copy..."
+					response << " ~ Saving Local Copy... \n"
 
+					def now = new Date()
+					def fileName = 'textXmlParser-upload_' + g.formatDate(date:now, format: 'yyyy-MM-dd-hh-mm') + '.xml'
+					def xmlFileWriter = new File(fileName).newWriter()
+
+					def smb = new StreamingMarkupBuilder().bind {xml -> xml.mkp.yield table}
+
+					xmlFileWriter.write(smb.toString())
+					xmlFileWriter.flush()
+
+					println " ~ Done Saving Local Copy."
+					response << " ~ Saving Local Copy. \n"
+				}
 			} catch (Exception ex) {
 				response << " ! Invalid XML:\n"
 				response << "	${ex.cause}\n"
