@@ -17,27 +17,27 @@ class DataParserService {
 	
 	def parseEverything(table, response) {
 		// TODO send data by table name so the entire file is not parsed each time 
-		parseFormats table, response
-		parseConsent table, response
-		parseIncentive table, response
 		parseBirthBatch table, response
+		parseBirthIncentiveBatch table, response
+		parseComboBatch table, response
+		parseConsent table, response
+		parseEnBatch table, response
+		parseFormats table, response
 		parseHhBatch table, response
+		parseHiConBatch table, response
+		parseIncentive table, response
+		parseLbBatch table, response
+		parseLbReminderBatch table, response
+		parseLoCnLqBatch table, response
 		parseLowConsentBatch table, response
 		parseLowQuex1Batch table, response
+		parseNonResponseList table, response
+		parsePpgFollowBatch table, response
 		parsePpv1Batch table, response
 		parsePv1Batch table, response
 		parsePv2Batch table, response
-		parseScreenerBatch table, response
-		parseNonResponseList table, response
-		parseComboBatch table, response
-		parseEnBatch table, response
-		parsePpgFollowBatch table, response
-		parseLbBatch table, response
-		parseBirthIncentiveBatch table, response
-		parseLbReminderBatch table, response
-		parseHiConBatch table, response
-		parseLoCnLqBatch table, response
 		parseRamseyPpgFollowup table, response
+		parseScreenerBatch table, response
 	}
 
 
