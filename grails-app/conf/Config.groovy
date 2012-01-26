@@ -87,9 +87,11 @@ log4j = {
 environments {
     development {
         log4j.appender.'errors.File'="stacktrace.log"
+		ncs.uploads = "/var/spool/ncs-data/uploads"
     }
     production {
-        log4j.appender.'errors.File'="/var/log/tomcat6/stacktrace.log"
+        log4j.appender.'errors.File'="/var/log/tomcat6/stacktrace.${appName}.log"
+		ncs.uploads = "/var/spool/ncs-data/uploads"
     }
 }
 

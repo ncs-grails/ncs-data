@@ -271,159 +271,136 @@ class BootStrap {
 		environments {
 			development {
 
-				// Test Data
+				if (false) {
+					// Test Data
 
-				/*
-				 * 1636 BREDA AVE            |           |          | SAINT PAUL | MN         | 55108 | 2701 |
-				 * 4 WYOMING ST E            |           |          | SAINT PAUL | MN         | 55107 | 3240 |
-				 * 1372 HAZEL ST N           |           |          | SAINT PAUL | MN         | 55119 | 4507 |
-				 * 180 WAYZATA ST            | APT       | 114      | SAINT PAUL | MN         | 55117 | 5351 |
-				 * 2122 WOODLYNN AVE         | APT       | 4        | SAINT PAUL | MN         | 55109 | 1480 |
-				 * 3744 CLEVELAND AVE N      | APT       | 104      | SAINT PAUL | MN         | 55112 | 3264 |
-				 * 1255 FLANDRAU ST          |           |          | SAINT PAUL | MN         | 55106 | 2302 |
-				 * 4310 OLD WHITE BEAR AVE N |           |          | SAINT PAUL | MN         | 55110 | 3874 |
-				 * 1131 MARION ST            |           |          | SAINT PAUL | MN         | 55117 | 4461 |
-				 * 305 EDMUND AVE            |           |          | SAINT PAUL | MN         | 55103 | 1708 |
-				 * 1412 COUNTY ROAD E W      |           |          | SAINT PAUL | MN         | 55112 | 3653 |
-				 * 1952 OAK KNOLL DR         |           |          | SAINT PAUL | MN         | 55110 | 4263 |
-				 * 480 GERANIUM AVE E        |           |          | SAINT PAUL | MN         | 55130 | 3709 |
-				 * 1140 4TH ST E             | APT       | 306      | SAINT PAUL | MN         | 55106 | 5353 |
-				 * 1793 MORGAN AVE           |           |          | SAINT PAUL | MN         | 55116 | 2721 |
-				 * 346 CLEVELAND AVE SW      | APT       | 14       | SAINT PAUL | MN         | 55112 | 3535 |
-				 * 1575 SAINT PAUL AVE       | APT       | 9        | SAINT PAUL | MN         | 55116 | 2862 |
-				 * 4041 BETHEL DR            | APT       | 27       | SAINT PAUL | MN         | 55112 | 6921 |
-				 * 1265 3RD ST E             |           |          | SAINT PAUL | MN         | 55106 | 5778 |
-				 * 1528 BREDA AVE            |           |          | SAINT PAUL | MN         | 55108 | 2610 |
-				 */
-/*
-				def myAddressList = [
-					['1636 BREDA AVE', 'SAINT PAUL', 'MN', '55108', '2701'],
-					['WYOMING ST E', 'SAINT PAUL', 'MN', '55107', '3240'],
-					['1372 HAZEL ST N', 'SAINT PAUL', 'MN', '55119', '4507 '],
-					['180 WAYZATA ST APT 114', 'SAINT PAUL', 'MN', '55117', '5351'],
-					['2122 WOODLYNN AVE APT 4', 'SAINT PAUL', 'MN', '55109', '1480'],
-					['3744 CLEVELAND AVE N APT 104', 'SAINT PAUL', 'MN', '55112', '3264'],
-					['1255 FLANDRAU ST', 'SAINT PAUL', 'MN', '55106', '2302'],
-					['4310 OLD WHITE BEAR AVE N', 'SAINT PAUL', 'MN', '55110', '3874'],
-					['1131 MARION ST', 'SAINT PAUL', 'MN', '55117', '4461'],
-					['305 EDMUND AVE', 'SAINT PAUL', 'MN', '55103', '1708'],
-					['1412 COUNTY ROAD E W', 'SAINT PAUL', 'MN', '55112', '3653'],
-					['1952 OAK KNOLL DR', 'SAINT PAUL', 'MN', '55110', '4263'],
-					['480 GERANIUM AVE E', 'SAINT PAUL', 'MN', '55130', '3709'],
-					['1140 4TH ST E APT 306', 'SAINT PAUL', 'MN', '55106', '5353'],
-					['1793 MORGAN AVE', 'SAINT PAUL', 'MN', '55116', '2721'],
-					['346 CLEVELAND AVE SW APT 14', 'SAINT PAUL', 'MN', '55112', '3535'],
-					['1575 SAINT PAUL AVE APT 9', 'SAINT PAUL', 'MN', '55116', '2862'],
-					['4041 BETHEL DR APT 27', 'SAINT PAUL', 'MN', '55112', '6921'],
-					['1265 3RD ST E','SAINT PAUL', 'MN', '55106', '5778'],
-					['1528 BREDA AVE','SAINT PAUL', 'MN', '55108', '2610']
-				]
+					def myAddressList = [
+						['1636 BREDA AVE', 'SAINT PAUL', 'MN', '55108', '2701'],
+						['WYOMING ST E', 'SAINT PAUL', 'MN', '55107', '3240'],
+						['1372 HAZEL ST N', 'SAINT PAUL', 'MN', '55119', '4507 '],
+						['180 WAYZATA ST APT 114', 'SAINT PAUL', 'MN', '55117', '5351'],
+						['2122 WOODLYNN AVE APT 4', 'SAINT PAUL', 'MN', '55109', '1480'],
+						['3744 CLEVELAND AVE N APT 104', 'SAINT PAUL', 'MN', '55112', '3264'],
+						['1255 FLANDRAU ST', 'SAINT PAUL', 'MN', '55106', '2302'],
+						['4310 OLD WHITE BEAR AVE N', 'SAINT PAUL', 'MN', '55110', '3874'],
+						['1131 MARION ST', 'SAINT PAUL', 'MN', '55117', '4461'],
+						['305 EDMUND AVE', 'SAINT PAUL', 'MN', '55103', '1708'],
+						['1412 COUNTY ROAD E W', 'SAINT PAUL', 'MN', '55112', '3653'],
+						['1952 OAK KNOLL DR', 'SAINT PAUL', 'MN', '55110', '4263'],
+						['480 GERANIUM AVE E', 'SAINT PAUL', 'MN', '55130', '3709'],
+						['1140 4TH ST E APT 306', 'SAINT PAUL', 'MN', '55106', '5353'],
+						['1793 MORGAN AVE', 'SAINT PAUL', 'MN', '55116', '2721'],
+						['346 CLEVELAND AVE SW APT 14', 'SAINT PAUL', 'MN', '55112', '3535'],
+						['1575 SAINT PAUL AVE APT 9', 'SAINT PAUL', 'MN', '55116', '2862'],
+						['4041 BETHEL DR APT 27', 'SAINT PAUL', 'MN', '55112', '6921'],
+						['1265 3RD ST E','SAINT PAUL', 'MN', '55106', '5778'],
+						['1528 BREDA AVE','SAINT PAUL', 'MN', '55108', '2610']
+					]
 
-				def baseNorcSuId = 123456
+					def baseNorcSuId = 123456
 
-				myAddressList.each{
-					def sa = new StreetAddress(address:it[0],
-						city:it[1], state:it[2], zipCode:it[3], zip4:it[4],
-						country:us, county:'Ramsey', appCreated:'byHand').save()
+					myAddressList.each{
+						def sa = new StreetAddress(address:it[0],
+							city:it[1], state:it[2], zipCode:it[3], zip4:it[4],
+							country:us, county:'Ramsey', appCreated:'byHand').save()
 
-					def du = new DwellingUnit(address:sa,
-						appCreated:'byHand').save()
+						def du = new DwellingUnit(address:sa,
+							appCreated:'byHand').save()
 
-					def suId = "00${baseNorcSuId}00"
-					baseNorcSuId++
+						def suId = "00${baseNorcSuId}00"
+						baseNorcSuId++
 
-					// adding NORC SU_IDs
-					def duNorc = new DwellingUnitLink(dwellingUnit: du,
-						deliverySequenceId: 1, norcSuId:suId).save()
+						// adding NORC SU_IDs
+						def duNorc = new DwellingUnitLink(dwellingUnit: du,
+							deliverySequenceId: 1, norcSuId:suId).save()
 
-					//println "Created Dwelling unit: ${du?.id}:${sa?.id}"
+						//println "Created Dwelling unit: ${du?.id}:${sa?.id}"
+					}
+
+					def advLetter = new Instrument(name:'Advance Letter',
+						nickName:'ADV', study:ncs, requiresPrimaryContact:false).save()
+
+			
+					// adding NORC Link for the Doc ID
+					def norcAdvLetter = new InstrumentLink(instrument: advLetter,
+						norcDocId: "80", norcQuexId: "ADVBRO",
+						norcDescription:"Advance Letter and Brochure").save()
+
+
+					def bccAdv = new BatchCreationConfig(name:'Advance Mailing',
+						instrument:advLetter, format:firstClassMail, direction: outgoing,
+						isInitial:initial, selectionQuery:"", active:true, manualSelection:true,
+						oneBatchEventPerson:true).save()
+
+					// add a document
+					bccAdv.addToDocuments(
+						documentLocation:'n:/production documents/advance letter/ncs_advance_letter_merge.docx')
+					.save()
+
+
+					// 10 Fake Mailings
+					// generate a batch
+
+					(1..10).each{
+						
+						def batchAdv = new Batch(format:firstClassMail,
+							direction: outgoing, instrumentDate: today, batchRunBy:'ajz',
+							batchRunByWhat: appName, trackingDocumentSent:false,
+							creationConfig: bccAdv)
+
+						bccAdv.addToBatches(batchAdv)
+
+						if (! bccAdv.save() ) {
+							println "ERRORS:"
+							bccAdv.errors.each{ error ->
+								println "ERROR>> ${error} "
+							}
+							println ""
+						} else {
+							// add an instrument
+							batchAdv.addToInstruments(instrument:advLetter, isInitial:initial).save()
+
+						}
+
+						if (batchAdv) {
+							// reload from the database
+							batchAdv.refresh()
+
+							// assign a mail date to batches 1 and 3
+							if ( it == 1 || it == 3 ){
+								batchAdv.mailDate = today
+							}
+
+							// assign an addressing and mailing date to batches 5 and 6
+							if ( it == 5 || it == 7 ){
+								batchAdv.addressAndMailingDate = today + 1
+							}
+
+							// set the instrument date for batches 4 and 8
+							if ( it == 4 || it == 8 ){
+								batchAdv.instrumentDate = today - 1
+							}
+						}
+
+						// Add Items to batch
+						def dwellingUnitInstanceList = DwellingUnit.list()
+
+						dwellingUnitInstanceList.each{ du ->
+							batchAdv.addToItems(dwellingUnit:du)
+						}
+
+						if (! batchAdv.save() ) {
+							println "ERRORS adding to batch:"
+							batchAdv.errors.each{ error ->
+								println "ERROR>> ${error} "
+							}
+							println ""
+						}
+
+						println "Created Batch: ${batchAdv.id}"
+
+					}
 				}
-
-				def advLetter = new Instrument(name:'Advance Letter',
-					nickName:'ADV', study:ncs, requiresPrimaryContact:false).save()
-
-		
-				// adding NORC Link for the Doc ID
-				def norcAdvLetter = new InstrumentLink(instrument: advLetter,
-					norcDocId: "80", norcQuexId: "ADVBRO",
-					norcDescription:"Advance Letter and Brochure").save()
-
-
-				def bccAdv = new BatchCreationConfig(name:'Advance Mailing',
-					instrument:advLetter, format:firstClassMail, direction: outgoing,
-					isInitial:initial, selectionQuery:"", active:true, manualSelection:true,
-					oneBatchEventPerson:true).save()
-
-				// add a document
-				bccAdv.addToDocuments(
-					documentLocation:'n:/production documents/advance letter/ncs_advance_letter_merge.docx')
-				.save()
-
-
-				// 10 Fake Mailings
-				// generate a batch
-
-				(1..10).each{
-					
-					def batchAdv = new Batch(format:firstClassMail,
-						direction: outgoing, instrumentDate: today, batchRunBy:'ajz',
-						batchRunByWhat: appName, trackingDocumentSent:false,
-						creationConfig: bccAdv)
-
-					bccAdv.addToBatches(batchAdv)
-
-					if (! bccAdv.save() ) {
-						println "ERRORS:"
-						bccAdv.errors.each{ error ->
-							println "ERROR>> ${error} "
-						}
-						println ""
-					} else {
-						// add an instrument
-						batchAdv.addToInstruments(instrument:advLetter, isInitial:initial).save()
-
-					}
-
-					if (batchAdv) {
-						// reload from the database
-						batchAdv.refresh()
-
-						// assign a mail date to batches 1 and 3
-						if ( it == 1 || it == 3 ){
-							batchAdv.mailDate = today
-						}
-
-						// assign an addressing and mailing date to batches 5 and 6
-						if ( it == 5 || it == 7 ){
-							batchAdv.addressAndMailingDate = today + 1
-						}
-
-						// set the instrument date for batches 4 and 8
-						if ( it == 4 || it == 8 ){
-							batchAdv.instrumentDate = today - 1
-						}
-					}
-
-					// Add Items to batch
-					def dwellingUnitInstanceList = DwellingUnit.list()
-
-					dwellingUnitInstanceList.each{ du ->
-						batchAdv.addToItems(dwellingUnit:du)
-					}
-
-					if (! batchAdv.save() ) {
-						println "ERRORS adding to batch:"
-						batchAdv.errors.each{ error ->
-							println "ERROR>> ${error} "
-						}
-						println ""
-					}
-
-					println "Created Batch: ${batchAdv.id}"
-
-				}
-
-*/
 
 			}
 		}
