@@ -1,0 +1,5 @@
+Starting Process at Tue Jan 31 18:51:40 CST 2012
+Updating Config.groovy
+Moving DataSource.groovy to /home/AD/ajz/development/grails/ncs/config/development/ncs-data-config.groovy
+Adding security plugin dependencies to grails-app/conf/BuildConfig.groovy
+Removing plugins.umn-acegi from application.properties
