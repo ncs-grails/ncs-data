@@ -48,3 +48,6 @@ grails.gorm.default.mapping = {
 	"user-type" type: org.joda.time.contrib.hibernate.PersistentLocalDateTime, class: org.joda.time.LocalDateTime
 	"user-type" type: org.joda.time.contrib.hibernate.PersistentPeriod, class: org.joda.time.Period
 }
+
+// Always require HTTPS
+grails.plugins.springsecurity.secureChannel.definition = [ '/**': 'REQUIRES_SECURE_CHANNEL' ]
