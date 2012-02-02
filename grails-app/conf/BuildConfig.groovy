@@ -32,4 +32,34 @@ grails.project.dependency.resolution = {
         runtime 'mysql:mysql-connector-java:5.1.5'
 		compile "org.codehaus.gpars:gpars:0.11"
     }
+	plugins {
+		compile ":hibernate:$grailsVersion"
+		compile ":tomcat:$grailsVersion"
+
+		compile ":audit-logging:0.5.4"
+		compile ":joda-time:1.0"
+		compile ":mail:1.0-SNAPSHOT"
+		compile ":ncs-event:1.1"
+		compile ":ncs-norc-link:0.4"
+		compile ":ncs-people:0.8"
+		compile ":ncs-recruitment:1.0"
+		compile ":ncs-tracking:3.2.2"
+		compile ":ncs-web-template:0.2"
+		compile ":spring-security-core:1.2.7.1"
+
+		test ":code-coverage:1.2.5"
+		test ":codenarc:0.16.1"
+	}
 }
+
+codenarc.reports = {
+	JenkinsXmlReport('xml') {
+		outputFile = 'target/test-reports/CodeNarcReport.xml'
+		title = 'CodeNarc Report for NCS Data Web Service'
+	}
+	JenkinsHtmlReport('html') {
+		outputFile = 'CodeNarcReport.html'
+		title = 'CodeNarc Report for NCS Data Web Service'
+	}
+}
+codenarc.propertiesFile = 'grails-app/conf/codenarc.properties'
