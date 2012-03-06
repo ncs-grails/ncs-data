@@ -28,17 +28,18 @@ class VdrController {
 			// build the file name
 			def fileName = saveLocation + '/ncs-vdr-upload_' + g.formatDate(date:now, format: 'yyyy-MM-dd-hh-mm') + '.xml.zip'
 			// get a file to write to
-			def xmlFileWriter = new File(fileName).newWriter()
+			def fileWriter = new File(fileName).newWriter()
 			// get a reader for the request data stream
-			def dataReader = request.getReader()
+			def dataReader = request.getInputStream()
 			// write the data from the reader to the XML file
 
 			int c
+			// TODO: Find out why this loop is not copying line feeds!
 			while ((c = dataReader.read()) != -1 ) {
-				xmlFileWriter.write(c)
+				fileWriter.write(c)
 			}
 			// flush the stream
-			xmlFileWriter.flush()
+			fileWriter.flush()
 
 			println " ~ Done Saving Data File."
 			response << " ~ Saving Data File. \n"
