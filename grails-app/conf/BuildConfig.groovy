@@ -33,7 +33,7 @@ grails.project.dependency.resolution = {
 		compile ":tomcat:$grailsVersion"
 
 		compile ":audit-logging:0.5.4"
-		compile ":joda-time:1.0"
+		compile ":joda-time:1.1"
 		compile ":mail:1.0-SNAPSHOT"
 		compile ":ncs-tracking:3.2.5"
 		compile ":ncs-people:0.9"
