@@ -21,28 +21,44 @@ class VdrController {
 
 			def saveLocation = config.uploads
 
-			println " ~ Saving Data File..."
-			response << " ~ Saving Data File... \n"
+
+			log.info " ~ Saving Data File..."
+			response << " ~ Saving Data File ... \n"
 
 			def now = new Date()
 			// build the file name
-			def fileName = saveLocation + '/ncs-vdr-upload_' + g.formatDate(date:now, format: 'yyyy-MM-dd-hh-mm') + '.xml.zip'
+			def fileName = saveLocation + '/ncs-vdr-upload_' + g.formatDate(date:now, format: 'yyyy-MM-dd-HH-mm') + '.xml.zip'
 			// get a file to write to
-			def fileWriter = new File(fileName).newWriter()
+			def fileOutputStream = new File(fileName).newDataOutputStream()
 			// get a reader for the request data stream
-			def dataReader = request.getInputStream()
-			// write the data from the reader to the XML file
+			def httpsInputStream = request.getInputStream()
+			// create a 1k buffer for data transfer
+			byte[] transferBuffer = new byte[1024]
+			// this will store the bytes read as we go along
+			int bytesRead
+			long totalBytesRead = 0
 
-			int c
 			// TODO: Find out why this loop is not copying line feeds!
-			while ((c = dataReader.read()) != -1 ) {
-				fileWriter.write(c)
+			while ( (bytesRead = httpsInputStream.read(transferBuffer)) > 0 ) {
+				fileOutputStream.write(transferBuffer,0, bytesRead)
+				totalBytesRead += bytesRead
 			}
 			// flush the stream
-			fileWriter.flush()
+			fileOutputStream.close()
+			httpsInputStream.close()
 
-			println " ~ Done Saving Data File."
-			response << " ~ Saving Data File. \n"
+			log.info " ~ Done Saving Data File (${totalBytesRead} bytes)."
+			response << " ~ Saved Data File (${totalBytesRead} bytes). \n"
+			response << " ~ Calculating MD5 sum... \n"
+
+			def md5Command = "md5sum ${fileName}"
+			log.info "Executing Shell command: ${md5Command}"
+			def proc = md5Command.execute()
+			proc.waitFor()
+			def resultText = proc.in.text
+			def md5Sum = resultText[0..31]
+			log.info " ~ Calculated MD5 sum:${md5Sum}."
+			response << " ~ Calculated MD5 sum:${md5Sum}. \n"
 			
 		}
 		render "save action finished.\n"

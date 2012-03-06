@@ -35,11 +35,11 @@ grails.project.dependency.resolution = {
 		compile ":audit-logging:0.5.4"
 		compile ":joda-time:1.0"
 		compile ":mail:1.0-SNAPSHOT"
+		compile ":ncs-tracking:3.2.5"
+		compile ":ncs-people:0.9"
 		compile ":ncs-event:1.1"
 		compile ":ncs-norc-link:0.4"
-		compile ":ncs-people:0.8"
 		compile ":ncs-recruitment:1.0"
-		compile ":ncs-tracking:3.2.2"
 		compile ":ncs-web-template:0.2"
 		compile ":spring-security-core:1.2.7.1"
 
