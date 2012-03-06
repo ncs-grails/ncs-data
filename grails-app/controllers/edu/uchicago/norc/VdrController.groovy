@@ -51,12 +51,17 @@ class VdrController {
 			response << " ~ Saved Data File (${totalBytesRead} bytes). \n"
 			response << " ~ Calculating MD5 sum... \n"
 
-			def md5Command = "md5sum ${fileName}"
-			log.info "Executing Shell command: ${md5Command}"
-			def proc = md5Command.execute()
-			proc.waitFor()
-			def resultText = proc.in.text
-			def md5Sum = resultText[0..31]
+			def md5Sum = "too big to calculate"
+			try {
+				def md5Command = "md5sum ${fileName}"
+				log.info "Executing Shell command: ${md5Command}"
+				def proc = md5Command.execute()
+				proc.waitFor()
+				def resultText = proc.in.text
+				md5Sum = resultText[0..31]
+			} catch (java.io.IOException ex) {
+				md5Sum = "too big of a file to calculate MD5 quickly"
+			}
 			log.info " ~ Calculated MD5 sum:${md5Sum}."
 			response << " ~ Calculated MD5 sum:${md5Sum}. \n"
 			
