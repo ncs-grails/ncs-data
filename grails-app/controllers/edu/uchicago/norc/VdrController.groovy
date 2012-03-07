@@ -38,7 +38,6 @@ class VdrController {
 			int bytesRead
 			long totalBytesRead = 0
 
-			// TODO: Find out why this loop is not copying line feeds!
 			while ( (bytesRead = httpsInputStream.read(transferBuffer)) > 0 ) {
 				fileOutputStream.write(transferBuffer,0, bytesRead)
 				totalBytesRead += bytesRead
@@ -69,6 +68,6 @@ class VdrController {
 		render "save action finished.\n"
 
 		// send notification email
-		// emailNotifyService.notifyOfNorcUpload(request.remoteAddr)
+		emailNotifyService.notifyOfNorcUpload(request.remoteAddr)
 	}
 }
