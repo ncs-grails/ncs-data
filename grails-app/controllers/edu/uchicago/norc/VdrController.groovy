@@ -2,6 +2,8 @@ package edu.uchicago.norc
 
 import edu.umn.ncs.data.AccessService
 import edu.umn.ncs.data.VdrService
+import edu.umn.ncs.data.ClientHost
+import edu.umn.ncs.data.DataExchangePartner
 
 class VdrController {
 
@@ -15,33 +17,24 @@ class VdrController {
 
 	def index = {
 
-		def config = grailsApplication.config.ncs
-
 		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_WRITE_INSTRUMENT') ) {
 			response.sendError(403)
 			render "ACCESS DENIED ROLE_WRITE_INSTRUMENT\n"
 		} else {
 
-			def saveLocation = config.uploads
-
 			log.info " ~ Saving Data File..."
 			response << " ~ Saving Data File ... \n"
 
-			def now = new Date()
 			// build the file name
-			def fileName = saveLocation + '/ncs-vdr-upload_' + g.formatDate(date:now, format: 'yyyy-MM-dd-HH-mm') + '.xml.zip'
-			// get a reader for the request data stream
+			def fileName = vdrService.getNewSaveLocation()
 			def httpsInputStream = request.getInputStream()
-
 			def result = vdrService.saveStreamToFile(httpsInputStream, fileName)
-			def totalBytesRead = result.bytesRead
-			def md5Sum = result.md5Sum
 
-			log.info " ~ Done Saving Data File (${totalBytesRead} bytes)."
-			response << " ~ Saved Data File (${totalBytesRead} bytes). \n"
+			log.info " ~ Saved Data File '${fileName}' (${result.bytesRead} bytes)."
+			response << " ~ Saved Data File (${result.bytesRead} bytes). \n"
 
-			log.info " ~ Calculated MD5 sum:${md5Sum}."
-			response << " ~ Calculated MD5 sum:${md5Sum}. \n"
+			log.info " ~ Calculated MD5 sum:${result.md5Sum}."
+			response << " ~ Calculated MD5 sum:${result.md5Sum}. \n"
 			
 		}
 		render "save action finished.\n"
@@ -50,5 +43,59 @@ class VdrController {
 		emailNotifyService.notifyOfNorcUpload(request.remoteAddr)
 	}
 
-	def key = { }
+	def key = {
+
+		def clientHostEligible = false
+
+		def clientHost = ClientHost.findByIpvFour(request.remoteAddr)
+		if (clientHost) {
+			def dataExchangePartner = DataExchangePartner.createCriteria().list{
+				allowedClients {
+					idEq(clientHost.id)
+				}
+			}
+			if (dataExchangePartner) {
+				clientHostEligible = true
+			}
+		}
+
+		[ clientHostEligible: clientHostEligible ]
+	}
+
+
+	def uploadFile = {
+		def remoteAddress = request.remoteAddr
+		def key = params.key
+
+		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_WRITE_INSTRUMENT') ) {
+			flash.message = "Access denied: ROLE_WRITE_INSTRUMENT, from host: ${remoteAddress}"
+			redirect(action:'key')
+		} else {
+			[ key: key ]
+		}
+	}
+
+	def upload = {
+		def remoteAddress = request.remoteAddr
+		def key = params.key
+
+		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_WRITE_INSTRUMENT') ) {
+			flash.message = "Access denied: ROLE_WRITE_INSTRUMENT, from host: ${remoteAddress}"
+			redirect(action:'key')
+		} else {
+			def f = request.getFile('vdrFile')
+			if (! f.empty ) {
+				def fileName = vdrService.getNewSaveLocation()
+				f.transferTo(new File(fileName))
+				log.info "Wrote file ${fileName}."
+				flash.message = "The file was successfully uploaded."
+				// send notification email
+				emailNotifyService.notifyOfNorcUpload(request.remoteAddr)
+				redirect(action:'key')
+			} else {
+				flash.message = "Sorry, the file you uploaded was empty."
+				redirect(action:'uploadFile', params:[key: key])
+			}
+		}
+	}
 }

@@ -4,6 +4,16 @@ import java.security.MessageDigest
 
 class VdrService {
 
+	// inject grailsApplication
+	def grailsApplication
+
+	def getNewSaveLocation() {
+		def config = grailsApplication.config.ncs
+		def saveLocation = config.uploads
+		def now = new Date()
+		return saveLocation + '/ncs-vdr-upload_' + now.format('yyyy-MM-dd-HH-mm') + '.xml.zip'
+	}
+
 	def saveStreamToFile(inputStream, fileName) {
 		def result = [ bytesRead:0, md5Sum:'' ]
 
