@@ -4,6 +4,10 @@ class AccessService {
 
     static transactional = true
 
+	private def getPartnerByKey = { privateKey ->
+		return DataExchangePartner.findByPrivateKey(privateKey)
+	}
+
 	private def hasRoleAccess = { privateKey, ipAddress, roleName ->
 		def now = new Date()
 		def grantAccess = false

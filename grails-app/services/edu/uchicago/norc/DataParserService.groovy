@@ -16,28 +16,32 @@ class DataParserService {
 	DateTimeFormatter fmtDateOnly = DateTimeFormat.forPattern("yyyy-MM-dd")
 	
 	def parseEverything(table, response) {
-		// TODO send data by table name so the entire file is not parsed each time 
-		parseBirthBatch table, response
-		parseBirthIncentiveBatch table, response
-		parseComboBatch table, response
-		parseConsent table, response
-		parseEnBatch table, response
-		parseFormats table, response
-		parseHhBatch table, response
-		parseHiConBatch table, response
-		parseIncentive table, response
-		parseLbBatch table, response
-		parseLbReminderBatch table, response
-		parseLoCnLqBatch table, response
-		parseLowConsentBatch table, response
-		parseLowQuex1Batch table, response
-		parseNonResponseList table, response
-		parsePpgFollowBatch table, response
-		parsePpv1Batch table, response
-		parsePv1Batch table, response
-		parsePv2Batch table, response
-		parseRamseyPpgFollowup table, response
-		parseScreenerBatch table, response
+
+		def parseResults = [:]
+
+		parseResults.birthBatch = parseBirthBatch(table, response)
+		parseResults.birthIncentiveBatch = parseBirthIncentiveBatch(table, response)
+		parseResults.comboBatch = parseComboBatch(table, response)
+		parseResults.consent = parseConsent(table, response)
+		parseResults.enBatch = parseEnBatch(table, response)
+		parseResults.formats = parseFormats(table, response)
+		parseResults.hhBatch = parseHhBatch(table, response)
+		parseResults.hiConBatch = parseHiConBatch(table, response)
+		parseResults.incentive = parseIncentive(table, response)
+		parseResults.lbBatch = parseLbBatch(table, response)
+		parseResults.lbReminderBatch = parseLbReminderBatch(table, response)
+		parseResults.loCnLqBatch = parseLoCnLqBatch(table, response)
+		parseResults.lowConsentBatch = parseLowConsentBatch(table, response)
+		parseResults.lowQuex1Batch = parseLowQuex1Batch(table, response)
+		parseResults.nonResponseList = parseNonResponseList(table, response)
+		parseResults.ppgFollowBatch = parsePpgFollowBatch(table, response)
+		parseResults.ppv1Batch = parsePpv1Batch(table, response)
+		parseResults.pv1Batch = parsePv1Batch(table, response)
+		parseResults.pv2Batch = parsePv2Batch(table, response)
+		parseResults.ramseyPpgFollowup = parseRamseyPpgFollowup(table, response)
+		parseResults.screenerBatch = parseScreenerBatch(table, response)
+
+		return parseResults
 	}
 
 
@@ -119,6 +123,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcRamseyPpgFollowup in ${diff} seconds"			
 		}
 		// end RAMSEY_PPGFOLLOWUP
+		return saveCount
 	}
 
 	def parseLoCnLqBatch(table, response) {
@@ -755,6 +760,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcLoCnLqBatch in ${diff} seconds"			
 		}
 		// end LOCNLQ_BATCH1
+		return saveCount
 	}
 
 
@@ -1025,6 +1031,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcHiConBatch in ${diff} seconds"			
 		}
 		// end HICON_BATCH1
+		return saveCount
 	}
 
 	def parseBirthIncentiveBatch(table, response) {
@@ -1122,6 +1129,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcBirthIncentiveBatch in ${diff} seconds"			
 		}
 		// end BIRTHINCENTIVE_BATCH1
+		return saveCount
 	}
 
 
@@ -1205,6 +1213,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcLbReminderBatch in ${diff} seconds"			
 		}
 		// end LBREMINDER_BATCH1 
+		return saveCount
 	}
 
 	def parseLbBatch(table, response) {
@@ -1816,6 +1825,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcLbBatch in ${diff} seconds"			
 		}
 		// end LB1_BATCH1
+		return saveCount
 	}
 	def parseHhBatch(table, response) {
 		def now = new Date()
@@ -1827,7 +1837,6 @@ class DataParserService {
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
-		//table?.HH_BATCH1?.each{ c ->
 		GParsPool.withPool {
 			table?.HH_BATCH1?.eachParallel { c ->
 				
@@ -2809,6 +2818,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcHhBatch in ${diff} seconds"			
 		}
 		// end HH_BATCH1
+		return saveCount
 	}
 		
 	def parseLowConsentBatch(table, response) {
@@ -2820,7 +2830,6 @@ class DataParserService {
 			logMessage response, "Parsing LOWCONSENT_BATCH1"
 		}
 		def startTime = System.nanoTime()
-		//table?.LOWCONSENT_BATCH1?.each{ c ->
 		GParsPool.withPool {
 			table?.LOWCONSENT_BATCH1?.eachParallel { c ->
 				NorcLowConsentBatch.withTransaction {
@@ -3068,6 +3077,7 @@ class DataParserService {
 		}
 		// end LOWCONSENT_BATCH1
 
+		return saveCount
 	}
 	
 	def parseLowQuex1Batch(table, response) {
@@ -3081,7 +3091,6 @@ class DataParserService {
 			logMessage response, "Parsing LOWQUEX1_BATCH1"
 		}
 		def startTime = System.nanoTime()
-		//table?.LOWQUEX1_BATCH1?.each{ c ->
 		GParsPool.withPool {
 			table?.LOWQUEX1_BATCH1?.eachParallel { c ->
 				NorcLowQuex1Batch.withTransaction {
@@ -3498,6 +3507,7 @@ class DataParserService {
 		}
 		// end LOWQUEX1_BATCH1
 
+		return saveCount
 	}
 
 	def parseScreenerBatch(table, response) {
@@ -3511,7 +3521,6 @@ class DataParserService {
 			logMessage response, "Parsing SCREENER_BATCH1"
 		}
 		def startTime = System.nanoTime()
-		//table?.SCREENER_BATCH1?.each{ c ->
 		GParsPool.withPool {
 			table?.SCREENER_BATCH1?.eachParallel { c ->
 				NorcScreenerBatch.withTransaction {
@@ -4012,6 +4021,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcScreenerBatch in ${diff} seconds"			
 		}
 		// end SCREENER_BATCH1
+		return saveCount
 	}
 
 	def parseNonResponseList(table, response) {
@@ -4025,7 +4035,6 @@ class DataParserService {
 			logMessage response, "Parsing NONRESPONSE_LIST"			
 		}
 		def startTime = System.nanoTime()
-		//table?.NONRESPONSE_LIST?.each{ c ->
 		GParsPool.withPool {
 			table?.NONRESPONSE_LIST?.eachParallel { c ->
 				NorcNonResponseList.withTransaction {
@@ -4074,10 +4083,11 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcNonResponseList in ${diff} seconds"
 		}
 		// end NONRESPONSE_LIST
+		return saveCount
 	}
 	
 	def parseIncentive(table, response) {
-		//table?.INCENTIVE_BATCH1?.each{ c ->
+		def saveCount = 0
 		GParsPool.withPool {
 			table?.INCENTIVE_BATCH1?.eachParallel { c ->
 				NorcIncentive.withTransaction {
@@ -4257,6 +4267,7 @@ class DataParserService {
 					if (norcIncentive.hasErrors()) {
 						logMessage response, "! consent has errors."
 					} else if (norcIncentive.save(flush:true)) {
+						saveCount++
 						logMessage response, "= saved data"
 					} else {
 						logMessage response, "! unable to save data."
@@ -4269,10 +4280,11 @@ class DataParserService {
 				}
 			}
 		}
+		return saveCount
 	}
 
 	def parseConsent(table, response) {
-		//table?.CONSENT_BATCH1?.each{ c ->
+		def saveCount = 0
 		GParsPool.withPool {
 			table?.CONSENT_BATCH1?.eachParallel { c ->
 				NorcConsent.withTransaction {
@@ -4476,6 +4488,7 @@ class DataParserService {
 						if (norcConsent.hasErrors()) {
 							logMessage response, "! consent has errors."
 						} else if (norcConsent.save(flush:true)) {
+							saveCount++
 							logMessage response, "= saved data"
 						} else {
 							logMessage response, "! unable to save data."
@@ -4491,9 +4504,11 @@ class DataParserService {
 				}
 			}
 		}
+		return saveCount
 	}
 
 	def parseFormats(table, response) {
+		def saveCount = 0
 
 		table?.FMTS?.each{ f ->
 			
@@ -4507,11 +4522,13 @@ class DataParserService {
 					if ( ! norcDocType ) {
 						norcDocType = new NorcDocType(name:fName, label:fLabel, value:fValue)
 						norcDocType.save(flush:true)
+						saveCount++
 						logMessage response, "Saved new NorcDocType: ${norcDocType.label}"
 					} else {
 						if (norcDocType.label != fLabel) {
 							norcDocType.label = fLabel
 							norcDocType.save(flush:true)
+							saveCount++
 	
 							logMessage response, "Updated NorcDocType(${norcDocType.value}) = ${norcDocType.name}"
 						} else {
@@ -4524,11 +4541,13 @@ class DataParserService {
 					if ( ! norcDocMode ) {
 						norcDocMode = new NorcDocMode(name:fName, label:fLabel, value:fValue)
 						norcDocMode.save(flush:true)
+						saveCount++
 						logMessage response, "Saved new NorcDocType: ${norcDocMode.label}"
 					} else {
 						if (norcDocMode.label != fLabel) {
 							norcDocMode.label = fLabel
 							norcDocMode.save(flush:true)
+							saveCount++
 	
 							logMessage response, "Updated NorcDocMode(${norcDocMode.value}) = ${norcDocMode.name}"
 						} else {
@@ -4541,11 +4560,13 @@ class DataParserService {
 					if ( ! norcSource ) {
 						norcSource = new NorcSource(name:fName, label:fLabel, value:fValue)
 						norcSource.save(flush:true)
+						saveCount++
 						logMessage response, "Saved new NorcSource: ${norcSource.label}"
 					} else {
 						if (norcSource.label != fLabel) {
 							norcSource.label = fLabel
 							norcSource.save(flush:true)
+							saveCount++
 	
 							logMessage response, "Updated NorcSource(${norcSource.value}) = ${norcSource.name}"
 						} else {
@@ -4558,11 +4579,13 @@ class DataParserService {
 					if ( ! norcStatus ) {
 						norcStatus = new NorcStatus(name:fName, label:fLabel, value:fValue)
 						norcStatus.save(flush:true)
+						saveCount++
 						logMessage response, "Saved new NorcStatus: ${norcStatus.label}"
 					} else {
 						if (norcStatus.label != fLabel) {
 							norcStatus.label = fLabel
 							norcStatus.save(flush:true)
+							saveCount++
 	
 							logMessage response, "Updated NorcStatus(${norcStatus.value}) = ${norcStatus.name}"
 						} else {
@@ -4574,6 +4597,7 @@ class DataParserService {
 					logMessage response, "Unknown FMTS: ${fName}"
 			}
 		}
+		return saveCount
 	}
 	
 	def parseBirthBatch(table, response) {
@@ -4586,7 +4610,6 @@ class DataParserService {
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
-		//table?.HH_BATCH1?.each{ c ->
 		GParsPool.withPool {
 			table?.BIRTH_BATCH1?.eachParallel { c ->
 				
@@ -5203,6 +5226,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcBirthBatch in ${diff} seconds"
 		}
 		// end BIRTH_BATCH
+		return saveCount
 	}
 
 	def parsePpv1Batch(table, response) {
@@ -5215,7 +5239,6 @@ class DataParserService {
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
-		//table?.HH_BATCH1?.each{ c ->
 		GParsPool.withPool {
 			table?.PPV1_BATCH1?.eachParallel { c ->
 				
@@ -5806,6 +5829,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcPpv1Batch in ${diff} seconds"
 		}
 		// end PPV1_BATCH
+		return saveCount
 	}
 
 	def parsePv1Batch(table, response) {
@@ -5818,7 +5842,6 @@ class DataParserService {
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
-		//table?.HH_BATCH1?.each{ c ->
 		GParsPool.withPool {
 			table?.PV1_BATCH1?.eachParallel { c ->
 				
@@ -6643,6 +6666,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcPv1Batch in ${diff} seconds"
 		}
 		// end PV1_BATCH
+		return saveCount
 	}
 
 	def parsePv2Batch(table, response) {
@@ -6655,7 +6679,6 @@ class DataParserService {
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
-		//table?.HH_BATCH1?.each{ c ->
 		GParsPool.withPool {
 			table?.PV2_BATCH1?.eachParallel { c ->
 				
@@ -7324,6 +7347,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcPv2Batch in ${diff} seconds"
 		}
 		// end PV2_BATCH
+		return saveCount
 	}
 
 	// Start COMBO_BATCH
@@ -7337,7 +7361,6 @@ class DataParserService {
 		}
 		// Save data in batches
 		def startTime = System.nanoTime()
-		//table?.COMBO_BATCH1?.each{ c ->
 		GParsPool.withPool {
 			table?.COMBO_BATCH1?.eachParallel { c ->
 				
@@ -7803,6 +7826,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcComboBatch in ${diff} seconds"
 		}
 		// end COMBO_BATCH
+		return saveCount
 	}
 	
 	// Start En_BATCH
@@ -8680,6 +8704,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcEnBatch in ${diff} seconds"
 		}
 		// end EN_BATCH1
+		return saveCount
 	}
 	
 	// Start PPGFOLLOW_BATCH1
@@ -8856,6 +8881,7 @@ class DataParserService {
 			logMessage response, "    Done! ${saveCount} records saved to norcPpgFollowBatch in ${diff} seconds"
 		}
 		// end PPGFOLLOW_BATCH1
+		return saveCount
 	}
 	
 	/** Logs a message to remote user and to local logfile/output */

@@ -10,25 +10,32 @@ class EmailNotifyService {
 
 	def mailService
 
-
 	def notifyOfNorcUpload(clientAddress) {
+		def norcPartner = DataExchangePartner.findByName('NORC')
+		notifyOfUpload(clientAddress, norcPartner, [:])
+	}
 
-		if (clientAddress != '0:0:0:0:0:0:0:1' || clientAddress != '127.0.0.1') {
-			def recipients = [ 'ajz@umn.edu'
-			, 'ast@umn.edu'
-			, 'jaf@umn.edu'
-			, 'msg@umn.edu'
-			, 'ngp@umn.edu' ]
+	def notifyOfUpload(clientAddress, dataExchangePartner, dataDetails) {
+		def recipients = [ 'ajz@umn.edu'
+		, 'ast@umn.edu'
+		, 'jaf@umn.edu'
+		, 'msg@umn.edu' ]
 
-			def referenceDate = new Date()
+		if (dataExchangePartner.contactEmail) {
+			recipients.add dataExchangePartner.contactEmail
+		}
 
-			mailService.sendMail {
-				to recipients.toArray()
-				from "help@ncs.umn.edu"
-				subject "Notification of NORC Data Upload ${referenceDate}"
-				body( view:"/combined/notify",
-						model:[ referenceDate: referenceDate, clientAddress: clientAddress ] )
-			}
+		def referenceDate = new Date()
+
+		mailService.sendMail {
+			to recipients.toArray()
+			from "help@ncs.umn.edu"
+			subject "Notification of ${dataExchangePartner.name} Data Upload ${referenceDate}"
+			body( view:"/combined/notify",
+					model:[ referenceDate: referenceDate, 
+						clientAddress: clientAddress,
+						dataExchangePartner: dataExchangePartner,
+						dataDetails: dataDetails ] )
 		}
 	}
 }

@@ -17,6 +17,8 @@ class VdrController {
 
 	def index = {
 
+		def dataExchangePartner = accessService.getPartnerByKey(params.key)
+
 		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_WRITE_INSTRUMENT') ) {
 			response.sendError(403)
 			render "ACCESS DENIED ROLE_WRITE_INSTRUMENT\n"
@@ -36,11 +38,17 @@ class VdrController {
 			log.info " ~ Calculated MD5 sum:${result.md5Sum}."
 			response << " ~ Calculated MD5 sum:${result.md5Sum}. \n"
 			
-		}
-		render "save action finished.\n"
+			def parseResults = [:]
+			parseResults.dataType = 'VDR'
+			parseResults.method = 'HTTPS POST'
+			parseResults.dataSize = "${result.bytesRead} bytes"
+			parseResults.md5Sum = result.md5Sum
+			parseResults.fileSaved = fileName
 
-		// send notification email
-		emailNotifyService.notifyOfNorcUpload(request.remoteAddr)
+			// send notification email
+			emailNotifyService.notifyOfUpload(request.remoteAddr, dataExchangePartner, parseResults)
+		}
+		render "vdr action finished.\n"
 	}
 
 	def key = {
@@ -78,8 +86,9 @@ class VdrController {
 	def upload = {
 		def remoteAddress = request.remoteAddr
 		def key = params.key
+		def dataExchangePartner = accessService.getPartnerByKey(key)
 
-		if ( ! accessService.hasRoleAccess(params.key, request.remoteAddr, 'ROLE_WRITE_INSTRUMENT') ) {
+		if ( ! accessService.hasRoleAccess(key, remoteAddress, 'ROLE_WRITE_INSTRUMENT') ) {
 			flash.message = "Access denied: ROLE_WRITE_INSTRUMENT, from host: ${remoteAddress}"
 			redirect(action:'key')
 		} else {
@@ -89,8 +98,15 @@ class VdrController {
 				f.transferTo(new File(fileName))
 				log.info "Wrote file ${fileName}."
 				flash.message = "The file was successfully uploaded."
+
+				def parseResults = [:]
+				parseResults.dataType = 'VDR'
+				parseResults.method = 'Web Based Wizard'
+				parseResults.fileSaved = fileName
+
 				// send notification email
-				emailNotifyService.notifyOfNorcUpload(request.remoteAddr)
+				emailNotifyService.notifyOfUpload(remoteAddress, dataExchangePartner, parseResults)
+
 				redirect(action:'key')
 			} else {
 				flash.message = "Sorry, the file you uploaded was empty."
