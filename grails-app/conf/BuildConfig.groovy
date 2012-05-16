@@ -41,7 +41,7 @@ grails.project.dependency.resolution = {
 		compile ":ncs-norc-link:0.4"
 		compile ":ncs-recruitment:1.0"
 		compile ":ncs-web-template:0.2"
-		compile ":spring-security-core:1.2.7.1"
+		compile ":spring-security-core:1.2.7.9"
 
 		test ":code-coverage:1.2.5"
 		test ":codenarc:0.16.1"
