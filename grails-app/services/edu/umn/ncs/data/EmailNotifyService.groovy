@@ -16,7 +16,7 @@ class EmailNotifyService {
 	}
 
 	def notifyOfUpload(clientAddress, dataExchangePartner, dataDetails) {
-		def recipients = [ 'ajz@umn.edu'
+		def recipients = [ 'ngp@umn.edu'
 		, 'ast@umn.edu'
 		, 'jaf@umn.edu'
 		, 'msg@umn.edu' ]
