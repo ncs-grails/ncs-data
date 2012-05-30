@@ -3,7 +3,7 @@
 . norc_key.sh
 . rest_server.sh
 
-curl --insecure \
+${curl_cmd} --insecure \
 	--request POST \
 	--header "Content-Type:text/xml" \
 	--sslv3 \

@@ -46,7 +46,7 @@
 #        --data @data_transmission_16SEP11_1.xml \
 #        ${base_url}combined/?key=${norc_key}
 
-curl --insecure \
+${curl_cmd} --insecure \
         --request POST \
         --header "Content-Type:text/xml" \
 		--sslv3 \

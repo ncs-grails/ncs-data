@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# The "curl" command
-curl_cmd="curl --insecure"
 # the private key used to access the RESTful service
 . norc_key.sh
 . rest_server.sh

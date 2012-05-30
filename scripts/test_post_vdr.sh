@@ -13,7 +13,7 @@ else
 	md5sum ${payload}
 
 	echo "Posting data..."
-	curl --insecure \
+	${curl_cmd} --insecure \
 		--request POST \
 		--header "Content-Type:application/zip" \
 		--sslv3 \

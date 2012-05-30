@@ -1,7 +1,5 @@
 #!/bin/bash
 
-curl_cmd="curl --insecure"
-
 . norc_key.sh
 . rest_server.sh
 
